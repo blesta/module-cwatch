@@ -1,0 +1,31 @@
+<?php
+
+$this->Widget->clear();
+$this->Widget->create($this->_('CWatch.add_row.box_title', true));
+?>
+
+<div class="inner">
+    <div class="pad">
+    <?php
+    $this->Form->create();
+    ?>
+    <ul>
+        <li>
+            <?php $this->Form->label("Username", "un");
+            $this->Form->fieldText("username", $this->Html->ifSet($vars->username), array("id" => "un"));
+            ?>
+        </li>
+        <li>
+            <?php $this->Form->label("Password", "pw");
+            $this->Form->fieldPassword("password", $this->Html->ifSet($vars->password), array("id" => "pw"));
+            ?>
+        </li>
+    </ul>
+    <div class="button_row">
+        <a href="#" class="btn btn_right submit"><?php echo $this->_('CWatch.add_row.add_btn', true)?></a>
+    </div>
+    </div>
+</div>
+<?php
+$this->Widget->end();
+?>

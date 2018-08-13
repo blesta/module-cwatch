@@ -1,0 +1,49 @@
+        <?php
+	$link_buttons = array(['name'=>$this->_('CWatch.add_module_row', true), 'attributes'=>array('href'=>$this->base_uri . 'settings/company/modules/addrow/' . $module->id, 'class'=>'btn btn_right')]);
+
+        $this->Widget->clear();
+	$this->Widget->setLinkButtons($link_buttons);
+        $this->Widget->create($this->_('CWatch.manage.boxtitle', true, $this->Html->_($module->name, true)), ['id' => 'manage_none']);
+        ?>
+       <div class="inner">
+    <div class="pad">
+        <table class="table">
+            <thead>
+                <tr class="heading_row">
+                    <td><?php echo $this->_('CWatch.heading_username.name', true)?></td>
+                    <td><?php echo $this->_('CWatch.heading_options.name', true)?></td>
+                </tr>
+            </thead>
+            <tbody>
+    <?php
+    foreach($module->rows as $row){
+    ?>
+        <tr>
+            <td><?php echo($row->meta->username); ?></td>
+            <td><a href="<?php echo $this->base_uri; ?>settings/company/modules/editrow/<?php echo $module->id; ?>/<?php echo $row->id; ?>">Edit</a>
+            <?php
+            $this->Form->create($this->base_uri . "settings/company/modules/deleterow/");
+            $this->Form->fieldHidden("id", $module->id);
+            $this->Form->fieldHidden("row_id", $row->id);
+            ?>
+            <a href="<?php echo $this->base_uri; ?>settings/company/modules/deleterow/<?php echo $module->id; ?>/<?php echo $row->id; ?>" class="manage" rel="Are you sure you want to delete <?php echo $row->meta->username; ?>?">Delete</a>
+            <?php $this->Form->end(); ?>
+            </td>
+        </tr>
+    <?php
+    }
+    ?>
+        </tbody>
+    </table>
+    </div>
+</div>
+        <?php
+        $this->Widget->end();
+        ?>
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('a.manage[rel]').blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', close: '<?php $this->_("AppController.modal.text_close");?>', submit: true});
+	});
+</script>
