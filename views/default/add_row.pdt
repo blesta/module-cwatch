@@ -1,31 +1,41 @@
 <?php
 
-$this->Widget->clear();
-$this->Widget->create($this->_('CWatch.add_row.box_title', true));
+    $this->Widget->clear();
+    $this->Widget->create($this->_('CWatch.add_row.box_title', true));
 ?>
 
-<div class="inner">
-    <div class="pad">
+    <div class="inner">
+        <?php
+    	    $this->Form->create();
+    	?>  
+
+        <div class="title_row first">
+            <h3><?php $this->_('CWatch.add_row.basic_title'); ?></h3>
+        </div>
+
+	<div class="pad">
+            <ul>
+                <li>
+                    <?php 
+			$this->Form->label("Username", "un");
+           	        $this->Form->fieldText("username", $this->Html->ifSet($vars->username), array("id" => "un"));
+            	    ?>
+        	</li>
+                <li>
+                    <?php 
+			$this->Form->label("Password", "pw");
+            	        $this->Form->fieldPassword("password", $this->Html->ifSet($vars->password), array("id" => "pw"));
+            	    ?>
+        	</li>
+            </ul>
+	<div>
+
+        <div class="button_row">
+	    <?php 
+	        $this->Form->fieldSubmit('submit', $this->_('CWatch.add_row.add_btn', true), ['class' => 'btn btn-primary pull-right']);
+	    ?>
+        </div>
+    </div>
     <?php
-    $this->Form->create();
+	$this->Widget->end();
     ?>
-    <ul>
-        <li>
-            <?php $this->Form->label("Username", "un");
-            $this->Form->fieldText("username", $this->Html->ifSet($vars->username), array("id" => "un"));
-            ?>
-        </li>
-        <li>
-            <?php $this->Form->label("Password", "pw");
-            $this->Form->fieldPassword("password", $this->Html->ifSet($vars->password), array("id" => "pw"));
-            ?>
-        </li>
-    </ul>
-    <div class="button_row">
-        <a href="#" class="btn btn_right submit"><?php echo $this->_('CWatch.add_row.add_btn', true)?></a>
-    </div>
-    </div>
-</div>
-<?php
-$this->Widget->end();
-?>

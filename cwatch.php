@@ -23,6 +23,9 @@ class cwatch extends Module {
 
 	// Load configuration required by this module
         $this->loadConfig(dirname(__FILE__) . DS . "config.json");
+
+	// Load product configuration required by this module
+        Configure::load('cwatch', dirname(__FILE__).DS.'config'.DS);
     }
 
     /**
@@ -82,7 +85,7 @@ class cwatch extends Module {
         return $view->fetch();
     }
 
-   /**
+    /**
      * Load the view
      *
      * @param string $view
@@ -99,6 +102,80 @@ class cwatch extends Module {
 
         return $viewObj;
     }
+    
+    public function selectModuleRow($module_group_id) 
+    {
+	if (!isset($this->ModuleManager))
+	    Loader::loadModels($this, array("ModuleManager"));
+	
+	$group = $this->ModuleManager->getGroup($module_group_id);
+	
+	if ($group) {
+	    switch ($group->add_order) {
+		default:
+		case "first":
+		    foreach ($group->rows as $row) {
+			return $row->id;
+		    }
+		break;
+	    }
+	}
+	
+        return 0;
+    }
+    
+    private function getModuleRowByApi($module_row, $module_group = "") 
+    {
+        $row = null;
+	    
+	if ($module_group == "") {
+	    if ($module_row > 0) {
+	        $row = $this->getModuleRow($module_row);
+	    } else {
+		$rows = $this->getModuleRows();
+   
+		if (isset($rows[0]))
+	            $row = $rows[0];
+		    unset($rows);
+	    }
+	} else {
+		$rows = $this->getModuleRows($module_group);
 
+		if (isset($rows[0]))
+                    $row = $rows[0];
+		    unset($rows);
+	}
+		
+	return $row;
+    }
+        
+    public function getPackageFields($vars=null)
+    {
+        Loader::loadHelpers($this, array("Form", "Html"));
+        
+        $module = $this->getModuleRowByApi((isset($vars->module_row) ? $vars->module_row : 0), (isset($vars->module_group) ? $vars->module_group : ""));
+        
+        $fields = new ModuleFields();
+        
+        if ($module)
+	{
+    	    $products = Configure::get('cwatch.products');
+            $type = $fields->label(Language::_('CWatch.add_product.license_type', true), "license_type");
+            $type->attach($fields->fieldSelect("meta[cwatch_license_type]", $products, $this->Html->ifSet($vars->meta['cwatch_license_type']), array("id" => "license_type")));
+            $fields->setField($type);
+            unset($type);
+        }
+            
+        return $fields;
+    }
+    
+    public function getEmailTags()
+    {
+        return array(
+            'module' => array(),
+            'package' => array(),
+            'service' => array("cwatch_license")
+        );
+    }
 }
 ?>
