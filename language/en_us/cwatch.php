@@ -34,4 +34,5 @@
 
 // Add product
     $lang['CWatch.add_product.license_type'] = 'CWatch License Type';
+    $lang['CWatch.add_product.license_term'] = 'CWatch License Term';
 
