@@ -230,7 +230,45 @@ class cwatch extends Module {
         ];
     }
 
+//    public function unsuspendService($package, $service, $parent_package = null, $parent_service = null) {
+//        return null;
+//    }
+
     public function suspendService($package, $service, $parent_package = null, $parent_service = null) {
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;
+        $row = $this->getModuleRow();
+        if (isset($row->meta->username)) {
+            $user = $row->meta->username;
+        }
+        if (isset($row->meta->password)) {
+            $pass = $row->meta->password;
+        }
+        if (isset($package->meta->cwatch_sandbox)) {
+            $sandbox = $package->meta->cwatch_sandbox;
+        }
+        $this->loadApi($user, $pass, $sandbox);
+        try {
+            if (empty($licensekey)) {
+                $this->Input->setErrors(['api' => ['internal' => 'License Key not found.']]);
+            } else {
+                $response = $this->api->deactivateLicense($licensekey);
+                $json = json_decode($response->resp);
+                if ($response->success != 1) {
+                    $this->Input->setErrors(['api' => ['internal' => $json[0]->message]]);
+                }
+            }
+        } catch (exception $e) {
+            $this->Input->setErrors(['api' => ['internal' => $e->getMessage()]]);
+        }
+        // Return on error
+        if ($this->Input->errors())
+            return;
+
+        return null;
+    }
+
+    public function cancelService($package, $service, $parent_package = null, $parent_service = null) {
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $licensekey = $service_fields->licensekey;
         $row = $this->getModuleRow();
@@ -247,9 +285,9 @@ class cwatch extends Module {
         try {
             $response = $this->api->deactivateLicense($licensekey);
             $json = json_decode($response->resp);
-            print_r($json); exit();
-            if ($response->success != "") {
-                $this->Input->setErrors(['api' => ['internal' => $response->message]]);
+            //print_r($json); exit();
+            if ($response->success != 1) {
+                 $this->Input->setErrors(['api' => ['internal' => $json[0]->message]]);
             }
         } catch (exception $e) {
             $this->Input->setErrors(['api' => ['internal' => $e]]);
@@ -261,10 +299,67 @@ class cwatch extends Module {
         return null;
     }
 
-    public function unsuspendService($package, $service, $parent_package = null, $parent_service = null) {
-         $service_fields = $this->serviceFieldsToObject($service->fields);
-        $licensekey = $service_fields->licensekey;
+    public function getClientTabs($package) {
+        return [
+            'tabClientActions' => Language::_('Cwatch.tab_client_actions', true)
+        ];
+    }
+
+    public function getAdminTabs($package) {
+//        return array(
+//            'tabAdminManagementAction' => Language::_("Cwatch.tab_AdminManagementAction", true),
+//        );
+    }
+
+    public function tabClientActions($package, $service, array $get = null, array $post = null, array $files = null) {
+        $this->view = new View("tab_site", "default");
+        $this->view->base_uri = $this->base_uri;
+        // Load the helpers required for this view
+        Loader::loadHelpers($this, array("Form", "Html"));
         $row = $this->getModuleRow();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;
+        if (isset($row->meta->username)) {
+            $user = $row->meta->username;
+        }
+        if (isset($row->meta->password)) {
+            $pass = $row->meta->password;
+        }
+        if (isset($package->meta->cwatch_sandbox)) {
+            $sandbox = $package->meta->cwatch_sandbox;
+        }
+        if (isset($package->meta->cwatch_license_type)) {
+            $product = $package->meta->cwatch_license_type;
+        }
+        if (isset($package->meta->cwatch_license_term)) {
+            $term = $package->meta->cwatch_license_term;
+        }
+        Loader::loadModels($this, ['Clients']);
+        $client = $this->Clients->get($service->client_id, false);
+        $email = $client->email;
+        $this->loadApi($user, $pass, $sandbox);
+        if (!empty($post)) {
+            $sites = $this->api->addSite(['email' => $email, 'domain' => $post['domainname'], 'licenseKey' => $licensekey, 'initiateDns' => $post['initiateDns'] == 1 ? true : false, 'autoSsl' => $post['autoSsl'] == 1 ? true : false]);
+            if (!empty($sites->errorMsg)) {
+                $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
+            }
+        }
+
+        $sites = $this->api->getSites($email);
+        $this->view->set("sites_data", json_decode($sites->resp));
+        $this->view->set("service", $service);
+        $this->view->set('service_id', $service->id);
+        $this->view->set('licenseid', $licensekey);
+        $this->view->set("addsite", $get[2]);
+
+        $this->view->setDefaultView("components" . DS . "modules" . DS . "cwatch" . DS);
+        return $this->view->fetch();
+    }
+
+    public function getClientServiceInfo($service, $package) {
+        $row = $this->getModuleRow();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;
         if (isset($row->meta->username)) {
             $user = $row->meta->username;
         }
@@ -275,78 +370,60 @@ class cwatch extends Module {
             $sandbox = $package->meta->cwatch_sandbox;
         }
         $this->loadApi($user, $pass, $sandbox);
-        try {
-            $response = $this->api->deactivateLicense($licensekey);
-            $json = json_decode($response->resp);
-            print_r($json); exit();
-            if ($response->code != 200) {
-                $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
-            }
-        } catch (exception $e) {
-            $this->Input->setErrors(['api' => ['internal' => $e]]);
+        $response = $this->api->getLicenseInfo($licensekey);
+        $json = json_decode($response->resp);
+        if ($response->code != 200) {
+            $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
         }
-        // Return on error
-        if ($this->Input->errors())
-            return;
+        // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
+        $this->view = new View("client_service_info", "default");
+        $this->view->base_uri = $this->base_uri;
+        $this->view->setDefaultView("components" . DS . "modules" . DS . "cwatch" . DS);
 
-        return null;
-    }
-    public function editService($package, $service, array $vars = null, $parent_package = null, $parent_service = null) {
-        
-    }
+        // Load the helpers required for this view
+        Loader::loadHelpers($this, array("Form", "Html"));
 
-    public function changeServicePackage($package_from, $package_to, $service, $parent_package = null, $parent_service = null) {
-        
-    }
+        $this->view->set("module_row", $row);
+        $this->view->set("package", $json);
+        $this->view->set("service", $service);
+        $this->view->set("service_fields", $this->serviceFieldsToObject($service->fields));
 
-    public function tabClientActions($package, $service, array $get = null, array $post = null, array $files = null) {
-        
+        return $this->view->fetch();
     }
 
-    public function cancelService($package, $service, $parent_package = null, $parent_service = null) {
-        if ($service->status == 'active') {
-            $service_fields = $this->serviceFieldsToObject($service->fields);
-            $licensekey = $service_fields->licensekey;
-            $row = $this->getModuleRow();
-            if (isset($row->meta->username)) {
-                $user = $row->meta->username;
-            }
-            if (isset($row->meta->password)) {
-                $pass = $row->meta->password;
-            }
-            if (isset($package->meta->cwatch_sandbox)) {
-                $sandbox = $package->meta->cwatch_sandbox;
-            }
-            if (isset($vars['use_module']) && $vars['use_module'] == "true") {
-                $this->loadApi($user, $pass, $sandbox);
-                try {
-                    $response = $this->api->deleteUser('rajukumarguptagupta@gmail.com');
-                    $json = json_decode($response->resp);
-                    if ($response->code != 200) {
-                        $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
-                    }
-                } catch (exception $e) {
-                    $this->Input->setErrors(['api' => ['internal' => $e]]);
-                }
-                if ($this->Input->errors())
-                    return;
-            }
-        }return null;
-    }
+    public function getAdminServiceInfo($service, $package) {
+        $row = $this->getModuleRow();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;
+        if (isset($row->meta->username)) {
+            $user = $row->meta->username;
+        }
+        if (isset($row->meta->password)) {
+            $pass = $row->meta->password;
+        }
+        if (isset($package->meta->cwatch_sandbox)) {
+            $sandbox = $package->meta->cwatch_sandbox;
+        }
+        $this->loadApi($user, $pass, $sandbox);
+        $response = $this->api->getLicenseInfo($licensekey);
+        $json = json_decode($response->resp);
+        if ($response->code != 200) {
+            $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
+        }
+        // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
+        $this->view = new View("admin_service_info", "default");
+        $this->view->base_uri = $this->base_uri;
+        $this->view->setDefaultView("components" . DS . "modules" . DS . "cwatch" . DS);
 
-    public function getClientTabs($package) {
+        // Load the helpers required for this view
+        Loader::loadHelpers($this, array("Form", "Html"));
 
-//        return [
-//            'tabClientActions' => Language::_('Cwatch.tab_client_actions', true)
-//        ];
-    }
+        $this->view->set("module_row", $row);
+        $this->view->set("package", $json);
+        $this->view->set("service", $service);
+        $this->view->set("service_fields", $this->serviceFieldsToObject($service->fields));
 
-    public function getAdminTabs($package) {
-//        return array(
-//            'tabAdminManagementAction' => Language::_("Cwatch.tab_AdminManagementAction", true),
-//        );
+        return $this->view->fetch();
     }
 
 }
-
-?>
