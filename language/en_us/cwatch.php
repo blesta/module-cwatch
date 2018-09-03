@@ -50,6 +50,8 @@ $lang['Cwatch.domain_name'] = 'Domain Name';
 $lang['Cwatch.domain_initiateDns'] = 'Initial DNS';
 $lang['Cwatch.domain_autoSsl'] = 'AutoSSL';
 $lang['Cwatch.field_password_submit'] = 'Submit';
+$lang['CWatch.edit_row.label_sandbox'] = 'Enable SandBox';
+
 
 
 

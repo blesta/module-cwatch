@@ -27,6 +27,12 @@
             	        $this->Form->fieldPassword("password", $this->Html->ifSet($vars->password), array("id" => "pw"));
             	    ?>
         	</li>
+                 <li>
+            	    <?php
+			$this->Form->label($this->_('CWatch.edit_row.label_sandbox', true), "snd");
+            		$this->Form->fieldCheckbox('cwatch_sandbox', 'true', $this->Html->ifSet($vars->cwatch_sandbox, 'true') == 'true', ['id'=>'cwatch_sandbox']);
+            	    ?>
+            </li>
             </ul>
 	<div>
 
