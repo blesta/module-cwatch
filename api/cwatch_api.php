@@ -31,7 +31,7 @@ class APIController {
         }
     }
 
-    /**
+    /** function will create user and assign license to user
      * @param string $email
      * @param type $name
      * @param type $surname
@@ -49,7 +49,7 @@ class APIController {
         return $apiResponse;
     }
 
-    /**
+    /** Function will create user
      * @param string $email
      * @param string $name
      * @param string $surname
@@ -70,6 +70,7 @@ class APIController {
     }
 
     /**
+     * Function will delete user
      * @param string $email
      * @return json string
      */
@@ -86,6 +87,7 @@ class APIController {
     }
 
     /**
+     * Function will cancel license
      * @param string $lkey
      * @return json string
      */
@@ -102,6 +104,7 @@ class APIController {
     }
 
     /**
+     * It will fetch the license info for particular license key
      * @param string $lkey
      * @return json string
      */
@@ -118,6 +121,7 @@ class APIController {
     }
 
     /**
+     * Get site by user email
      * @param string $email
      * @return json string
      */
@@ -134,6 +138,7 @@ class APIController {
     }
 
     /**
+     * add site for a user
      * @param array $params
      * @return json string
      */
@@ -149,6 +154,7 @@ class APIController {
     }
 
     /**
+     * assign license to user
      * @param string $product
      * @param string $term
      * @param string $email
@@ -171,9 +177,10 @@ class APIController {
     }
 
     /**
+     * send request to cwatch server
      * @param string $route
      * @param string $body
-     * @param string $method 
+     * @param string $method  (POST,GET,PUT)
      * @return array
      */
     private function api_call(string $route, string $body, $method) {

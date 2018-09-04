@@ -9,9 +9,6 @@
  * @license http://blesta.com/license/ The Blesta License Agreement
  * @link http://blesta.com/ Blesta
  */
-//ini_set('display_errors', true);
-//error_reporting(E_ALL);
-
 class cwatch extends Module {
 
     /**
@@ -40,18 +37,14 @@ class cwatch extends Module {
         $this->params = array();
     }
 
-    public function install() {
-        // No Logic
-    }
-
-    public function uninstall($module_id, $last_instance) {
-        // No Logic
-    }
-
-    public function upgrade($current_version) {
-        // No Logic
-    }
-
+    /**
+     * Returns the rendered view of the manage module page
+     *
+     * @param mixed $module A stdClass object representing the module and its rows
+     * @param array $vars An array of post data submitted to or on the manager module
+     *  page (used to repopulate fields after an error)
+     * @return string HTML content containing information to display when viewing the manager module page
+     */
     public function manageModule($module, array &$vars) {
         $view = $this->getView('manage');
         Loader::loadHelpers($view, array('Form', 'Html', 'Widget'));
@@ -62,6 +55,17 @@ class cwatch extends Module {
         return $view->fetch();
     }
 
+    /**
+     * Adds the module row on the remote server. Sets Input errors on failure,
+     * preventing the row from being added. Returns a set of data, which may be
+     * a subset of $vars, that is stored for this module row
+     *
+     * @param array $vars An array of module info to add
+     * @return array A numerically indexed array of meta fields for the module row containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     */
     public function manageAddRow(array &$vars) {
         $view = $this->getView('add_row');
         Loader::loadHelpers($view, array('Form', 'Html', 'Widget'));
@@ -70,6 +74,14 @@ class cwatch extends Module {
         return $view->fetch();
     }
 
+    /**
+     * Returns the rendered view of the edit module row page
+     *
+     * @param stdClass $module_row The stdClass representation of the existing module row
+     * @param array $vars An array of post data submitted to or on the edit
+     *  module row page (used to repopulate fields after an error)
+     * @return string HTML content containing information to display when viewing the edit module row page
+     */
     public function manageEditRow($module_row, array &$vars) {
         $view = $this->getView('edit_row');
         Loader::loadHelpers($view, array('Form', 'Html', 'Widget'));
@@ -99,6 +111,16 @@ class cwatch extends Module {
         return $viewObj;
     }
 
+    /**
+     * Returns an array of available service deligation order methods. The module
+     * will determine how each method is defined. For example, the method "first"
+     * may be implemented such that it returns the module row with the least number
+     * of services assigned to it.
+     *
+     * @return array An array of order methods in key/value paris where the key is
+     *  the type to be stored for the group and value is the name for that option
+     * @see Module::selectModuleRow()
+     */
     public function selectModuleRow($module_group_id) {
         if (!isset($this->ModuleManager))
             Loader::loadModels($this, array("ModuleManager"));
@@ -143,6 +165,14 @@ class cwatch extends Module {
         return $row;
     }
 
+    /**
+     * Returns all fields used when adding/editing a package, including any
+     * javascript to execute when the page is rendered with these fields.
+     *
+     * @param $vars stdClass A stdClass object representing a set of post fields
+     * @return ModuleFields A ModuleFields object, containing the fields to
+     *  render as well as any additional HTML markup to include
+     */
     public function getPackageFields($vars = null) {
         Loader::loadHelpers($this, array("Form", "Html"));
 
@@ -173,14 +203,47 @@ class cwatch extends Module {
         return $fields;
     }
 
+    /**
+     * Returns an array of key values for fields stored for a module, package,
+     * and service under this module, used to substitute those keys with their
+     * actual module, package, or service meta values in related emails.
+     *
+     * @return array A multi-dimensional array of key/value pairs where each key is
+     *  one of 'module', 'package', or 'service' and each value is a numerically
+     *  indexed array of key values that match meta fields under that category.
+     * @see Modules::addModuleRow()
+     * @see Modules::editModuleRow()
+     * @see Modules::addPackage()
+     * @see Modules::editPackage()
+     * @see Modules::addService()
+     * @see Modules::editService()
+     */
     public function getEmailTags() {
-        return array(
-            'module' => array(),
-            'package' => array(),
-            'service' => array("cwatch_license")
-        );
+        return [
+            'module' => [],
+            'package' => ['type', 'package', 'acl'],
+            'service' => ['licensekey', 'cwatch_license_type', 'cwatch_license_term']
+        ];
     }
 
+    /**
+     * Adds the service to the remote server. Sets Input errors on failure,
+     * preventing the service from being added.
+     *
+     * @param stdClass $package A stdClass object representing the selected package
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param stdClass $parent_package A stdClass object representing the parent
+     *  service's selected package (if the current service is an addon service)
+     * @param stdClass $parent_service A stdClass object representing the parent
+     *  service of the service being added (if the current service is an addon service
+     *  service and parent service has already been provisioned)
+     * @return array A numerically indexed array of meta fields to be stored for this service containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     * @see Module::getModule()
+     * @see Module::getModuleRow()
+     */
     public function addService($package, array $vars = null, $parent_package = null, $parent_service = null, $status = "pending") {
         $row = $this->getModuleRow();
         if (isset($row->meta->username)) {
@@ -216,7 +279,7 @@ class cwatch extends Module {
             } catch (exception $e) {
                 $this->Input->setErrors(['api' => ['internal' => $e]]);
             }
-            // $this->log("createcommand", serialize($client), "input", true);
+            $this->log("createcommand", serialize($response), "output", true);
             // Return on error
             if ($this->Input->errors())
                 return;
@@ -230,10 +293,24 @@ class cwatch extends Module {
         ];
     }
 
-//    public function unsuspendService($package, $service, $parent_package = null, $parent_service = null) {
-//        return null;
-//    }
-
+    /**
+     * Suspends the service on the remote server. Sets Input errors on failure,
+     * preventing the service from being suspended.
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param stdClass $parent_package A stdClass object representing the parent
+     *  service's selected package (if the current service is an addon service)
+     * @param stdClass $parent_service A stdClass object representing the parent
+     *  service of the service being suspended (if the current service is an addon service)
+     * @return mixed null to maintain the existing meta fields or a numerically
+     *  indexed array of meta fields to be stored for this service containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     * @see Module::getModule()
+     * @see Module::getModuleRow()
+     */
     public function suspendService($package, $service, $parent_package = null, $parent_service = null) {
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $licensekey = $service_fields->licensekey;
@@ -258,6 +335,7 @@ class cwatch extends Module {
                     $this->Input->setErrors(['api' => ['internal' => $json[0]->message]]);
                 }
             }
+            $this->log("suspendService", serialize($response), "output", true);
         } catch (exception $e) {
             $this->Input->setErrors(['api' => ['internal' => $e->getMessage()]]);
         }
@@ -268,6 +346,24 @@ class cwatch extends Module {
         return null;
     }
 
+    /**
+     * Cancels the service on the remote server. Sets Input errors on failure,
+     * preventing the service from being canceled.
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param stdClass $parent_package A stdClass object representing the parent
+     *  service's selected package (if the current service is an addon service)
+     * @param stdClass $parent_service A stdClass object representing the parent
+     *  service of the service being canceled (if the current service is an addon service)
+     * @return mixed null to maintain the existing meta fields or a numerically
+     *  indexed array of meta fields to be stored for this service containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     * @see Module::getModule()
+     * @see Module::getModuleRow()
+     */
     public function cancelService($package, $service, $parent_package = null, $parent_service = null) {
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $licensekey = $service_fields->licensekey;
@@ -287,8 +383,9 @@ class cwatch extends Module {
             $json = json_decode($response->resp);
             //print_r($json); exit();
             if ($response->success != 1) {
-                 $this->Input->setErrors(['api' => ['internal' => $json[0]->message]]);
+                $this->Input->setErrors(['api' => ['internal' => $json[0]->message]]);
             }
+            $this->log("cancelService", serialize($response), "output", true);
         } catch (exception $e) {
             $this->Input->setErrors(['api' => ['internal' => $e]]);
         }
@@ -299,18 +396,27 @@ class cwatch extends Module {
         return null;
     }
 
+    /**
+     * Client Statistics tab (bandwidth/disk usage)
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @param array $files Any FILES parameters
+     * @return string The string representing the contents of this tab
+     */
     public function getClientTabs($package) {
         return [
             'tabClientActions' => Language::_('Cwatch.tab_client_actions', true)
         ];
     }
 
-    public function getAdminTabs($package) {
-//        return array(
-//            'tabAdminManagementAction' => Language::_("Cwatch.tab_AdminManagementAction", true),
-//        );
-    }
-
+    /**
+     * Client Actions (Manage Site)
+     *
+     * @return string The string representing the contents of this tab
+     */
     public function tabClientActions($package, $service, array $get = null, array $post = null, array $files = null) {
         $this->view = new View("tab_site", "default");
         $this->view->base_uri = $this->base_uri;
@@ -356,6 +462,14 @@ class cwatch extends Module {
         return $this->view->fetch();
     }
 
+    /**
+     * Fetches the HTML content to display when viewing the service info in the
+     * client interface.
+     *
+     * @param stdClass $service A stdClass object representing the service
+     * @param stdClass $package A stdClass object representing the service's package
+     * @return string HTML content containing information to display when viewing the service info
+     */
     public function getClientServiceInfo($service, $package) {
         $row = $this->getModuleRow();
         $service_fields = $this->serviceFieldsToObject($service->fields);
@@ -387,10 +501,18 @@ class cwatch extends Module {
         $this->view->set("package", $json);
         $this->view->set("service", $service);
         $this->view->set("service_fields", $this->serviceFieldsToObject($service->fields));
-
+        $this->log("viewinfo", serialize($response), "output", true);
         return $this->view->fetch();
     }
 
+    /**
+     * Fetches the HTML content to display when viewing the service info in the
+     * admin interface.
+     *
+     * @param stdClass $service A stdClass object representing the service
+     * @param stdClass $package A stdClass object representing the service's package
+     * @return string HTML content containing information to display when viewing the service info
+     */
     public function getAdminServiceInfo($service, $package) {
         $row = $this->getModuleRow();
         $service_fields = $this->serviceFieldsToObject($service->fields);
@@ -422,7 +544,7 @@ class cwatch extends Module {
         $this->view->set("package", $json);
         $this->view->set("service", $service);
         $this->view->set("service_fields", $this->serviceFieldsToObject($service->fields));
-
+        $this->log("viewinfo", serialize($response), "output", true);
         return $this->view->fetch();
     }
 
