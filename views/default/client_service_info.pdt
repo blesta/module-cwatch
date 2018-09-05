@@ -1,0 +1,14 @@
+<div class='title_row first'>
+    <h3><?php $this->_('CWatch.service.info'); ?></h3>
+</div>
+
+<table class='table'>
+    <?php 
+        foreach($package as $key=>$pack){
+    ?>
+    <tr>
+        <td><?php echo ucfirst($key); ?></td>
+        <td><?php echo $pack;  ?></td>
+    </tr>
+    <?php } ?>
+</table>    
