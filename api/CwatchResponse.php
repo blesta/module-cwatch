@@ -1,6 +1,6 @@
 <?php
 
-class APIResponse 
+class ApiResponse 
 {
 
     public $code;

@@ -2,7 +2,7 @@
 
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'CwatchResponse.php';
 
-class APIController 
+class ApiController 
 {
 
     // URL where API reside, please do not change
@@ -70,7 +70,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -88,7 +88,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -106,7 +106,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -124,7 +124,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -142,7 +142,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -159,7 +159,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
@@ -183,7 +183,7 @@ class APIController
             $responseBody = $response['content'];
         }
 
-        return new APIResponse($responseBody);
+        return new ApiResponse($responseBody);
     }
 
     /**
