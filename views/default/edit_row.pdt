@@ -1,0 +1,48 @@
+<?php
+
+$this->Widget->clear();
+    $this->Widget->create($this->_('CWatch.edit_row.box_title', true));
+?>
+
+<div class="inner">
+        <?php
+    	    $this->Form->create();
+    	?>
+
+    <div class="title_row first">
+        <h3><?php $this->_('CWatch.edit_row.basic_title'); ?></h3>
+    </div>
+
+    <div class="pad">
+        <ul>
+            <li>
+                    <?php
+		        $this->Form->label($this->_('CWatch.edit_row.label_username', true), "un");
+            		$this->Form->fieldText('username', $this->Html->ifSet($vars->username), array('id' => 'un'));
+            	    ?>
+            </li>
+            <li>
+            	    <?php
+			$this->Form->label($this->_('CWatch.edit_row.label_password', true), "pw");
+            		$this->Form->fieldPassword('password', array('id' => 'pw', 'value' => $this->Html->ifSet($vars->password)));
+            	    ?>
+            </li>
+             <li>
+            	    <?php
+			$this->Form->label($this->_('CWatch.edit_row.label_sandbox', true), "snd");
+            		$this->Form->fieldCheckbox('cwatch_sandbox', 'true', $this->Html->ifSet($vars->cwatch_sandbox), ['id'=>'cwatch_sandbox']);
+            	    ?>
+            </li>
+        </ul>
+    </div>
+
+    <div class="button_row">
+	    <?php
+	        $this->Form->fieldSubmit('submit', $this->_('CWatch.edit_row.add_btn', true), ['class' => 'btn btn-primary pull-right']);
+	    ?>
+    </div>
+</div>
+
+    <?php
+	$this->Widget->end();
+    ?>
