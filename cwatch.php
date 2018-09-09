@@ -299,10 +299,51 @@ class cwatch extends Module
                 'key' => 'licensekey',
                 'value' => $licensekey,
                 'encrypted' => 0
+            ],
+            [
+                'key' => 'number_sites',
+                'value' => $vars['configoptions']['number_of_sites'],
+                'encrypted' => 0
             ]
         ];
     }
 
+    /**
+     * Edits the service on the remote server. Sets Input errors on failure,
+     * preventing the service from being edited.
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param stdClass $parent_package A stdClass object representing the parent
+     *  service's selected package (if the current service is an addon service)
+     * @param stdClass $parent_service A stdClass object representing the parent
+     *  service of the service being edited (if the current service is an addon service)
+     * @return array A numerically indexed array of meta fields to be stored for this service containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     * @see Module::getModule()
+     * @see Module::getModuleRow()
+     */
+    public function editService($package, $service, array $vars = [], $parent_package = null, $parent_service = null)
+    {
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;        
+        return 
+        [
+            [
+                'key' => 'licensekey',
+                'value' => $licensekey,
+                'encrypted' => 0
+            ],
+            [
+                'key' => 'number_sites',
+                'value' => $vars['configoptions']['number_of_sites'],
+                'encrypted' => 0
+            ]
+        ];
+    }
     /**
      * Suspends the service on the remote server. Sets Input errors on failure,
      * preventing the service from being suspended.
@@ -422,10 +463,53 @@ class cwatch extends Module
     public function getClientTabs($package) 
     {
         return [
-            'tabClientActions' => Language::_('Cwatch.tab_client_actions', true)
+            'tabClientActions' => Language::_('Cwatch.tab_client_actions', true),
+            'tabClientMalWare' => Language::_('Cwatch.site.malware', true)
         ];
     }
-
+    function tabClientMalWare($package, $service, array $get = null, array $post = null, array $files = null) 
+    {
+        $this->view = new View('tab_malware', 'default');
+        $this->view->base_uri = $this->base_uri;
+        // Load the helpers required for this view
+        Loader::loadHelpers($this, array('Form', 'Html'));
+        $row = $this->getModuleRow();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+        $licensekey = $service_fields->licensekey;
+        if (isset($row->meta->username)) {
+            $user = $row->meta->username;
+        }
+        if (isset($row->meta->password)) {
+            $pass = $row->meta->password;
+        }
+        if (isset($package->meta->cwatch_sandbox)) {
+            $sandbox = $package->meta->cwatch_sandbox;
+        }
+        if (isset($package->meta->cwatch_license_type)) {
+            $product = $package->meta->cwatch_license_type;
+        }
+        if (isset($package->meta->cwatch_license_term)){
+            $term = $package->meta->cwatch_license_term;
+        }
+        Loader::loadModels($this, ['Clients']);
+        $client = $this->Clients->get($service->client_id, false);
+        $email = $client->email;
+        $this->loadApi($user, $pass, $sandbox);
+        if (!empty($post)){
+            if($post['actionname']=='checkstatus'){
+                $sites = $this->api->getScanner($post['domainname']);
+            }else{
+                $sites = $this->api->addScanner(['domain' => $post['domainname'], 'password' => $post['password'], 'username' => $post['username'], 'host' => $post['host'], 'port' => $post['port'],'path'=>$post['path']]);
+            }
+            if (!empty($sites->errorMsg)) {
+                $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
+            }
+        }
+        $this->view->set('service', $service);
+        $this->view->set('service_id', $service->id);
+        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
+        return $this->view->fetch();
+    }
     /**
      * Client Actions (Manage Site)
      *
@@ -459,16 +543,25 @@ class cwatch extends Module
         $client = $this->Clients->get($service->client_id, false);
         $email = $client->email;
         $this->loadApi($user, $pass, $sandbox);
-        if (!empty($post)) 
-        {
-            $sites = $this->api->addsite(['email' => $email, 'domain' => $post['domainname'], 'licenseKey' => $licensekey, 'initiateDns' => $post['initiateDns'] == 1 ? true : false, 'autoSsl' => $post['autoSsl'] == 1 ? true : false]);
-            if (!empty($sites->errorMsg)) {
-                $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
+        $sitesdata = $this->api->getsites($email);
+        $usedsites=json_decode($sitesdata->resp,true);
+        if (!empty($post)){
+            $sitecount=0;
+            foreach($usedsites as $site){
+                if($site->licenseKey==$licensekey){
+                    $sitecount +=1;
+                }
+            }
+            if($sitecount<$service_fields->number_sites || $service_fields->number_sites==0){
+                $sites = $this->api->addsite(['email' => $email, 'domain' => $post['domainname'], 'licenseKey' => $licensekey, 'initiateDns' => $post['initiateDns'] == 1 ? true : false, 'autoSsl' => $post['autoSsl'] == 1 ? true : false]);
+                if (!empty($sites->errorMsg)) {
+                    $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
+                }
+            }else{
+                $this->Input->setErrors(['api' => ['internal' => Language::_('Cwatch.site.notallow', true)]]);
             }
         }
-
-        $sites = $this->api->getsites($email);
-        $this->view->set('sites_data', json_decode($sites->resp));
+        $this->view->set('sites_data', json_decode($sitesdata->resp));
         $this->view->set('service', $service);
         $this->view->set('service_id', $service->id);
         $this->view->set('licenseid', $licensekey);

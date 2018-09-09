@@ -161,7 +161,38 @@ class ApiController
 
         return new ApiResponse($responseBody);
     }
+    /**
+     * add site for a scan malware
+     * @param array $params
+     * @return json string
+     */
+    public function addScanner($params) 
+    {
+        $response = $this->api_call('/malware/enableScanner', json_encode([$params]), 'POST');
+        if (!$response) {
+            $responseBody = self::API_ERROR;
+        } else {
+            $responseBody = $response['content'];
+        }
 
+        return new ApiResponse($responseBody);
+    }
+    /**
+     * get scanner status
+     * @param array $params
+     * @return json string
+     */
+    public function getScanner($site) 
+    {
+        $response = $this->api_call('/malware/getScannerStatus?site='.$site, '', 'GET');
+        if (!$response) {
+            $responseBody = self::API_ERROR;
+        } else {
+            $responseBody = $response['content'];
+        }
+
+        return new ApiResponse($responseBody);
+    }
     /**
      * assign license to user
      * @param string $product
