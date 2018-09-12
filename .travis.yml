@@ -13,6 +13,6 @@ before_script:
   - composer install --dev
 script:
   - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
-  - ./vendor/bin/phpcs --extensions=php --report=summary --ignore=./vendor/*,./build/* --standard=PSR2 ./
+  - ./vendor/bin/phpcs --extensions=php,pdt --report=summary --ignore=./vendor/*,./build/*,./api/* --standard=./phpcs.xml.dist ./
 after_script:
   - php ./vendor/bin/coveralls -v
