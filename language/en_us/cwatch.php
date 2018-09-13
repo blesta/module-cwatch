@@ -51,6 +51,16 @@ $lang['Cwatch.domain_initiateDns'] = 'Initial DNS';
 $lang['Cwatch.domain_autoSsl'] = 'AutoSSL';
 $lang['Cwatch.field_password_submit'] = 'Submit';
 $lang['CWatch.edit_row.label_sandbox'] = 'Enable SandBox';
+$lang['Cwatch.site.notallow'] = 'You have Used your site quota. Plese Upgrade your Plan.';
+$lang['Cwatch.site.malware'] = 'Malware Control';
+$lang['Cwatch.domain_name'] = 'Domain Name';
+$lang['Cwatch.site.ftppassword'] = 'FTP Password';
+$lang['Cwatch.site.ftpusername'] = 'FTP username';
+$lang['Cwatch.site.host'] = 'FTP HostName';
+$lang['Cwatch.site.port'] = 'FTP Port';
+$lang['Cwatch.site.path'] = 'Site Directory';
+$lang['Cwatch.site.malwarestatus'] = 'Check Malware Status';
+
 
 
 

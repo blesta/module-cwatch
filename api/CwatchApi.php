@@ -146,7 +146,7 @@ class ApiController
     }
 
     /**
-     * add site for a user
+     * function will provision site with for license  in Cwatch
      * @param array $params
      * @return json string
      */
@@ -161,7 +161,38 @@ class ApiController
 
         return new ApiResponse($responseBody);
     }
+    /**
+     * function will allow to add  site for malware scanner
+     * @param array $params
+     * @return json string
+     */
+    public function addScanner($params) 
+    {
+        $response = $this->api_call('/malware/enableScanner', json_encode([$params]), 'POST');
+        if (!$response) {
+            $responseBody = self::API_ERROR;
+        } else {
+            $responseBody = $response['content'];
+        }
 
+        return new ApiResponse($responseBody);
+    }
+    /**
+     * function will allow to check malware  scan status
+     * @param array $params
+     * @return json string
+     */
+    public function getScanner($site) 
+    {
+        $response = $this->api_call('/malware/getScannerStatus?site='.$site, '', 'GET');
+        if (!$response) {
+            $responseBody = self::API_ERROR;
+        } else {
+            $responseBody = $response['content'];
+        }
+
+        return new ApiResponse($responseBody);
+    }
     /**
      * assign license to user
      * @param string $product
