@@ -451,7 +451,7 @@ class cwatch extends Module
     }
 
     /**
-     * Client Statistics tab (bandwidth/disk usage)
+     * Client tab (add client/add malware scanner and view status)
      *
      * @param stdClass $package A stdClass object representing the current package
      * @param stdClass $service A stdClass object representing the current service
@@ -467,6 +467,11 @@ class cwatch extends Module
             'tabClientMalWare' => Language::_('Cwatch.site.malware', true)
         ];
     }
+    /**
+     * Client Actions (Add site for scanner)
+     *
+     * @return string The string representing the contents of this tab
+     */
     function tabClientMalWare($package, $service, array $get = null, array $post = null, array $files = null) 
     {
         $this->view = new View('tab_malware', 'default');
@@ -476,27 +481,14 @@ class cwatch extends Module
         $row = $this->getModuleRow();
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $licensekey = $service_fields->licensekey;
-        if (isset($row->meta->username)) {
-            $user = $row->meta->username;
-        }
-        if (isset($row->meta->password)) {
-            $pass = $row->meta->password;
-        }
-        if (isset($package->meta->cwatch_sandbox)) {
-            $sandbox = $package->meta->cwatch_sandbox;
-        }
-        if (isset($package->meta->cwatch_license_type)) {
-            $product = $package->meta->cwatch_license_type;
-        }
-        if (isset($package->meta->cwatch_license_term)){
-            $term = $package->meta->cwatch_license_term;
-        }
-        Loader::loadModels($this, ['Clients']);
-        $client = $this->Clients->get($service->client_id, false);
-        $email = $client->email;
+        $user = $row->meta->username;
+        $pass = $row->meta->password;
+        $sandbox = $package->meta->cwatch_sandbox;
+        $product = $package->meta->cwatch_license_type;
+        $term = $package->meta->cwatch_license_term;
         $this->loadApi($user, $pass, $sandbox);
         if (!empty($post)){
-            if($post['actionname']=='checkstatus'){
+            if($post['actionname'] == 'checkstatus'){
                 $sites = $this->api->getScanner($post['domainname']);
             }else{
                 $sites = $this->api->addScanner(['domain' => $post['domainname'], 'password' => $post['password'], 'username' => $post['username'], 'host' => $post['host'], 'port' => $post['port'],'path'=>$post['path']]);
@@ -548,12 +540,14 @@ class cwatch extends Module
         if (!empty($post)){
             $sitecount=0;
             foreach($usedsites as $site){
-                if($site->licenseKey==$licensekey){
+                if($site->licenseKey == $licensekey){
                     $sitecount +=1;
                 }
             }
-            if($sitecount<$service_fields->number_sites || $service_fields->number_sites==0){
-                $sites = $this->api->addsite(['email' => $email, 'domain' => $post['domainname'], 'licenseKey' => $licensekey, 'initiateDns' => $post['initiateDns'] == 1 ? true : false, 'autoSsl' => $post['autoSsl'] == 1 ? true : false]);
+            if($sitecount<$service_fields->number_sites || $service_fields->number_sites == 0){
+                $initiateDns = $post['initiateDns'] == 1 ? true : false;
+                $autoSsl = $post['autoSsl'] == 1 ? true : false;
+                $sites = $this->api->addsite(['email' => $email, 'domain' => $post['domainname'], 'licenseKey' => $licensekey, 'initiateDns' => $initiateDns, 'autoSsl' => $autossl]);
                 if (!empty($sites->errorMsg)) {
                     $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
                 }

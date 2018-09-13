@@ -146,7 +146,7 @@ class ApiController
     }
 
     /**
-     * add site for a user
+     * function will provision site with for license  in Cwatch
      * @param array $params
      * @return json string
      */
@@ -162,7 +162,7 @@ class ApiController
         return new ApiResponse($responseBody);
     }
     /**
-     * add site for a scan malware
+     * function will allow to add  site for malware scanner
      * @param array $params
      * @return json string
      */
@@ -178,7 +178,7 @@ class ApiController
         return new ApiResponse($responseBody);
     }
     /**
-     * get scanner status
+     * function will allow to check malware  scan status
      * @param array $params
      * @return json string
      */

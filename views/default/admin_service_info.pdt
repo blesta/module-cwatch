@@ -1,3 +1,4 @@
+
 <div class='title_row first'>
     <h3><?php $this->_('CWatch.service.info'); ?></h3>
 </div>
