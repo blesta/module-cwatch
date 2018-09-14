@@ -35,38 +35,33 @@ $lang['CWatch.edit_row.field_sandbox'] = 'Enable SandBox';
 $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 
 // Add product
-$lang['CWatch.add_product.license_type'] = 'CWatch License Type';
-$lang['CWatch.add_product.license_term'] = 'CWatch License Term';
+$lang['CWatch.package_fields.license_type'] = 'CWatch License Type';
 $lang['CWatch.package_fields.license_term'] = 'CWatch License Term';
 $lang['CWatch.service.info'] = 'Service Detail';
 
-$lang['Cwatch.tab_client_actions'] = 'Manage Sites';
-$lang['Cwatch.tab_client_sites'] = 'Sites';
+$lang['CWatch.tab_client_actions'] = 'Manage Sites';
+$lang['CWatch.tab_client_sites'] = 'Sites';
 
-$lang['Cwatch.site_name'] = 'Site Name';
-$lang['Cwatch.site_license'] = 'License';
-$lang['Cwatch.site_expiry'] = 'Expiry';
-$lang['Cwatch.site_status'] = 'Status';
-$lang['Cwatch.site_action'] = 'Action';
-$lang['Cwatch.site_add_new'] = 'Add New Site';
-$lang['Cwatch.domain_name'] = 'Domain Name';
-$lang['Cwatch.domain_initiateDns'] = 'Initial DNS';
-$lang['Cwatch.domain_autoSsl'] = 'AutoSSL';
-$lang['Cwatch.field_password_submit'] = 'Submit';
-$lang['Cwatch.site.notallow'] = 'You have Used your site quota. Plese Upgrade your Plan.';
-$lang['Cwatch.site.malware'] = 'Malware Control';
-$lang['Cwatch.domain_name'] = 'Domain Name';
-$lang['Cwatch.site.ftppassword'] = 'FTP Password';
-$lang['Cwatch.site.ftpusername'] = 'FTP username';
-$lang['Cwatch.site.host'] = 'FTP HostName';
-$lang['Cwatch.site.port'] = 'FTP Port';
-$lang['Cwatch.site.path'] = 'Site Directory';
-$lang['Cwatch.site.malwarestatus'] = 'Check Malware Status';
+$lang['CWatch.tab_site.domainname'] = 'Domain Name';
+$lang['CWatch.tab_site.initiateDns'] = 'Initial DNS';
+$lang['CWatch.tab_site.autoSsl'] = 'AutoSSL';
+$lang['CWatch.tab_site.add_new'] = 'Add New Site';
+$lang['CWatch.tab_site.name'] = 'Site Name';
+$lang['CWatch.tab_site.license'] = 'License';
+$lang['CWatch.tab_site.expiry'] = 'Expiry';
+$lang['CWatch.tab_site.status'] = 'Status';
+$lang['CWatch.tab_site.action'] = 'Action';
 
+$lang['CWatch.site.notallow'] = 'You have Used your site quota. Plese Upgrade your Plan.';
 
+$lang['CWatch.tab_malware.add_new_site'] = 'Add New Site';
+$lang['CWatch.tab_malware.malware'] = 'Malware Control';
+$lang['CWatch.tab_malware.domainname'] = 'Domain Name';
+$lang['CWatch.tab_malware.ftppassword'] = 'FTP Password';
+$lang['CWatch.tab_malware.ftpusername'] = 'FTP username';
+$lang['CWatch.tab_malware.host'] = 'FTP HostName';
+$lang['CWatch.tab_malware.port'] = 'FTP Port';
+$lang['CWatch.tab_malware.path'] = 'Site Directory';
+$lang['CWatch.tab_malware.malwarestatus'] = 'Check Malware Status';
 
-
-
-
-
-
+$lang['CWatch.field_password_submit'] = 'Submit';

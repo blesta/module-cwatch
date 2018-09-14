@@ -2,7 +2,7 @@
 
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'CwatchResponse.php';
 
-class ApiController 
+class ApiController
 {
 
     // URL where API reside, please do not change
@@ -18,7 +18,7 @@ class ApiController
      * @param string $login
      * @param string $pass
      */
-    public function __construct(string $login, string $pass, string $mode) 
+    public function __construct(string $login, string $pass, string $mode)
     {
         if ($mode == 'true') {
             $this->API_URL = 'http://cwatchpartnerportalstaging-env.us-east-1.elasticbeanstalk.com';
@@ -42,7 +42,7 @@ class ApiController
      * @param type $term
      * @return json
      */
-    public function createlicence(string $email, string $name, string $surname, string $country, string $product, string $term) 
+    public function createlicence(string $email, string $name, string $surname, string $country, string $product, string $term)
     {
         $apiResponse = $this->createuser($email, $name, $surname, $country);
         if (200 === $apiResponse->code) {
@@ -59,7 +59,7 @@ class ApiController
      * @param string $country
      * @return APIResponse
      */
-    private function createuser(string $email, string $name, string $surname, string $country) 
+    private function createuser(string $email, string $name, string $surname, string $country)
     {
         //$params = "{\"email\": \"{$email}\",  \"name\": \"{$name}\",  \"surname\": \"{$surname}\",  \"country\": \"{$country}\"}";
         $params = json_encode(['email' => $email, 'name' => $name, 'surname' => $surname, 'country' => $country]);
@@ -78,7 +78,7 @@ class ApiController
      * @param string $email
      * @return json string
      */
-    public function deleteuser(string $email) 
+    public function deleteuser(string $email)
     {
         $params = json_encode(['email' => $email]);
         $response = $this->api_call('customer/deleteCustomer', $params, 'POST');
@@ -96,7 +96,7 @@ class ApiController
      * @param string $lkey
      * @return json string
      */
-    public function deactivatelicense(string $lkey) 
+    public function deactivatelicense(string $lkey)
     {
         $params = json_encode(['licenses' => [$lkey]]);
         $response = $this->api_call('customer/deactivatelicense', $params, 'PUT');
@@ -114,7 +114,7 @@ class ApiController
      * @param string $lkey
      * @return json string
      */
-    public function getlicenseinfo(string $lkey) 
+    public function getlicenseinfo(string $lkey)
     {
         $params = "";
         $response = $this->api_call('customer/showLicenceByKey?licenseKey=' . $lkey, $params, 'GET');
@@ -132,7 +132,7 @@ class ApiController
      * @param string $email
      * @return json string
      */
-    public function getsites(string $email) 
+    public function getsites(string $email)
     {
         $params = "";
         $response = $this->api_call('siteprovision/item/getByCustomer?customerEmail=' . $email, $params, 'GET');
@@ -150,7 +150,7 @@ class ApiController
      * @param array $params
      * @return json string
      */
-    public function addsite($params) 
+    public function addsite($params)
     {
         $response = $this->api_call('siteprovision/add', json_encode([$params]), 'POST');
         if (!$response) {
@@ -166,7 +166,7 @@ class ApiController
      * @param array $params
      * @return json string
      */
-    public function addScanner($params) 
+    public function addScanner($params)
     {
         $response = $this->api_call('/malware/enableScanner', json_encode([$params]), 'POST');
         if (!$response) {
@@ -182,7 +182,7 @@ class ApiController
      * @param array $params
      * @return json string
      */
-    public function getScanner($site) 
+    public function getScanner($site)
     {
         $response = $this->api_call('/malware/getScannerStatus?site='.$site, '', 'GET');
         if (!$response) {
@@ -203,7 +203,7 @@ class ApiController
      * @param string $country
      * @return APIResponse
      */
-    private function distributelicense(string $product, string $term, string $email, string $name, string $surname, string $country) 
+    private function distributelicense(string $product, string $term, string $email, string $name, string $surname, string $country)
     {
         $array = ['term' => $term, 'product' => $product, 'customers' => [['surname' => $surname, 'email' => $email, 'country' => $country,'name' => $name]],'autoLicenseUpgrade' => false,'renewAutomatically' => false];
         $params = json_encode($array);
@@ -224,7 +224,7 @@ class ApiController
      * @param string $method  (POST,GET,PUT)
      * @return array
      */
-    private function api_call(string $route, string $body, $method) 
+    private function api_call(string $route, string $body, $method)
     {
         $url = $this->API_URL . "/{$route}";
         $ch = curl_init();

@@ -305,10 +305,12 @@ class cwatch extends Module
             try {
                 $response = $this->api->createlicence($email, $firstname, $lastname, $country, $product, $term);
                 $json = json_decode($response->resp);
+
                 if ($response->code != 200) {
                     $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
+                } else {
+                    $licensekey = $json->distributionResult[0]->licenseKeys[0];
                 }
-                $licensekey = $json->distributionResult[0]->licenseKeys[0];
             } catch (exception $e) {
                 $this->Input->setErrors(['api' => ['internal' => $e]]);
             }
@@ -328,7 +330,9 @@ class cwatch extends Module
             ],
             [
                 'key' => 'number_sites',
-                'value' => $vars['configoptions']['number_of_sites'],
+                'value' => isset($vars['configoptions']['number_of_sites'])
+                    ? $vars['configoptions']['number_of_sites']
+                    : 0,
                 'encrypted' => 0
             ]
         ];
@@ -492,8 +496,8 @@ class cwatch extends Module
     public function getClientTabs($package)
     {
         return [
-            'tabClientActions' => Language::_('Cwatch.tab_client_actions', true),
-            'tabClientMalWare' => Language::_('Cwatch.site.malware', true)
+            'tabClientActions' => Language::_('CWatch.tab_client_actions', true),
+            'tabClientMalWare' => Language::_('CWatch.tab_malware.malware', true)
         ];
     }
     /**
@@ -564,12 +568,6 @@ class cwatch extends Module
         if (isset($row->meta->cwatch_sandbox)) {
             $sandbox = $row->meta->cwatch_sandbox;
         }
-        if (isset($package->meta->cwatch_license_type)) {
-            $product = $package->meta->cwatch_license_type;
-        }
-        if (isset($package->meta->cwatch_license_term)) {
-            $term = $package->meta->cwatch_license_term;
-        }
 
         Loader::loadModels($this, ['Clients']);
         $client = $this->Clients->get($service->client_id, false);
@@ -580,13 +578,14 @@ class cwatch extends Module
         if (!empty($post)) {
             $sitecount = 0;
             foreach ($usedsites as $site) {
-                if ($site->licenseKey == $licensekey) {
+                if ($site['licenseKey'] == $licensekey) {
                     $sitecount += 1;
                 }
             }
+
             if ($sitecount < $service_fields->number_sites || $service_fields->number_sites == 0) {
-                $initiateDns = $post['initiateDns'] == 1 ? true : false;
-                $autoSsl = $post['autoSsl'] == 1 ? true : false;
+                $initiateDns = isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false;
+                $autoSsl = isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false;
                 $sites = $this->api->addsite(
                     [
                         'email' => $email,
@@ -601,14 +600,14 @@ class cwatch extends Module
                     $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
                 }
             } else {
-                $this->Input->setErrors(['api' => ['internal' => Language::_('Cwatch.site.notallow', true)]]);
+                $this->Input->setErrors(['api' => ['internal' => Language::_('CWatch.site.notallow', true)]]);
             }
         }
         $this->view->set('sites_data', json_decode($sitesdata->resp));
         $this->view->set('service', $service);
         $this->view->set('service_id', $service->id);
         $this->view->set('licenseid', $licensekey);
-        $this->view->set('addsite', $get[2]);
+        $this->view->set('addsite', isset($get[2]) ? $get[2] : false);
 
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
         return $this->view->fetch();
