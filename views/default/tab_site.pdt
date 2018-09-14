@@ -14,7 +14,7 @@ if(!empty($addsite)){
         <div class="form-group">
                 <?php
                 $this->Form->label($this->_('Cwatch.domain_name', true), 'domainname');
-                $this->Form->fieldText('domainname','',['class'=>'form-control']);
+                $this->Form->fieldText('domainname','',['class'=>'form-control','id'=>'domainname']);
                 ?>
         </div>
         <div class="form-group">

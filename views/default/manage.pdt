@@ -1,4 +1,5 @@
 <?php
+
 $link_buttons = array(['name'=>$this->_('CWatch.add_module_row', true), 'attributes'=>array('href'=>$this->base_uri . 'settings/company/modules/addrow/' . $module->id)]);
     $this->Widget->clear();
     $this->Widget->setLinkButtons($link_buttons);
@@ -51,17 +52,14 @@ $link_buttons = array(['name'=>$this->_('CWatch.add_module_row', true), 'attribu
 	<?php
 	    } else {
 	?>
-<div class='empty_section'>
-    <div class='empty_box'>
-		    <?php $this->_('CWatch.empty_result'); ?>
-    </div>
-</div>
+        <div class='empty_section'>
+            <div class='empty_box'>
+                            <?php $this->_('CWatch.empty_result'); ?>
+            </div>
+        </div>
 
 	<?php
 	    }
-	?>
-
-	<?php
 	    $this->Widget->end();
 	?>
 <script type="text/javascript">
