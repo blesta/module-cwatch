@@ -3,12 +3,14 @@
 </div>
 
 <table class='table'>
-    <?php 
-        foreach($package as $key=>$pack){
+    <?php
+    foreach ($this->Html->ifSet($package, []) as $key => $pack) {
     ?>
     <tr>
-        <td><?php echo ucfirst($key); ?></td>
-        <td><?php echo $pack;  ?></td>
+        <td><?php echo ucfirst($this->Html->_($key, true)); ?></td>
+        <td><?php $this->Html->_($pack); ?></td>
     </tr>
-    <?php } ?>
-</table>    
+    <?php
+    }
+    ?>
+</table>

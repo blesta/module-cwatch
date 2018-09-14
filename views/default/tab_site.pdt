@@ -3,7 +3,7 @@
 </div>
 <?php
 
-if(!empty($addsite)){
+if (!empty($addsite)) {
 ?>
 <div id="change_password">
     <h4><?php $this->_('Cwatch.add_new_site');?></h4>
@@ -12,35 +12,33 @@ if(!empty($addsite)){
         ?>
     <div class="col-md-12">
         <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Cwatch.domain_name', true), 'domainname');
-                $this->Form->fieldText('domainname','',['class'=>'form-control','id'=>'domainname']);
-                ?>
+            <?php
+            $this->Form->label($this->_('Cwatch.domain_name', true), 'domainname');
+            $this->Form->fieldText('domainname', '', ['class' => 'form-control', 'id' => 'domainname']);
+            ?>
         </div>
         <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Cwatch.domain_initiateDns', true), 'initiateDns');
-                $this->Form->fieldCheckbox('initiateDns','1',['class'=>'form-control']);
-                ?>
+            <?php
+            $this->Form->label($this->_('Cwatch.domain_initiateDns', true), 'initiateDns');
+            $this->Form->fieldCheckbox('initiateDns', '1', ['class' => 'form-control']);
+            ?>
         </div>
         <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Cwatch.domain_autoSsl', true), 'autoSsl');
-                $this->Form->fieldCheckbox('autoSsl','1',['class'=>'form-control']);
-                ?>
+            <?php
+            $this->Form->label($this->_('Cwatch.domain_autoSsl', true), 'autoSsl');
+            $this->Form->fieldCheckbox('autoSsl', '1', ['class' => 'form-control']);
+            ?>
         </div>
     </div>
     <button class="btn btn-default pull-right">
         <i class="fa fa-edit"></i> <?php $this->_('Cwatch.field_password_submit');?>
     </button>
-        <?php
-        $this->Form->end();
-        ?>
+    <?php
+    $this->Form->end();
+    ?>
 </div>
-
 <?php
-}else{
-
+} else {
 ?>
 <a  href="add" class="btn default-btn" style="float:right;"><?php $this->_('Cwatch.site_add_new');?></a><br>
 <table class='table'>
@@ -50,18 +48,21 @@ if(!empty($addsite)){
         <td><?php $this->_('Cwatch.site_expiry'); ?></td>
         <td><?php $this->_('Cwatch.site_status'); ?></td>
     </tr>
-    <?php 
-        foreach($sites_data as $key=>$site){
-            if($site->licenseKey==$licenseid){
-        ?>
+    <?php
+    foreach ($this->Html->ifSet($sites_data, []) as $key => $site) {
+        if ($site->licenseKey == $this->Html->ifSet($licenseid)) {
+    ?>
     <tr>
-        <td><?php echo $site->domain; ?></td>
-        <td><?php echo $site->licenseKey; ?></td>
-        <td><?php if($site->endTime) echo date('Y-m-d H:s:m',substr($site->endTime,0,10)); ?></td>
-        <td><?php echo $site->status; ?></td>
+        <td><?php $this->Html->_($site->domain); ?></td>
+        <td><?php $this->Html->_($site->licenseKey); ?></td>
+        <td><?php if ($this->Html->ifSet($site->endTime)) { echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10)); } ?></td>
+        <td><?php $this->Html->_($site->status); ?></td>
     </tr>
-    <?php 
+    <?php
         }
-    } ?>
-</table>    
-<?php } ?>
+    }
+    ?>
+</table>
+<?php
+}
+?>
