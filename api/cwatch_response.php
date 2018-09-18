@@ -28,5 +28,4 @@ class CwatchResponse
             $this->resp = $msg;
         }
     }
-
 }

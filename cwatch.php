@@ -96,19 +96,16 @@ class cwatch extends Module
     /**
      * Load the view
      *
-     * @param string $view
+     * @param string $view The name of the view to load
      * @return \View
      */
     protected function getView($view)
     {
-        $viewObj = new View($view, 'default');
-        $viewObj->base_uri = $this->base_uri;
-        $viewObj->setDefaultView(
-            'components' . DIRECTORY_SEPARATOR . 'modules'
-            . DIRECTORY_SEPARATOR . 'cwatch' . DIRECTORY_SEPARATOR
-        );
+        $view_obj = new View($view, 'default');
+        $view_obj->base_uri = $this->base_uri;
+        $view_obj->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
 
-        return $viewObj;
+        return $view_obj;
     }
 
     /**
@@ -142,33 +139,6 @@ class cwatch extends Module
         return 0;
     }
 
-    private function getModuleRowByApi($module_row, $module_group = '')
-    {
-        $row = null;
-        if ($module_group == '') {
-            if ($module_row > 0) {
-                $row = $this->getModuleRow($module_row);
-            } else {
-                $rows = $this->getModuleRows();
-
-                if (isset($rows[0])) {
-                    $row = $rows[0];
-                }
-
-                unset($rows);
-            }
-        } else {
-            $rows = $this->getModuleRows($module_group);
-            if (isset($rows[0])) {
-                $row = $rows[0];
-            }
-
-            unset($rows);
-        }
-
-        return $row;
-    }
-
     /**
      * Returns an array of key values for fields stored for a module, package,
      * and service under this module, used to substitute those keys with their
@@ -190,7 +160,7 @@ class cwatch extends Module
         [
             'module' => [],
             'package' => ['type', 'package', 'acl'],
-            'service' => ['licensekey', 'cwatch_license_type', 'cwatch_license_term']
+            'service' => ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country']
         ];
     }
 
@@ -594,8 +564,8 @@ class cwatch extends Module
      */
     public function tabClientMalWare($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $this->view = new View('tab_malware', 'default');
-        $this->view->base_uri = $this->base_uri;
+        // Load view
+        $this->view = $this->getView('tab_malware');
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -624,9 +594,7 @@ class cwatch extends Module
             }
         }
 
-        $this->view->set('service', $service);
         $this->view->set('service_id', $service->id);
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
         return $this->view->fetch();
     }
     /**
@@ -636,8 +604,8 @@ class cwatch extends Module
      */
     public function tabClientSites($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $this->view = new View('tab_sites', 'default');
-        $this->view->base_uri = $this->base_uri;
+        // Load view
+        $this->view = $this->getView('tab_sites');
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -669,7 +637,7 @@ class cwatch extends Module
         $sites = [];
         if (empty($sites_response->errorMsg)) {
             foreach (json_decode($sites_response->resp) as $site) {
-                if ($site->addSiteSuccess || strtolower($site->status) == 'waiting') {
+                if (strtolower($site->status) != 'add_site_fail') {
                     $sites[] = $site;
                 }
             }
@@ -706,10 +674,8 @@ class cwatch extends Module
      */
     public function getClientServiceInfo($service, $package)
     {
-        // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
-        $this->view = new View('client_service_info', 'default');
-        $this->view->base_uri = $this->base_uri;
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
+        // Load view
+        $this->view = $this->getView('client_service_info');
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -745,10 +711,8 @@ class cwatch extends Module
      */
     public function getAdminServiceInfo($service, $package)
     {
-        // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
-        $this->view = new View('admin_service_info', 'default');
-        $this->view->base_uri = $this->base_uri;
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
+        // Load view
+        $this->view = $this->getView('admin_service_info');
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);

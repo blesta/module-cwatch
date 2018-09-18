@@ -55,24 +55,29 @@ if ($this->Html->ifSet($addsite)) {
     </tr>
     <?php
     if (!empty($this->Html->ifSet($sites))) {
-        var_dump($sites);
         foreach ($sites as $key => $site) {
         ?>
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
             <td><?php $this->Html->_($site->licenseKey); ?></td>
-            <td><?php if ($this->Html->ifSet($site->endTime)) { echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10)); } ?></td>
+            <td>
+                <?php
+                if ($this->Html->ifSet($site->endTime)) {
+                    echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10));
+                }
+                ?>
+            </td>
             <td><?php $this->Html->_($site->status); ?></td>
         </tr>
         <?php
         }
     } else {
     ?>
-		<tr>
-			<td colspan="5">
-                <?php $this->_("CWatch.tab_sites.no_results");?>
-			</td>
-		</tr>
+        <tr>
+            <td colspan="5">
+                <?php $this->_('CWatch.tab_sites.no_results');?>
+            </td>
+        </tr>
     <?php
     }
     ?>

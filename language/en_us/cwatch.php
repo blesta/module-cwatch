@@ -2,7 +2,7 @@
 
 $lang['CWatch.name'] = 'CWatch';
 $lang['CWatch.module_row.name'] = 'Credential';
-$lang['CWatch.module_rows.name'] = 'Credentials';
+$lang['CWatch.module_row_plural.name'] = 'Credentials';
 
 
 // Manage Module Row Meta
@@ -39,11 +39,7 @@ $lang['CWatch.edit_row.field_password'] = 'Password';
 $lang['CWatch.edit_row.field_sandbox'] = 'Enable SandBox';
 $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 
-// Add product
-$lang['CWatch.package_fields.license_type'] = 'CWatch License Type';
-$lang['CWatch.package_fields.license_term'] = 'CWatch License Term';
-$lang['CWatch.service.info'] = 'Service Detail';
-
+// Tab sites
 $lang['CWatch.tab_sites.sites'] = 'Manage Sites';
 $lang['CWatch.tab_sites.add'] = 'Add New Site';
 $lang['CWatch.tab_sites.name'] = 'Site Name';
@@ -57,6 +53,7 @@ $lang['CWatch.tab_sites.initiateDns'] = 'Initial DNS';
 $lang['CWatch.tab_sites.autoSsl'] = 'AutoSSL';
 $lang['CWatch.tab_sites.submit'] = 'Submit';
 
+// Tab malware
 $lang['CWatch.tab_malware.add_new_site'] = 'Add New Site';
 $lang['CWatch.tab_malware.malware'] = 'Malware Control';
 $lang['CWatch.tab_malware.domainname'] = 'Domain Name';
@@ -67,4 +64,4 @@ $lang['CWatch.tab_malware.port'] = 'FTP Port';
 $lang['CWatch.tab_malware.path'] = 'Site Directory';
 $lang['CWatch.tab_malware.malwarestatus'] = 'Check Malware Status';
 
-$lang['CWatch.field_password_submit'] = 'Submit';
+$lang['CWatch.tab_malware.submit'] = 'Submit';

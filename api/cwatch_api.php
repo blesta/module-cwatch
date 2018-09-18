@@ -3,9 +3,6 @@ require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cwatch_response.php';
 
 class CwatchApi
 {
-
-    const API_ERROR = '{"error": "Server Error", "message": "Server Error", "status": 500}';
-
     // API endpoint URL
     private $API_URL;
 
@@ -49,13 +46,7 @@ class CwatchApi
         $params = json_encode(['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country]);
         $response = $this->apiRequest('customer/add', $params, 'POST');
 
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
-
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -67,13 +58,8 @@ class CwatchApi
     public function deleteUser($email)
     {
         $response = $this->apiRequest('customer/deleteCustomer?email' . $email, '', 'GET');
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
 
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -87,13 +73,7 @@ class CwatchApi
         $params = json_encode(['customers' => [$email]]);
         $response = $this->apiRequest('customer/add', $params, 'POST');
 
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
-
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -122,13 +102,7 @@ class CwatchApi
         $params = json_encode($array);
         $response = $this->apiRequest('customer/distributeLicenseForCustomers', $params, 'POST');
 
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
-
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -142,13 +116,7 @@ class CwatchApi
         $params = json_encode(['licenses' => [$licenseKey]]);
         $response = $this->apiRequest('customer/deactivatelicense', $params, 'PUT');
 
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
-
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -165,13 +133,8 @@ class CwatchApi
     public function addSite($params)
     {
         $response = $this->apiRequest('siteprovision/add', json_encode([$params]), 'POST');
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
 
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -182,15 +145,9 @@ class CwatchApi
      */
     public function getSites($email)
     {
-        $params = '';
-        $response = $this->apiRequest('siteprovision/item/getByCustomer?customerEmail=' . $email, $params, 'GET');
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
+        $response = $this->apiRequest('siteprovision/item/getByCustomer?customerEmail=' . $email, '', 'GET');
 
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -201,15 +158,9 @@ class CwatchApi
      */
     public function getLicense($licenseKey)
     {
-        $params = '';
-        $response = $this->apiRequest('customer/showLicenceByKey?licenseKey=' . $licenseKey, $params, 'GET');
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
+        $response = $this->apiRequest('customer/showLicenceByKey?licenseKey=' . $licenseKey, '', 'GET');
 
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
 
     /**
@@ -221,47 +172,41 @@ class CwatchApi
     public function getLicenses($email)
     {
         $response = $this->apiRequest('customer/listlicencebyemail?activeLicenseOnly=true&email=' . $email, '', 'GET');
-        if (!$response) {
-            $responseBody = self::API_ERROR;
-        } else {
-            $responseBody = $response['content'];
-        }
 
-        return new CwatchResponse($responseBody);
+        return new CwatchResponse($response['content']);
     }
-//
-//    /**
-//     * function will allow to add  site for malware scanner
-//     * @param array $params
-//     * @return json string
-//     */
-//    public function addScanner($params)
-//    {
-//        $response = $this->apiRequest('/malware/enableScanner', json_encode([$params]), 'POST');
-//        if (!$response) {
-//            $responseBody = self::API_ERROR;
-//        } else {
-//            $responseBody = $response['content'];
-//        }
-//
-//        return new CwatchResponse($responseBody);
-//    }
-//    /**
-//     * function will allow to check malware  scan status
-//     * @param array $params
-//     * @return json string
-//     */
-//    public function getScanner($site)
-//    {
-//        $response = $this->apiRequest('/malware/getScannerStatus?site='.$site, '', 'GET');
-//        if (!$response) {
-//            $responseBody = self::API_ERROR;
-//        } else {
-//            $responseBody = $response['content'];
-//        }
-//
-//        return new CwatchResponse($responseBody);
-//    }
+
+    /**
+     * Check the malware scanner status for a given damin
+     *
+     * @param string $site The domain to check
+     * @return CwatchResponse
+     */
+    public function getScanner($site)
+    {
+        $response = $this->apiRequest('/malware/getScannerStatus?site=' . $site, '', 'GET');
+
+        return new CwatchResponse($response['content']);
+    }
+
+    /**
+     * Check a malware scanner for a given damin
+     *
+     * @param array $params
+     *     - domain The domain to scan
+     *     - username The username for FTP access
+     *     - password The password for FTP access
+     *     - host The host to use for FTP access
+     *     - port The port to use for FTP access
+     *     - path The path to the web directory for this site
+     * @return CwatchResponse
+     */
+    public function addScanner($params)
+    {
+        $response = $this->apiRequest('/malware/enableScanner', json_encode([$params]), 'POST');
+
+        return new CwatchResponse($response['content']);
+    }
 
     /**
      * Send an API request to cWatch server
@@ -306,24 +251,20 @@ class CwatchApi
         }
         curl_close($ch);
 
-        $headers = [];
+        $authorization = '';
         $data = explode("\n", $result);
-        $headers['status'] = $data[0];
-        array_shift($data);
-
         foreach ($data as $part) {
-            $middle = explode(':', $part);
-            try {
-                $headers[trim($middle[0])] = trim($middle[1]);
-            } catch (Exception $e) {
-                // Do nothing
+            $split_part = explode(':', $part);
+            if ($split_part[0] == 'Authorization' && isset($split_part[1])) {
+                $authorization = $split_part[1];
+                break;
             }
         }
 
         // Return request response
         return [
             'content' => $data[count($data) - 1],
-            'headers' => isset($headers['Authorization']) ? $headers['Authorization'] : ''
+            'headers' => $authorization
         ];
     }
 }
