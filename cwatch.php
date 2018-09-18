@@ -446,6 +446,7 @@ class cwatch extends Module
             }
 
             if (!$suspend) {
+                $this->log('deleteuser', $email, 'input', true);
                 // Remove user
                 $response = $api->deleteUser($email);
                 $this->log('deleteuser', serialize($response), 'output', $response->code == 200);
@@ -574,10 +575,15 @@ class cwatch extends Module
         $api = $this->getApi();
 
         if (!empty($post)) {
+            $data = $post;
+            $data['password'] = '***';
             if ($post['actionname'] == 'checkstatus') {
-                $sites = $api->getScanner($post['domainname']);
+                $this->log('checkmalware', serialize($data), 'input', true);
+                $scanner = $api->getScanner($post['domainname']);
+                $this->log('checkmalware', serialize($scanner), 'output', empty($scanner->errorMsg));
             } else {
-                $sites = $api->addScanner(
+                $this->log('addmalwarescanner', serialize($data), 'input', true);
+                $scanner = $api->addScanner(
                     [
                         'domain' => $post['domainname'],
                         'password' => $post['password'],
@@ -587,10 +593,11 @@ class cwatch extends Module
                         'path' => $post['path']
                     ]
                 );
+                $this->log('addmalwarescanner', serialize($scanner), 'input', empty($scanner->errorMsg));
             }
 
-            if (!empty($sites->errorMsg)) {
-                $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
+            if (!empty($scanner->errorMsg)) {
+                $this->Input->setErrors(['api' => ['internal' => $scanner->errorMsg]]);
             }
         }
 
@@ -617,7 +624,8 @@ class cwatch extends Module
         $api = $this->getApi();
 
         if (!empty($post)) {
-            $site = $api->addsite(
+            $this->log('addsite', serialize($post), 'input', true);
+            $site = $api->addSite(
                 [
                     'email' => $service_fields->cwatch_email,
                     'domain' => $post['domain'],
@@ -627,6 +635,7 @@ class cwatch extends Module
                 ]
             );
 
+            $this->log('addsite', serialize($site), 'input', empty($site->errorMsg));
             if (!empty($site->errorMsg)) {
                 $this->Input->setErrors(['api' => ['internal' => $site->errorMsg]]);
             }
