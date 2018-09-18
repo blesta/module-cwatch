@@ -1,14 +1,26 @@
-<div class='title_row first'>
-    <h3><?php $this->_('CWatch.service.info'); ?></h3>
-</div>
-
-<table class='table'>
+<table class="table">
     <?php
-    foreach ($this->Html->ifSet($package, []) as $key => $pack) {
+    $i = 0;
+    foreach ($this->Html->ifSet($licenses, []) as $license) {
     ?>
-    <tr>
-        <td><?php echo ucfirst($this->Html->_($key, true)); ?></td>
-        <td><?php $this->Html->_($pack); ?></td>
+    <tr class="expand <?php echo $i++ % 2 == 1 ? 'odd_row' : ''?>">
+        <td><?php $this->Html->_($license->friendlyName); ?></td>
+    </tr>
+    <tr class="expand_details">
+        <td class="subtable">
+            <table class="table">
+                <?php
+                foreach ($license as $field => $value) {
+                ?>
+                <tr>
+                    <td><?php echo ucfirst($this->Html->_($field, true)); ?></td>
+                    <td><?php $this->Html->_($value); ?></td>
+                </tr>
+                <?php
+                }
+                ?>
+            </table>
+        </td>
     </tr>
     <?php
     }

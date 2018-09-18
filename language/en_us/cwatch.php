@@ -44,21 +44,18 @@ $lang['CWatch.package_fields.license_type'] = 'CWatch License Type';
 $lang['CWatch.package_fields.license_term'] = 'CWatch License Term';
 $lang['CWatch.service.info'] = 'Service Detail';
 
-$lang['CWatch.tab_client_actions'] = 'Manage Sites';
-$lang['CWatch.tab_client_sites'] = 'Sites';
+$lang['CWatch.tab_sites.sites'] = 'Manage Sites';
+$lang['CWatch.tab_sites.add'] = 'Add New Site';
+$lang['CWatch.tab_sites.name'] = 'Site Name';
+$lang['CWatch.tab_sites.expiry'] = 'Expiry';
+$lang['CWatch.tab_sites.status'] = 'Status';
+$lang['CWatch.tab_sites.no_results'] = 'No sites have been provisioned for this customer.';
 
-$lang['CWatch.tab_site.domainname'] = 'Domain Name';
-$lang['CWatch.tab_site.initiateDns'] = 'Initial DNS';
-$lang['CWatch.tab_site.autoSsl'] = 'AutoSSL';
-$lang['CWatch.tab_site.add_new'] = 'Add New Site';
-$lang['CWatch.tab_site.name'] = 'Site Name';
-$lang['CWatch.tab_site.license'] = 'License';
-$lang['CWatch.tab_site.expiry'] = 'Expiry';
-$lang['CWatch.tab_site.status'] = 'Status';
-$lang['CWatch.tab_site.action'] = 'Action';
-$lang['CWatch.tab_site.removedomain'] = 'Remove Domain';
-
-$lang['CWatch.site.notallow'] = 'You have Used your site quota. Plese Upgrade your Plan.';
+$lang['CWatch.tab_sites.licenseKey'] = 'License';
+$lang['CWatch.tab_sites.domain'] = 'Domain Name';
+$lang['CWatch.tab_sites.initiateDns'] = 'Initial DNS';
+$lang['CWatch.tab_sites.autoSsl'] = 'AutoSSL';
+$lang['CWatch.tab_sites.submit'] = 'Submit';
 
 $lang['CWatch.tab_malware.add_new_site'] = 'Add New Site';
 $lang['CWatch.tab_malware.malware'] = 'Malware Control';

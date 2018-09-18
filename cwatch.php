@@ -223,9 +223,7 @@ class cwatch extends Module
 
         // Get cWatch API
         $api = $this->getApi();
-
         $errors = [];
-        $license_keys = [];
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             $response = null;
             try {
@@ -585,7 +583,7 @@ class cwatch extends Module
     public function getClientTabs($package)
     {
         return [
-            'tabClientLicenses' => Language::_('CWatch.tab_client_licenses', true),
+            'tabClientSites' => Language::_('CWatch.tab_sites.sites', true),
             'tabClientMalWare' => Language::_('CWatch.tab_malware.malware', true)
         ];
     }
@@ -632,13 +630,13 @@ class cwatch extends Module
         return $this->view->fetch();
     }
     /**
-     * Manage customer licenses
+     * Manage customer sites
      *
      * @return string The string representing the contents of this tab
      */
-    public function tabClientLicenses($package, $service, array $get = null, array $post = null, array $files = null)
+    public function tabClientSites($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $this->view = new View('tab_licenses', 'default');
+        $this->view = new View('tab_sites', 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -650,43 +648,48 @@ class cwatch extends Module
         // Get cWatch API
         $api = $this->getApi();
 
-        $licenses = $api->getSites($service_fields->cwatch_email);
-        var_dump($licenses);
-        $usedsites = json_decode($sitesdata->resp, true);
-
         if (!empty($post)) {
-            $sitecount = 0;
-            $license_types = array_fill_keys(Configure::get('cwatch.products'), 0);
-            foreach ($usedsites as $site) {
-                if (in_array($site['licenseKey'], $license_keys) && $site['addSiteSuccess']) {
-                    $sitecount += 1;
-                }
-            }
+            $site = $api->addsite(
+                [
+                    'email' => $service_fields->cwatch_email,
+                    'domain' => $post['domain'],
+                    'licenseKey' => $post['licenseKey'],
+                    'initiateDns' => isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false,
+                    'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
+                ]
+            );
 
-            if ($sitecount < $service_fields->number_sites || $service_fields->number_sites == 0) {
-                $initiateDns = isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false;
-                $autoSsl = isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false;
-                $sites = $api->addsite(
-                    [
-                        'email' => $service_fields->cwatch_email,
-                        'domain' => $post['domainname'],
-                        'licenseKey' => '',
-                        'initiateDns' => $initiateDns,
-                        'autoSsl' => $autoSsl
-                    ]
-                );
-
-                if (!empty($sites->errorMsg)) {
-                    $this->Input->setErrors(['api' => ['internal' => $sites->errorMsg]]);
-                }
-            } else {
-                $this->Input->setErrors(['api' => ['internal' => Language::_('CWatch.site.notallow', true)]]);
+            if (!empty($site->errorMsg)) {
+                $this->Input->setErrors(['api' => ['internal' => $site->errorMsg]]);
             }
         }
-        $this->view->set('sites_data', json_decode($sitesdata->resp));
+
+        // Get cWatch sites
+        $sites_response = $api->getSites($service_fields->cwatch_email);
+        $sites = [];
+        if (empty($sites_response->errorMsg)) {
+            foreach (json_decode($sites_response->resp) as $site) {
+                if ($site->addSiteSuccess || strtolower($site->status) == 'waiting') {
+                    $sites[] = $site;
+                }
+            }
+        }
+
+        // Get cWatch licenses
+        $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses = [];
+        if (empty($licenses_response->errorMsg)) {
+            foreach (json_decode($licenses_response->resp, true) as $license) {
+                if (strtolower($license['status']) == 'valid' && $license['registeredDomainCount'] == 0) {
+                    $licenses[$license['licenseKey']] = $license['friendlyName'];
+                }
+            }
+        }
+
+        $this->view->set('sites', $sites);
+        $this->view->set('licenses', $licenses);
         $this->view->set('service', $service);
         $this->view->set('service_id', $service->id);
-//        $this->view->set('licenseid', $licensekey);
         $this->view->set('addsite', isset($get[2]) ? $get[2] : false);
 
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
@@ -703,31 +706,32 @@ class cwatch extends Module
      */
     public function getClientServiceInfo($service, $package)
     {
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        $row = $this->getModuleRow();
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-        $licensekey = $service_fields->licensekey;
-
-        // Get cWatch API
-        $api = $this->getApi();
-
-        $response = $api->getlicenseinfo($licensekey);
-        $json = json_decode($response->resp);
-        if ($response->code != 200) {
-            $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
-        }
         // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
         $this->view = new View('client_service_info', 'default');
         $this->view->base_uri = $this->base_uri;
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
 
-        $this->view->set('module_row', $row);
-        $this->view->set('package', $json);
-        $this->view->set('service', $service);
-        $this->view->set('service_fields', $this->serviceFieldsToObject($service->fields));
-        $this->log('viewinfo', serialize($response), 'output', true);
+        // Load the helpers required for this view
+        Loader::loadHelpers($this, ['Form', 'Html']);
+
+        // Get cWatch API
+        $api = $this->getApi();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+
+        // Get cWatch licenses
+        $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses = [];
+        if (empty($licenses_response->errorMsg)) {
+            foreach (json_decode($licenses_response->resp) as $license) {
+                if (strtolower($license->status) == 'valid') {
+                    $licenses[] = $license;
+                }
+            }
+        }
+
+        $this->view->set('licenses', $licenses);
+        $this->log('viewinfo', serialize($licenses), 'output', true);
+
         return $this->view->fetch();
     }
 
@@ -741,18 +745,6 @@ class cwatch extends Module
      */
     public function getAdminServiceInfo($service, $package)
     {
-        $row = $this->getModuleRow();
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-        $licensekey = $service_fields->licensekey;
-
-        // Get cWatch API
-        $api = $this->getApi();
-
-        $response = $api->getlicenseinfo($licensekey);
-        $json = json_decode($response->resp);
-        if ($response->code != 200) {
-            $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
-        }
         // Load the view (admin_service_info.pdt) into this object, so helpers can be automatically added to the view
         $this->view = new View('admin_service_info', 'default');
         $this->view->base_uri = $this->base_uri;
@@ -761,11 +753,24 @@ class cwatch extends Module
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
 
-        $this->view->set('module_row', $row);
-        $this->view->set('package', $json);
-        $this->view->set('service', $service);
-        $this->view->set('service_fields', $this->serviceFieldsToObject($service->fields));
-        $this->log('viewinfo', serialize($response), 'output', true);
+        // Get cWatch API
+        $api = $this->getApi();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
+
+        // Get cWatch licenses
+        $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses = [];
+        if (empty($licenses_response->errorMsg)) {
+            foreach (json_decode($licenses_response->resp) as $license) {
+                if (strtolower($license->status) == 'valid') {
+                    $licenses[] = $license;
+                }
+            }
+        }
+
+        $this->view->set('licenses', $licenses);
+        $this->log('viewinfo', serialize($licenses), 'output', true);
+
         return $this->view->fetch();
     }
 

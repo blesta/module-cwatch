@@ -11,7 +11,7 @@ class CwatchResponse
      * CwatchResponse constructor.
      * @param string $msg
      */
-    public function __construct(string $msg)
+    public function __construct($msg)
     {
         $response = json_decode($msg);
         if (!isset($response->error)) {

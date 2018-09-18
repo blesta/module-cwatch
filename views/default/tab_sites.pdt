@@ -1,0 +1,82 @@
+<?php
+if ($this->Html->ifSet($addsite)) {
+?>
+    <h4><?php $this->_('CWatch.tab_sites.add');?></h4>
+    <?php
+    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service_id) . '/tabClientSites/');
+    ?>
+    <div class="col-md-12">
+        <div class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_sites.licenseKey', true), 'licenseKey');
+            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($licenses), null, ['class' => 'form-control', 'id' => 'licenseKey']);
+            ?>
+        </div>
+        <div class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_sites.domain', true), 'domain');
+            $this->Form->fieldText('domain', '', ['class' => 'form-control', 'id' => 'domain']);
+            ?>
+        </div>
+        <div class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_sites.initiateDns', true), 'initiateDns');
+            $this->Form->fieldCheckbox('initiateDns', '1', ['class' => 'form-control', 'id' => 'initiateDns']);
+            ?>
+        </div>
+        <div class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_sites.autoSsl', true), 'autoSsl');
+            $this->Form->fieldCheckbox('autoSsl', '1', ['class' => 'form-control', 'id' => 'autoSsl']);
+            ?>
+        </div>
+    </div>
+    <button class="btn btn-default pull-right">
+        <i class="fa fa-edit"></i> <?php $this->_('CWatch.tab_sites.submit');?>
+    </button>
+    <?php
+    $this->Form->end();
+    ?>
+<?php
+} else {
+?>
+<div class="title_row first">
+    <h3>
+        <?php $this->_('CWatch.tab_sites.sites'); ?>
+        <a href="add" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
+    </h3>
+</div>
+<table class="table table-bordered">
+    <tr>
+        <td><?php $this->_('CWatch.tab_sites.name'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.expiry'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.status'); ?></td>
+    </tr>
+    <?php
+    if (!empty($this->Html->ifSet($sites))) {
+        var_dump($sites);
+        foreach ($sites as $key => $site) {
+        ?>
+        <tr>
+            <td><?php $this->Html->_($site->domain); ?></td>
+            <td><?php $this->Html->_($site->licenseKey); ?></td>
+            <td><?php if ($this->Html->ifSet($site->endTime)) { echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10)); } ?></td>
+            <td><?php $this->Html->_($site->status); ?></td>
+        </tr>
+        <?php
+        }
+    } else {
+    ?>
+		<tr>
+			<td colspan="5">
+                <?php $this->_("CWatch.tab_sites.no_results");?>
+			</td>
+		</tr>
+    <?php
+    }
+    ?>
+</table>
+<?php
+}
+?>
