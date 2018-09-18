@@ -18,6 +18,11 @@ $lang['CWatch.manage.no_results'] = 'No accounts found';
 $lang['CWatch.manage.heading_username'] = 'Username';
 $lang['CWatch.manage.heading_options'] = 'Options';
 
+$lang['Cwatch.service_field.email'] = 'Email';
+$lang['Cwatch.service_field.firstname'] = 'First Name';
+$lang['Cwatch.service_field.lastname'] = 'Last Name';
+$lang['Cwatch.service_field.country'] = 'Country';
+
 // Add Module Row
 $lang['CWatch.add_row.box_title'] = 'Add API Account';
 $lang['CWatch.add_row.basic_title'] = 'User Settings';
@@ -51,6 +56,7 @@ $lang['CWatch.tab_site.license'] = 'License';
 $lang['CWatch.tab_site.expiry'] = 'Expiry';
 $lang['CWatch.tab_site.status'] = 'Status';
 $lang['CWatch.tab_site.action'] = 'Action';
+$lang['CWatch.tab_site.removedomain'] = 'Remove Domain';
 
 $lang['CWatch.site.notallow'] = 'You have Used your site quota. Plese Upgrade your Plan.';
 

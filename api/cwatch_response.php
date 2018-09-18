@@ -1,6 +1,6 @@
 <?php
 
-class ApiResponse 
+class CwatchResponse
 {
 
     public $code;
@@ -8,10 +8,10 @@ class ApiResponse
     public $resp;
 
     /**
-     * APIResponse constructor.
+     * CwatchResponse constructor.
      * @param string $msg
      */
-    public function __construct(string $msg) 
+    public function __construct(string $msg)
     {
         $response = json_decode($msg);
         if (!isset($response->error)) {

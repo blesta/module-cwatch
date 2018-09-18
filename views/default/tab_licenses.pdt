@@ -40,23 +40,25 @@ if ($this->Html->ifSet($addsite)) {
 <?php
 } else {
 ?>
-<a href="add" class="btn default-btn" style="float:right;"><?php $this->_('CWatch.tab_site.add_new');?></a><br>
+<a href="add" class="btn btn-default" style="float:right;"><?php $this->_('CWatch.tab_site.add_new');?></a><br>
 <table class='table'>
     <tr>
         <td><?php $this->_('CWatch.tab_site.name'); ?></td>
         <td><?php $this->_('CWatch.tab_site.license'); ?></td>
         <td><?php $this->_('CWatch.tab_site.expiry'); ?></td>
         <td><?php $this->_('CWatch.tab_site.status'); ?></td>
+        <td><?php $this->_('CWatch.tab_site.action'); ?></td>
     </tr>
     <?php
     foreach ($this->Html->ifSet($sites_data, []) as $key => $site) {
-        if ($site->licenseKey == $this->Html->ifSet($licenseid)) {
+        if ($site->licenseKey == $this->Html->ifSet($licenseid) && $site->addSiteSuccess) {
     ?>
     <tr>
         <td><?php $this->Html->_($site->domain); ?></td>
         <td><?php $this->Html->_($site->licenseKey); ?></td>
         <td><?php if ($this->Html->ifSet($site->endTime)) { echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10)); } ?></td>
         <td><?php $this->Html->_($site->status); ?></td>
+        <td><a class="btn btn-danger" href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service_id) . '/tabClientActions?removedomain=' . $this->Html->_($site->domain, true)?>"><?php $this->_('CWatch.tab_site.removedomain'); ?></a></td>
     </tr>
     <?php
         }
