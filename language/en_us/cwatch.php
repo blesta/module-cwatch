@@ -4,6 +4,8 @@ $lang['CWatch.name'] = 'CWatch';
 $lang['CWatch.module_row.name'] = 'Credential';
 $lang['CWatch.module_row_plural.name'] = 'Credentials';
 
+$lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
+
 
 // Manage Module Row Meta
 $lang['CWatch.manage.boxtitle'] = 'Manage CWatch Credentials';
@@ -43,7 +45,7 @@ $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 $lang['CWatch.tab_sites.sites'] = 'Manage Sites';
 $lang['CWatch.tab_sites.add'] = 'Add New Site';
 $lang['CWatch.tab_sites.name'] = 'Site Name';
-$lang['CWatch.tab_sites.expiry'] = 'Expiry';
+$lang['CWatch.tab_sites.expiry'] = 'Expiration Date';
 $lang['CWatch.tab_sites.status'] = 'Status';
 $lang['CWatch.tab_sites.no_results'] = 'No sites have been provisioned for this customer.';
 

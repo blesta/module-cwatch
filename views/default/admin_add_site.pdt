@@ -1,0 +1,38 @@
+<div class="title_row first">
+    <h3><?php $this->_('CWatch.tab_sites.add');?></h3>
+</div>
+<?php
+$this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->client_id) . '.' . $this->Html->ifSet($service->id) . '/tabSites/');
+?>
+<ul>
+    <li class="form-group">
+        <?php
+        $this->Form->label($this->_('CWatch.tab_sites.licenseKey', true), 'licenseKey');
+        $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($licenses), null, ['class' => 'form-control', 'id' => 'licenseKey']);
+        ?>
+    </li>
+    <li class="form-group">
+        <?php
+        $this->Form->label($this->_('CWatch.tab_sites.domain', true), 'domain');
+        $this->Form->fieldText('domain', '', ['class' => 'form-control', 'id' => 'domain']);
+        ?>
+    </li>
+    <li class="form-group">
+        <?php
+        $this->Form->fieldCheckbox('initiateDns', null, '1', ['class' => 'form-control', 'id' => 'initiateDns']);
+        $this->Form->label($this->_('CWatch.tab_sites.initiateDns', true), 'initiateDns', ['class' => 'inline']);
+        ?>
+    </li>
+    <li class="form-group">
+        <?php
+        $this->Form->fieldCheckbox('autoSsl', null, '1', ['class' => 'form-control', 'id' => 'autoSsl']);
+        $this->Form->label($this->_('CWatch.tab_sites.autoSsl', true), 'autoSsl', ['class' => 'inline']);
+        ?>
+    </li>
+</ul>
+<button class="btn btn-default pull-right">
+    <i class="fa fa-edit"></i> <?php $this->_('CWatch.tab_sites.submit');?>
+</button>
+<?php
+$this->Form->end();
+?>

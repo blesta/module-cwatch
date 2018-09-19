@@ -1,11 +1,11 @@
 <div class="title_row first">
     <h3>
         <?php $this->_('CWatch.tab_sites.sites'); ?>
-        <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
+        <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
     </h3>
 </div>
 <table class="table table-bordered">
-    <tr class="heading_row">
+    <tr>
         <td><?php $this->_('CWatch.tab_sites.name'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.expiry'); ?></td>

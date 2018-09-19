@@ -214,41 +214,18 @@ class cwatch extends Module
                 if ($response->code != 200) {
                     $errors = ['api' => ['internal' => $response->errorMsg]];
                 } else {
+                    $license_types = Configure::get('cwatch.products');
                     // Get a count of licenses to provide for each type
-                    $license_types = [
-                        'BASIC_DETECTION' => isset($vars['configoptions']['basic_licenses'])
-                            ? $vars['configoptions']['basic_licenses']
-                            : 0,
-                        'PRO' => isset($vars['configoptions']['pro_licenses'])
-                            ? $vars['configoptions']['pro_licenses']
-                            : 0,
-                        'PRO_FREE_60D' => isset($vars['configoptions']['pro_free_licenses'])
-                            ? $vars['configoptions']['pro_free_licenses']
-                            : 0,
-                        'PREMIUM' => isset($vars['configoptions']['premium_licenses'])
-                            ? $vars['configoptions']['premium_licenses']
-                            : 0,
-                        'PREMIUM_FREE_60D' => isset($vars['configoptions']['premium_free_licenses'])
-                            ? $vars['configoptions']['premium_free_licenses']
-                            : 0
-                    ];
+                    foreach ($license_types as $license_type => $value) {
+                        $license_types[$license_type] = isset($vars['configoptions'][$license_type])
+                            ? $vars['configoptions'][$license_type]
+                            : 0;
+                    }
 
                     // Determine what term to add these licenses for
                     $license_term = 'MONTH_1';
-                    $available_terms = Configure::get('cwatch.terms');
-                    $pricing = $this->Services->getPackagePricing($vars['pricing_id']);
-
-                    if ($pricing
-                        && array_key_exists(strtoupper($pricing->period) . '_' . $pricing->term, $available_terms)
-                    ) {
-                        // Use the monthly term if it is in the supported list
+                    if (($pricing = $this->Services->getPackagePricing($vars['pricing_id']))) {
                         $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
-                    } elseif ($pricing
-                        && $pricing->period == 'year'
-                        && array_key_exists('MONTH_' . (12 * $pricing->term), $available_terms)
-                    ) {
-                        // Convert the yearly tern to monthly and use it if it is in the supported list
-                        $license_term = 'MONTH_' . (12 * $pricing->term);
                     }
 
                     // Add licenses to the customer account according to the config options provided
@@ -337,29 +314,111 @@ class cwatch extends Module
      */
     public function editService($package, $service, array $vars = [], $parent_package = null, $parent_service = null)
     {
+        Loader::loadModels($this, ['Clients', 'Services']);
+
+        // Get cWatch API
+        $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
-        try {
-            // Log request data
-            $this->log('adduser', serialize($vars), 'input', true);
+        $license_keys = [];
 
-            $firstname = isset($vars['cwatch_firstname'])
-                    ? $vars['cwatch_firstname']
-                    : $service_fields->cwatch_firstname;
-            $lastname = isset($vars['cwatch_lastname'])
-                    ? $vars['cwatch_lastname']
-                    : $service_fields->cwatch_lastname;
-            $country = isset($vars['cwatch_country'])
-                    ? $vars['cwatch_country']
-                    : $service_fields->cwatch_country;
+        $firstname = isset($vars['cwatch_firstname'])
+                ? $vars['cwatch_firstname']
+                : $service_fields->cwatch_firstname;
+        $lastname = isset($vars['cwatch_lastname'])
+                ? $vars['cwatch_lastname']
+                : $service_fields->cwatch_lastname;
+        $country = isset($vars['cwatch_country'])
+                ? $vars['cwatch_country']
+                : $service_fields->cwatch_country;
 
-            // Update a customer account in cWatch
-            $response = $api->addUser($service_fields->cwatch_email, $firstname, $lastname, $country);
+        if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
+            try {
+                // Log request data
+                $this->log('edituser', serialize($vars), 'input', true);
 
-            if ($response->code != 200) {
-                $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
+                // Update a customer account in cWatch
+                $response = $api->addUser($service_fields->cwatch_email, $firstname, $lastname, $country);
+
+                $this->log('edituser', serialize($response), 'output', $response->code == 200);
+                if ($response->code != 200) {
+                    $this->Input->setErrors(['api' => ['internal' => $response->errorMsg]]);
+                } else {
+                    $license_types = Configure::get('cwatch.products');
+                    // Get a count of licenses to provide for each type
+                    foreach ($license_types as $license_type => $value) {
+                        $license_types[$license_type] = isset($vars['configoptions'][$license_type])
+                            ? $vars['configoptions'][$license_type]
+                            : 0;
+                    }
+
+                    // Get cWatch licenses
+                    $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+                    $licenses = empty($licenses_response->errorMsg) ? json_decode($licenses_response->resp) : [];
+
+                    // Count how many licenses to add
+                    foreach ($licenses as $license) {
+                        if (strtolower($license->status) == 'valid') {
+                            $license_types[$license->pricingTerm]--;
+                        }
+
+                        if ($license_types[$license->pricingTerm] < 0) {
+                            // Give an error if the config option has a value lower than the current number of licenses
+                            // for this type
+                            $this->Input->setErrors(
+                                ['licenses' => ['limit_exceeded' => Language::_('CWatch.!error.limit_exceeded', true)]]
+                            );
+                        }
+                    }
+
+                    // Determine what term to add these licenses for
+                    $license_term = 'MONTH_1';
+                    if (($pricing = $this->Services->getPackagePricing($vars['pricing_id']))) {
+                        $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
+                    }
+
+                    // Add licenses to the customer account according to the config options provided
+                    foreach ($license_types as $license_type => $quantity) {
+                        for ($i = 0; $i < $quantity; $i++) {
+                            $license_response = $api->addLicense(
+                                $license_type,
+                                $license_type == 'BASIC_DETECTION' ? 'UNLIMITED' : $license_term,
+                                $service_fields->cwatch_email,
+                                $firstname,
+                                $lastname,
+                                $country
+                            );
+
+                            $this->log(
+                                'addlicense',
+                                serialize($license_response),
+                                'output',
+                                $license_response->code == 200
+                            );
+
+                            // Break on error
+                            if ($license_response->code != 200) {
+                                $this->Input->setErrors(['api' => ['internal' => $license_response->errorMsg]]);
+
+                                break 2;
+                            }
+
+                            $license = json_decode($license_response->resp);
+                            $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
+                        }
+                    }
+                }
+            } catch (exception $e) {
+                $this->Input->setErrors(['api' => ['internal' => $e->getMessage()]]);
             }
-        } catch (exception $e) {
-            $this->Input->setErrors(['api' => ['internal' => $e->getMessage()]]);
+        }
+
+        if ($this->Input->errors()) {
+            // Deactivate any licenses that were added
+            foreach ($license_keys as $license_key) {
+                $license_response = $api->deactivateLicense($license_key);
+            }
+
+            return;
         }
 
         return [
@@ -368,30 +427,6 @@ class cwatch extends Module
             ['key' => 'cwatch_lastname', 'value' => $lastname, 'encrypted' => 0],
             ['key' => 'cwatch_country', 'value' => $country, 'encrypted' => 0]
         ];
-    }
-    /**
-     * Suspends the service on the remote server. Sets Input errors on failure,
-     * preventing the service from being suspended.
-     *
-     * @param stdClass $package A stdClass object representing the current package
-     * @param stdClass $service A stdClass object representing the current service
-     * @param stdClass $parent_package A stdClass object representing the parent
-     *  service's selected package (if the current service is an addon service)
-     * @param stdClass $parent_service A stdClass object representing the parent
-     *  service of the service being suspended (if the current service is an addon service)
-     * @return mixed null to maintain the existing meta fields or a numerically
-     *  indexed array of meta fields to be stored for this service containing:
-     *  - key The key for this meta field
-     *  - value The value for this key
-     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
-     * @see Module::getModule()
-     * @see Module::getModuleRow()
-     */
-    public function suspendService($package, $service, $parent_package = null, $parent_service = null)
-    {
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-        // Suspend user
-        $this->deleteUser($service_fields->cwatch_email, true);
     }
 
     /**
@@ -423,9 +458,8 @@ class cwatch extends Module
      * Deletes or suspends the given user
      *
      * @param string $email The email of the customer to delete or suspend
-     * @param bool $suspend False to delete the customer account, true otherwise
      */
-    private function deleteUser($email, $suspend = false)
+    private function deleteUser($email)
     {
         // Get cWatch API
         $api = $this->getApi();
@@ -445,12 +479,10 @@ class cwatch extends Module
                 }
             }
 
-            if (!$suspend) {
-                $this->log('deleteuser', $email, 'input', true);
-                // Remove user
-                $response = $api->deleteUser($email);
-                $this->log('deleteuser', serialize($response), 'output', $response->code == 200);
-            }
+            // Remove user
+            $this->log('deleteuser', $email, 'input', true);
+            $response = $api->deleteUser($email);
+            $this->log('deleteuser', serialize($response), 'output', $response->code == 200);
         } catch (Exception $e) {
             $errors['api']['internal'] = $e->getMessage();
         }
@@ -558,15 +590,65 @@ class cwatch extends Module
             'tabClientMalWare' => Language::_('CWatch.tab_malware.malware', true)
         ];
     }
+
     /**
-     * Client Actions (Add site for scanner)
+     * Returns all tabs to display to an admin when managing a service whose
+     * package uses this module
      *
+     * @param stdClass $package A stdClass object representing the selected package
+     * @return array An array of tabs in the format of method => title.
+     *  Example: array('methodName' => "Title", 'methodName2' => "Title2")
+     */
+    public function getAdminTabs($package)
+    {
+        return [
+            'tabSites' => Language::_('CWatch.tab_sites.sites', true),
+            'tabMalWare' => Language::_('CWatch.tab_malware.malware', true)
+        ];
+    }
+
+    /**
+     * Manage malware scanners
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
     public function tabClientMalWare($package, $service, array $get = null, array $post = null, array $files = null)
     {
+        return $this->getMalwareTab('tab_client_malware', $service, $post);
+    }
+
+    /**
+     * Manage malware scanners
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @param array $files Any FILES parameters
+     * @return string The string representing the contents of this tab
+     */
+    public function tabMalWare($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->getMalwareTab('tab_malware', $service, $post);
+    }
+
+    /**
+     * Manage malware scanners
+     *
+     * @param string $template The name of the template to use
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $post Any POST parameters
+     * @return string The string representing the contents of this tab
+     */
+    private function getMalwareTab($template, $service, $post)
+    {
         // Load view
-        $this->view = $this->getView('tab_malware');
+        $this->view = $this->getView($template);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -604,15 +686,60 @@ class cwatch extends Module
         $this->view->set('service_id', $service->id);
         return $this->view->fetch();
     }
+
     /**
      * Manage customer sites
      *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
     public function tabClientSites($package, $service, array $get = null, array $post = null, array $files = null)
     {
+        return $this->getSitesTab(
+            isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_sites',
+            $service,
+            $get,
+            $post
+        );
+    }
+
+    /**
+     * Manage customer sites
+     *
+     * @param stdClass $package A stdClass object representing the current package
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @param array $files Any FILES parameters
+     * @return string The string representing the contents of this tab
+     */
+    public function tabSites($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->getSitesTab(
+            isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_sites',
+            $service,
+            $get,
+            $post
+        );
+    }
+
+    /**
+     * Manage customer sites
+     *
+     * @param string $template The name of the template to use
+     * @param stdClass $service A stdClass object representing the current service
+     * @param array $get Any GET parameters
+     * @param array $post Any POST parameters
+     * @return string The string representing the contents of this tab
+     */
+    private function getSitesTab($template, $service, $get, $post)
+    {
         // Load view
-        $this->view = $this->getView('tab_sites');
+        $this->view = $this->getView($template);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -658,7 +785,7 @@ class cwatch extends Module
         if (empty($licenses_response->errorMsg)) {
             foreach (json_decode($licenses_response->resp, true) as $license) {
                 if (strtolower($license['status']) == 'valid' && $license['registeredDomainCount'] == 0) {
-                    $licenses[$license['licenseKey']] = $license['friendlyName'];
+                    $licenses[$license['licenseKey']] = $license['productTitle'];
                 }
             }
         }
@@ -666,8 +793,6 @@ class cwatch extends Module
         $this->view->set('sites', $sites);
         $this->view->set('licenses', $licenses);
         $this->view->set('service', $service);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('addsite', isset($get[2]) ? $get[2] : false);
 
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
         return $this->view->fetch();
@@ -683,31 +808,7 @@ class cwatch extends Module
      */
     public function getClientServiceInfo($service, $package)
     {
-        // Load view
-        $this->view = $this->getView('client_service_info');
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get cWatch API
-        $api = $this->getApi();
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Get cWatch licenses
-        $licenses_response = $api->getLicenses($service_fields->cwatch_email);
-        $licenses = [];
-        if (empty($licenses_response->errorMsg)) {
-            foreach (json_decode($licenses_response->resp) as $license) {
-                if (strtolower($license->status) == 'valid') {
-                    $licenses[] = $license;
-                }
-            }
-        }
-
-        $this->view->set('licenses', $licenses);
-        $this->log('viewinfo', serialize($licenses), 'output', true);
-
-        return $this->view->fetch();
+        return $this->getServiceInfo('client_service_info', $service);
     }
 
     /**
@@ -720,8 +821,20 @@ class cwatch extends Module
      */
     public function getAdminServiceInfo($service, $package)
     {
+        return $this->getServiceInfo('admin_service_info', $service);
+    }
+
+    /**
+     * Fetches the HTML content to display when viewing the service info.
+     *
+     * @param string $template The name of the template to use
+     * @param stdClass $service A stdClass object representing the current service
+     * @return string The string representing the contents of this tab
+     */
+    private function getServiceInfo($template, $service)
+    {
         // Load view
-        $this->view = $this->getView('admin_service_info');
+        $this->view = $this->getView($template);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
