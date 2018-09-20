@@ -57,7 +57,7 @@ class CwatchApi
      */
     public function deleteUser($email)
     {
-        $response = $this->apiRequest('customer/deleteCustomer?email' . $email, '', 'GET');
+        $response = $this->apiRequest('customer/deleteCustomer?email=' . $email, '', 'DELETE');
 
         return new CwatchResponse($response['content']);
     }
@@ -71,7 +71,7 @@ class CwatchApi
     public function getUser($email)
     {
         $params = json_encode(['customers' => [$email]]);
-        $response = $this->apiRequest('customer/add', $params, 'POST');
+        $response = $this->apiRequest('customer/list', $params, 'POST');
 
         return new CwatchResponse($response['content']);
     }
@@ -213,7 +213,7 @@ class CwatchApi
      *
      * @param string $route The path to the API method
      * @param string $body The data to be sent
-     * @param string $method Data transfer method (POST, GET, PUT)
+     * @param string $method Data transfer method (POST, GET, PUT, DELETE)
      * @return array
      */
     private function apiRequest($route, $body, $method)
@@ -237,6 +237,11 @@ class CwatchApi
 
         if ($method == 'GET') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        }
+
+        if ($method == 'DELETE') {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         }
 
         $headers = [];

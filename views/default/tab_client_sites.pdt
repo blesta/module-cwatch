@@ -10,6 +10,7 @@
         <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.expiry'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.status'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
     </tr>
     <?php
     if (!empty($this->Html->ifSet($sites))) {
@@ -25,7 +26,8 @@
                 }
                 ?>
             </td>
-            <td><?php $this->Html->_($site->status); ?></td>
+            <td><?php $this->Html->ifSet($site->status) == 'ADD_SITE_COMPLETED' ? $this->_('CWatch.tab_sites.status_complete') : $this->_('CWatch.tab_sites.status_pending'); ?></td>
+            <td></td>
         </tr>
         <?php
         }
