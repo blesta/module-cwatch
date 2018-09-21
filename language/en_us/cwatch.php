@@ -47,13 +47,15 @@ $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 $lang['CWatch.tab_sites.sites'] = 'Manage Sites';
 $lang['CWatch.tab_sites.add'] = 'Add New Site';
 $lang['CWatch.tab_sites.name'] = 'Site Name';
-$lang['CWatch.tab_sites.expiry'] = 'Expiration Date';
 $lang['CWatch.tab_sites.status'] = 'Status';
+$lang['CWatch.tab_sites.malware_scanner'] = 'Malware Scanner';
 $lang['CWatch.tab_sites.actions'] = 'Actions';
 $lang['CWatch.tab_sites.no_results'] = 'No sites have been provisioned for this customer.';
 
-$lang['CWatch.tab_sites.status_complete'] = 'Added';
-$lang['CWatch.tab_sites.status_pending'] = 'Pending';
+$lang['CWatch.tab_sites.not_applicable'] = 'N/A';
+$lang['CWatch.tab_sites.remove_site'] = 'Remove';
+$lang['CWatch.tab_sites.confirm_delete'] = 'Are you sure you want to remove this domain?';
+$lang['CWatch.tab_sites.malware_control'] = 'Malware Control';
 
 $lang['CWatch.tab_sites.licenseKey'] = 'License';
 $lang['CWatch.tab_sites.domain'] = 'Domain Name';
@@ -62,14 +64,13 @@ $lang['CWatch.tab_sites.autoSsl'] = 'AutoSSL';
 $lang['CWatch.tab_sites.submit'] = 'Submit';
 
 // Tab malware
-$lang['CWatch.tab_malware.add_new_site'] = 'Add New Site';
 $lang['CWatch.tab_malware.malware'] = 'Malware Control';
+$lang['CWatch.tab_malware.add_scanner'] = 'Add Scanner';
 $lang['CWatch.tab_malware.domainname'] = 'Domain Name';
 $lang['CWatch.tab_malware.ftppassword'] = 'FTP Password';
 $lang['CWatch.tab_malware.ftpusername'] = 'FTP Username';
 $lang['CWatch.tab_malware.host'] = 'FTP HostName';
 $lang['CWatch.tab_malware.port'] = 'FTP Port';
 $lang['CWatch.tab_malware.path'] = 'Site Directory';
-$lang['CWatch.tab_malware.malwarestatus'] = 'Check Malware Status';
 
 $lang['CWatch.tab_malware.submit'] = 'Submit';

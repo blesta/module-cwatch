@@ -655,35 +655,32 @@ class cwatch extends Module
 
         // Get cWatch API
         $api = $this->getApi();
+        $service_fields = $this->serviceFieldsToObject($service->fields);
 
         if (!empty($post)) {
             $data = $post;
             $data['password'] = '***';
-            if ($post['actionname'] == 'checkstatus') {
-                $this->log('checkmalware', serialize($data), 'input', true);
-                $scanner = $api->getScanner($post['domainname']);
-                $this->log('checkmalware', serialize($scanner), 'output', empty($scanner->errorMsg));
-            } else {
-                $this->log('addmalwarescanner', serialize($data), 'input', true);
-                $scanner = $api->addScanner(
-                    [
-                        'domain' => $post['domainname'],
-                        'password' => $post['password'],
-                        'username' => $post['username'],
-                        'host' => $post['host'],
-                        'port' => $post['port'],
-                        'path' => $post['path']
-                    ]
-                );
-                $this->log('addmalwarescanner', serialize($scanner), 'input', empty($scanner->errorMsg));
-            }
+            $this->log('addmalwarescanner', serialize($data), 'input', true);
+            $scanner = $api->addScanner(
+                $service_fields->cwatch_email,
+                [
+                    'domain' => $post['domainname'],
+                    'password' => $post['password'],
+                    'login' => $post['username'],
+                    'host' => $post['host'],
+                    'port' => $post['port'],
+                    'path' => $post['path'],
+                    'protocol' => $post['port'] == '22' ? 'FTPS' : 'FTP'
+                ]
+            );
+            $this->log('addmalwarescanner', serialize($scanner), 'input', empty($scanner->errorMsg));
 
             if (!empty($scanner->errorMsg)) {
                 $this->Input->setErrors(['api' => ['internal' => $scanner->errorMsg]]);
             }
         }
 
-        $this->view->set('service_id', $service->id);
+        $this->view->set('service', $service);
         return $this->view->fetch();
     }
 
@@ -699,12 +696,8 @@ class cwatch extends Module
      */
     public function tabClientSites($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        return $this->getSitesTab(
-            isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_sites',
-            $service,
-            $get,
-            $post
-        );
+        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_sites';
+        return $this->getSitesTab($template, $service, $post);
     }
 
     /**
@@ -719,12 +712,8 @@ class cwatch extends Module
      */
     public function tabSites($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        return $this->getSitesTab(
-            isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_sites',
-            $service,
-            $get,
-            $post
-        );
+        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_sites';
+        return $this->getSitesTab($template, $service, $post);
     }
 
     /**
@@ -732,11 +721,10 @@ class cwatch extends Module
      *
      * @param string $template The name of the template to use
      * @param stdClass $service A stdClass object representing the current service
-     * @param array $get Any GET parameters
      * @param array $post Any POST parameters
      * @return string The string representing the contents of this tab
      */
-    private function getSitesTab($template, $service, $get, $post)
+    private function getSitesTab($template, $service, $post)
     {
         // Load view
         $this->view = $this->getView($template);
@@ -751,20 +739,24 @@ class cwatch extends Module
         $api = $this->getApi();
 
         if (!empty($post)) {
-            $this->log('addsite', serialize($post), 'input', true);
-            $site = $api->addSite(
-                [
-                    'email' => $service_fields->cwatch_email,
-                    'domain' => $post['domain'],
-                    'licenseKey' => $post['licenseKey'],
-                    'initiateDns' => isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false,
-                    'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
-                ]
-            );
+            if (isset($post['action']) && $post['action'] == 'remove_domain') {
+                $site = $api->removeSite($service_fields->cwatch_email, $post['domain']);
+            } else {
+                $this->log('addsite', serialize($post), 'input', true);
+                $site = $api->addSite(
+                    [
+                        'email' => $service_fields->cwatch_email,
+                        'domain' => $post['domain'],
+                        'licenseKey' => $post['licenseKey'],
+                        'initiateDns' => isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false,
+                        'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
+                    ]
+                );
 
-            $this->log('addsite', serialize($site), 'input', empty($site->errorMsg));
-            if (!empty($site->errorMsg)) {
-                $this->Input->setErrors(['api' => ['internal' => $site->errorMsg]]);
+                $this->log('addsite', serialize($site), 'input', empty($site->errorMsg));
+                if (!empty($site->errorMsg)) {
+                    $this->Input->setErrors(['api' => ['internal' => $site->errorMsg]]);
+                }
             }
         }
 
@@ -774,6 +766,16 @@ class cwatch extends Module
         if (empty($sites_response->errorMsg)) {
             foreach (json_decode($sites_response->resp) as $site) {
                 if (strtolower($site->status) != 'add_site_fail') {
+                    $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
+                    if (empty($scanner->errorMsg)) {
+                        $site->scanner = json_decode($scanner->resp);
+                    }
+
+                    $license = $api->getLicense($site->licenseKey);
+                    if (empty($license->errorMsg)) {
+                        $site->license = json_decode($license->resp);
+                    }
+
                     $sites[] = $site;
                 }
             }

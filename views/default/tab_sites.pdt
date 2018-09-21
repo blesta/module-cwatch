@@ -4,12 +4,12 @@
         <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
     </h3>
 </div>
-<table class="table table-bordered">
+<table class="table table-bordered" id="sites">
     <tr class="heading_row">
         <td><?php $this->_('CWatch.tab_sites.name'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.expiry'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.status'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.malware_status'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
     </tr>
     <?php
@@ -19,15 +19,12 @@
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
             <td><?php $this->Html->_($site->licenseKey); ?></td>
-            <td>
-                <?php
-                if ($this->Html->ifSet($site->endTime)) {
-                    echo date('Y-m-d H:s:m', substr($site->endTime, 0, 10));
-                }
-                ?>
-            </td>
             <td><?php $this->Html->_($site->status); ?></td>
-            <td></td>
+            <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
+            <td>
+                <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>"><?php $this->_('CWatch.tab_sites.remove_site');?></a>,
+                <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=malware_scanner';?>"><?php $this->_('CWatch.tab_sites.malware_control');?></a>
+            </td>
         </tr>
         <?php
         }
@@ -40,5 +37,23 @@
         </tr>
     <?php
     }
+
+    $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/', ['id' => 'remove_site']);
+    $this->Form->fieldHidden('domain', '', ['id' => 'remove_domain']);
+    $this->Form->fieldHidden('action', 'remove_domain');
+    $this->Form->end();
     ?>
 </table>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Handle confirmation
+        $('#sites a.manage[rel]').click(function() {
+            var domain = $(this).attr('data-domain');
+            $('#remove_domain').val(domain);
+        });
+        $('#sites a.manage[rel]').each(function() {
+            $(this).blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', close: '<?php $this->_('AppController.modal.text_close');?>', submit: true, form: $('#remove_site')});
+        });
+    });
+</script>

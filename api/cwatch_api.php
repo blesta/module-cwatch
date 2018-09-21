@@ -138,6 +138,27 @@ class CwatchApi
     }
 
     /**
+     * Remove a site from Cwatch
+     *
+     * @param string $email The email of the customer to remove this site for
+     * @param string $domain The domain to be removed
+     * @return CwatchResponse
+     */
+    public function removeSite($email, $domain)
+    {
+        $params = ['domain' => $domain, 'engineSiteId' => ''];
+        $site_response = $this->getSite($email, $domain, '', 'GET');
+        if (empty($site_response->errorMsg)) {
+            $site = json_decode($site_response->resp);
+            $params['engineSiteId'] = $site->engineSiteId;
+        }
+
+        $response = $this->apiRequest('admin/removeDomain', json_encode($params), 'POST');
+
+        return new CwatchResponse($response['content']);
+    }
+
+    /**
      * Get sites by customer email
      *
      * @param string $email The customer's email
@@ -145,7 +166,21 @@ class CwatchApi
      */
     public function getSites($email)
     {
-        $response = $this->apiRequest('siteprovision/item/getByCustomer?customerEmail=' . $email, '', 'GET');
+        $response = $this->apiRequest('customer/site/listByEmail?email=' . $email, '', 'GET');
+
+        return new CwatchResponse($response['content']);
+    }
+
+    /**
+     * Get sites by customer email and domain
+     *
+     * @param string $email The customer's email
+     * @param string $domain The domain of the site to fetch
+     * @return CwatchResponse
+     */
+    public function getSite($email, $domain)
+    {
+        $response = $this->apiRequest('customer/site/listBySite?email=' . $email . '&siteName=' . $domain, '', 'GET');
 
         return new CwatchResponse($response['content']);
     }
@@ -179,12 +214,20 @@ class CwatchApi
     /**
      * Check the malware scanner status for a given damin
      *
-     * @param string $site The domain to check
+     * @param string $email The customer to check the domain for
+     * @param string $domain The domain to check
      * @return CwatchResponse
      */
-    public function getScanner($site)
+    public function getScanner($email, $domain)
     {
-        $response = $this->apiRequest('/malware/getScannerStatus?site=' . $site, '', 'GET');
+        $domainId = '';
+        $site_response = $this->getSite($email, $domain, '', 'GET');
+        if (empty($site_response->errorMsg)) {
+            $site = json_decode($site_response->resp);
+            $domainId = $site->engineSiteId;
+        }
+
+        $response = $this->apiRequest('/domain/' . $domainId . '/settings/scanner', '', 'GET');
 
         return new CwatchResponse($response['content']);
     }
@@ -193,17 +236,24 @@ class CwatchApi
      * Check a malware scanner for a given damin
      *
      * @param array $params
-     *     - domain The domain to scan
-     *     - username The username for FTP access
+     *     - domainname The domain to scan
+     *     - login The username for FTP access
      *     - password The password for FTP access
      *     - host The host to use for FTP access
      *     - port The port to use for FTP access
      *     - path The path to the web directory for this site
      * @return CwatchResponse
      */
-    public function addScanner($params)
+    public function addScanner($email, $params)
     {
-        $response = $this->apiRequest('/malware/enableScanner', json_encode([$params]), 'POST');
+        $domainId = '';
+        $site_response = $this->getSite($email, $params['domain'], '', 'GET');
+        if (empty($site_response->errorMsg)) {
+            $site = json_decode($site_response->resp);
+            $domainId = $site->engineSiteId;
+        }
+
+        $response = $this->apiRequest('/domain/' . $domainId . '/settings/scanner/ftp', json_encode($params), 'POST');
 
         return new CwatchResponse($response['content']);
     }
