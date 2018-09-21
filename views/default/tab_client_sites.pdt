@@ -19,16 +19,20 @@
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
             <td><?php $this->Html->_($site->license->productTitle); ?></td>
-            <td><?php $this->Html->_($site->status); ?></td>
+            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$site->status], $site->status)); ?></td>
             <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
             <td>
                 <?php
                 if ($this->Html->ifSet($site->status) == 'ADD_SITE_COMPLETED') {
+                    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites/');
+                    $this->Form->fieldHidden('domain', $this->Html->ifSet($site->domain));
+                    $this->Form->fieldHidden('action', 'remove_domain');
                 ?>
                 <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage btn btn-xs btn-default" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>">
                     <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_sites.remove_site');?>
                 </a>
                 <?php
+                    $this->Form->end();
                 }
                 ?>
             </td>
@@ -44,23 +48,15 @@
         </tr>
     <?php
     }
-
-    $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/', ['id' => 'remove_site']);
-    $this->Form->fieldHidden('domain', '', ['id' => 'remove_domain']);
-    $this->Form->fieldHidden('action', 'remove_domain');
-    $this->Form->end();
     ?>
 </table>
 
 <script type="text/javascript">
     $(document).ready(function() {
-        // Handle confirmation
-        $('#sites a.manage[rel]').click(function() {
-            var domain = $(this).attr('data-domain');
-            $('#remove_domain').val(domain);
-        });
-        $('#sites a.manage[rel]').each(function() {
-            $(this).blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', close: '<?php $this->_('AppController.modal.text_close');?>', submit: true, form: $('#remove_site')});
-        });
+		// Handle confirmation on delete action
+		$('#sites a[rel]').blestaModalConfirm({
+			base_url: '<?php echo $this->base_uri;?>',
+			submit: true
+		});
     });
 </script>

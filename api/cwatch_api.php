@@ -246,6 +246,27 @@ class CwatchApi
     }
 
     /**
+     * Check the malware scanner status for a given damin
+     *
+     * @param string $email The customer to check the domain for
+     * @param string $domain The domain to check
+     * @return CwatchResponse
+     */
+    public function getMalware($email, $domain)
+    {
+        $domainId = '';
+        $site_response = $this->getSite($email, $domain, '', 'GET');
+        if (empty($site_response->errorMsg)) {
+            $site = json_decode($site_response->resp);
+            $domainId = $site->engineSiteId;
+        }
+
+        $response = $this->apiRequest('/domain/' . $domainId . '/malwareremoval/?pageSize=25&pageNumber=1', '', 'GET');
+
+        return new CwatchResponse($response['content']);
+    }
+
+    /**
      * Check a malware scanner for a given damin
      *
      * @param array $params

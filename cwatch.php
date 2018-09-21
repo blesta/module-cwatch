@@ -694,13 +694,21 @@ class cwatch extends Module
 
         $sites_response = $api->getSites($service_fields->cwatch_email);
         $sites = ['' => Language::_('AppController.select.please', true)];
+        $domains_ftp = [];
         if (empty($sites_response->errorMsg)) {
             foreach (json_decode($sites_response->resp) as $site) {
+                $scanner_response = $api->getScanner($service_fields->cwatch_email, $site->domain);
+                if (empty($scanner_response->errorMsg)) {
+                    $scanner = json_decode($scanner_response->resp);
+                    $domains_ftp[$site->domain] = $scanner->ftp;
+                }
+
                 $sites[$site->domain] = $site->domain;
             }
         }
 
 
+        $this->view->set('domains_ftp', $domains_ftp);
         $this->view->set('sites', $sites);
         $this->view->set('service', $service);
         return $this->view->fetch();
@@ -763,6 +771,8 @@ class cwatch extends Module
         if (!empty($post)) {
             if (isset($post['action']) && $post['action'] == 'remove_domain') {
                 $site = $api->removeSite($service_fields->cwatch_email, $post['domain']);
+
+                // Error message if this does not work
             } else {
                 $this->log('addsite', serialize($post), 'input', true);
                 $site = $api->addSite(
@@ -815,6 +825,7 @@ class cwatch extends Module
             }
         }
 
+        $this->view->set('site_statuses', $this->getSiteStatuses());
         $this->view->set('site_provisions', $site_provisions);
         $this->view->set('licenses', $licenses);
         $this->view->set('service', $service);
@@ -883,6 +894,30 @@ class cwatch extends Module
         $this->log('viewinfo', serialize($licenses), 'output', true);
 
         return $this->view->fetch();
+    }
+
+    /**
+     * Gets a list of cWatch site provision statuses and their languages
+     *
+     * @return array A list of cWatch site provision statuses and their languages
+     */
+    private function getSiteStatuses()
+    {
+        return [
+            'WAITING' => Language::_('CWatch.getsitestatuses.waiting', true),
+            'ADD_SITE_INPROGRESS' => Language::_('CWatch.getsitestatuses.site_inprogress', true),
+            'ADD_SITE_RETRY' => Language::_('CWatch.getsitestatuses.site_retry', true),
+            'ADD_SITE_COMPLETED' => Language::_('CWatch.getsitestatuses.site_completed', true),
+            'ADD_SITE_FAIL' => Language::_('CWatch.getsitestatuses.site_failed', true),
+            'INITIATE_DNS_INPROGRESS' => Language::_('CWatch.getsitestatuses.dns_inprogress', true),
+            'INITIATE_DNS_RETRY' => Language::_('CWatch.getsitestatuses.dns_retry', true),
+            'INITIATE_DNS_COMPLETED' => Language::_('CWatch.getsitestatuses.dns_completed', true),
+            'INITIATE_DNS_FAIL' => Language::_('CWatch.getsitestatuses.dns_failed', true),
+            'AUTO_SSL_INPROGRESS' => Language::_('CWatch.getsitestatuses.ssl_inprogress', true),
+            'AUTO_SSL_RETRY' => Language::_('CWatch.getsitestatuses.ssl_retry', true),
+            'AUTO_SSL_COMPLETED' => Language::_('CWatch.getsitestatuses.ssl_completed', true),
+            'AUTO_SSL_FAIL' => Language::_('CWatch.getsitestatuses.ssl_fail', true)
+        ];
     }
 
     /**

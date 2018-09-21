@@ -19,7 +19,7 @@
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
             <td><?php $this->Html->_($site->licenseKey); ?></td>
-            <td><?php $this->Html->_($site->status); ?></td>
+            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$site->status], $site->status)); ?></td>
             <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
             <td>
                 <?php

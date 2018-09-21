@@ -78,3 +78,18 @@ $lang['CWatch.tab_malware.port'] = 'FTP Port';
 $lang['CWatch.tab_malware.path'] = 'Site Directory';
 
 $lang['CWatch.tab_malware.submit'] = 'Submit';
+
+// Get site statuses
+$lang['CWatch.getsitestatuses.waiting'] = 'Waiting';
+$lang['CWatch.getsitestatuses.site_inprogress'] = 'Site Provision in Progress';
+$lang['CWatch.getsitestatuses.site_retry'] = 'Retrying Site Provision';
+$lang['CWatch.getsitestatuses.site_completed'] = 'Site Added';
+$lang['CWatch.getsitestatuses.site_failed'] = 'Site Provision Failed';
+$lang['CWatch.getsitestatuses.dns_inprogress'] = 'DNS Scan in Progress';
+$lang['CWatch.getsitestatuses.dns_retry'] = 'Retrying DNS Scan';
+$lang['CWatch.getsitestatuses.dns_completed'] = 'DNS Scan Completed';
+$lang['CWatch.getsitestatuses.dns_failed'] = 'Site Added, DNS Scan Failed';
+$lang['CWatch.getsitestatuses.ssl_inprogress'] = 'SSL Install in Progress';
+$lang['CWatch.getsitestatuses.ssl_retry'] = 'Retrying SSL Install';
+$lang['CWatch.getsitestatuses.ssl_completed'] = 'SSL Certificate Added';
+$lang['CWatch.getsitestatuses.ssl_fail'] = 'Site Added, SSL Install Failed';
