@@ -60,7 +60,6 @@ $lang['CWatch.tab_sites.no_results'] = 'No sites have been provisioned for this 
 $lang['CWatch.tab_sites.not_applicable'] = 'N/A';
 $lang['CWatch.tab_sites.remove_site'] = 'Remove';
 $lang['CWatch.tab_sites.confirm_delete'] = 'Are you sure you want to remove this domain?';
-$lang['CWatch.tab_sites.malware_control'] = 'Malware Control';
 
 $lang['CWatch.tab_sites.licenseKey'] = 'License';
 $lang['CWatch.tab_sites.domain'] = 'Domain Name';
