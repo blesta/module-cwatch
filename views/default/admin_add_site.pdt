@@ -2,7 +2,7 @@
     <h3><?php $this->_('CWatch.tab_sites.add');?></h3>
 </div>
 <?php
-$this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->client_id) . '.' . $this->Html->ifSet($service->id) . '/tabSites/');
+$this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/');
 ?>
 <div class="pad">
     <ul>

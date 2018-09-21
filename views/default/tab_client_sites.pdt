@@ -13,8 +13,8 @@
         <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
     </tr>
     <?php
-    if (!empty($this->Html->ifSet($sites))) {
-        foreach ($sites as $key => $site) {
+    if (!empty($this->Html->ifSet($site_provisions))) {
+        foreach ($site_provisions as $key => $site) {
         ?>
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
@@ -22,21 +22,15 @@
             <td><?php $this->Html->_($site->status); ?></td>
             <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
             <td>
-                <div class="btn-group">
-                    <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage btn btn-xs btn-default" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>">
-                        <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_sites.remove_site');?>
-                    </a>
-                    <button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=malware_scanner';?>">
-                                <i class="fa fa-file-text-o fa-fw"></i> <?php $this->_('CWatch.tab_sites.malware_control');?>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                <?php
+                if ($this->Html->ifSet($site->status) == 'ADD_SITE_COMPLETED') {
+                ?>
+                <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage btn btn-xs btn-default" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>">
+                    <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_sites.remove_site');?>
+                </a>
+                <?php
+                }
+                ?>
             </td>
         </tr>
         <?php

@@ -186,6 +186,19 @@ class CwatchApi
     }
 
     /**
+     * Get sites provision requests by customer email
+     *
+     * @param string $email The customer's email
+     * @return CwatchResponse
+     */
+    public function getSiteProvisions($email)
+    {
+        $response = $this->apiRequest('siteprovision/item/getByCustomer?customerEmail=' . $email, '', 'GET');
+
+        return new CwatchResponse($response['content']);
+    }
+
+    /**
      * Fetch license info for a given license key
      *
      * @param string $licenseKey The key of the license

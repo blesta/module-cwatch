@@ -9,12 +9,12 @@
         <td><?php $this->_('CWatch.tab_sites.name'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.status'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.malware_status'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.malware_scanner'); ?></td>
         <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
     </tr>
     <?php
-    if (!empty($this->Html->ifSet($sites))) {
-        foreach ($sites as $key => $site) {
+    if (!empty($this->Html->ifSet($site_provisions))) {
+        foreach ($site_provisions as $key => $site) {
         ?>
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
@@ -22,8 +22,13 @@
             <td><?php $this->Html->_($site->status); ?></td>
             <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
             <td>
-                <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>"><?php $this->_('CWatch.tab_sites.remove_site');?></a>,
-                <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=malware_scanner';?>"><?php $this->_('CWatch.tab_sites.malware_control');?></a>
+                <?php
+                if ($this->Html->ifSet($site->status) == 'ADD_SITE_COMPLETED') {
+                ?>
+                <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>"><?php $this->_('CWatch.tab_sites.remove_site');?></a>
+                <?php
+                }
+                ?>
             </td>
         </tr>
         <?php

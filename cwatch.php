@@ -680,6 +680,16 @@ class cwatch extends Module
             }
         }
 
+        $sites_response = $api->getSites($service_fields->cwatch_email);
+        $sites = ['' => Language::_('AppController.select.please', true)];
+        if (empty($sites_response->errorMsg)) {
+            foreach (json_decode($sites_response->resp) as $site) {
+                $sites[$site->domain] = $site->domain;
+            }
+        }
+
+
+        $this->view->set('sites', $sites);
         $this->view->set('service', $service);
         return $this->view->fetch();
     }
@@ -761,22 +771,23 @@ class cwatch extends Module
         }
 
         // Get cWatch sites
-        $sites_response = $api->getSites($service_fields->cwatch_email);
-        $sites = [];
+        $sites_response = $api->getSiteProvisions($service_fields->cwatch_email);
+
+        $site_provisions = [];
         if (empty($sites_response->errorMsg)) {
-            foreach (json_decode($sites_response->resp) as $site) {
-                if (strtolower($site->status) != 'add_site_fail') {
-                    $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
+            foreach (json_decode($sites_response->resp) as $site_provision) {
+                if (strtolower($site_provision->status) != 'add_site_fail') {
+                    $scanner = $api->getScanner($service_fields->cwatch_email, $site_provision->domain);
                     if (empty($scanner->errorMsg)) {
-                        $site->scanner = json_decode($scanner->resp);
+                        $site_provision->scanner = json_decode($scanner->resp);
                     }
 
-                    $license = $api->getLicense($site->licenseKey);
+                    $license = $api->getLicense($site_provision->licenseKey);
                     if (empty($license->errorMsg)) {
-                        $site->license = json_decode($license->resp);
+                        $site_provision->license = json_decode($license->resp);
                     }
 
-                    $sites[] = $site;
+                    $site_provisions[] = $site_provision;
                 }
             }
         }
@@ -792,7 +803,7 @@ class cwatch extends Module
             }
         }
 
-        $this->view->set('sites', $sites);
+        $this->view->set('site_provisions', $site_provisions);
         $this->view->set('licenses', $licenses);
         $this->view->set('service', $service);
 
