@@ -7,6 +7,11 @@ $lang['CWatch.module_row_plural.name'] = 'Credentials';
 $lang['CWatch.!tooltip.initiateDns'] = 'Whether to start a scan of the DNS records.';
 $lang['CWatch.!tooltip.autoSsl'] = 'Whether to install a Comodo Free SSL Certificate.';
 
+$lang['CWatch.!error.cwatch_email.format'] = 'Invalid email format.';
+$lang['CWatch.!error.cwatch_email.unique'] = 'A customer with the given email already exists.';
+$lang['CWatch.!error.cwatch_firstname.empty'] = 'Enter a first name.';
+$lang['CWatch.!error.cwatch_lastname.empty'] = 'Enter a last name.';
+$lang['CWatch.!error.cwatch_country.length'] = 'Invalid county.';
 $lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
 
 // Manage Module Row Meta

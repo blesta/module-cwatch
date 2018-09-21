@@ -191,6 +191,12 @@ class cwatch extends Module
     ) {
         Loader::loadModels($this, ['Clients', 'Services']);
 
+        $this->validateService($package, $vars);
+
+        if ($this->Input->errors()) {
+            return;
+        }
+
         // Get cWatch API
         $api = $this->getApi();
         $errors = [];
@@ -315,6 +321,12 @@ class cwatch extends Module
     public function editService($package, $service, array $vars = [], $parent_package = null, $parent_service = null)
     {
         Loader::loadModels($this, ['Clients', 'Services']);
+
+        $this->validateServiceEdit($package, $vars);
+
+        if ($this->Input->errors()) {
+            return;
+        }
 
         // Get cWatch API
         $api = $this->getApi();
@@ -886,5 +898,106 @@ class cwatch extends Module
         $sandbox = isset($row->meta->cwatch_sandbox) ? $row->meta->cwatch_sandbox : 'true';
 
         return new CwatchApi($username, $password, $sandbox == 'true');
+    }
+
+    /**
+     * Attempts to validate service info. This is the top-level error checking method. Sets Input errors on failure.
+     *
+     * @param stdClass $package A stdClass object representing the selected package
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @return bool True if the service validates, false otherwise. Sets Input errors when false.
+     */
+    public function validateService($package, array $vars = null)
+    {
+        $this->Input->setRules($this->getServiceRules($vars));
+        return $this->Input->validates($vars);
+    }
+
+    /**
+     * Attempts to validate an existing service against a set of service info updates. Sets Input errors on failure.
+     *
+     * @param stdClass $service A stdClass object representing the service to validate for editing
+     * @param array $vars An array of user-supplied info to satisfy the request
+     * @return bool True if the service update validates or false otherwise. Sets Input errors when false.
+     */
+    public function validateServiceEdit($service, array $vars = null)
+    {
+        $this->Input->setRules($this->getServiceRules($vars, true));
+        return $this->Input->validates($vars);
+    }
+
+    /**
+     * Returns the rule set for adding/editing a service
+     *
+     * @param array $vars A list of input vars
+     * @param bool $edit True to get the edit rules, false for the add rules
+     * @return array Service rules
+     */
+    private function getServiceRules(array $vars = null, $edit = false)
+    {
+        $rules = [
+            'cwatch_email' => [
+                'format' => [
+                    'rule' => 'isEmail',
+                    'message' => Language::_('CWatch.!error.cwatch_email.format', true)
+                ],
+                'unique' => [
+                    'rule' => [[$this, 'validateEmail']],
+                    'message' => Language::_('CWatch.!error.cwatch_email.unique', true)
+                ]
+            ],
+            'cwatch_firstname' => [
+                'empty' => [
+                    'if_set' => $edit,
+                    'rule' => 'isEmpty',
+                    'negate' => true,
+                    'message' => Language::_('CWatch.!error.cwatch_firstname.empty', true)
+                ]
+            ],
+            'cwatch_lastname' => [
+                'empty' => [
+                    'if_set' => $edit,
+                    'rule' => 'isEmpty',
+                    'negate' => true,
+                    'message' => Language::_('CWatch.!error.cwatch_lastname.empty', true)
+                ]
+            ],
+            'cwatch_country' => [
+                'length' => [
+                    'if_set' => $edit,
+                    'rule' => ['maxLength', 3],
+                    'message' => Language::_('CWatch.!error.cwatch_country.length', true)
+                ]
+            ]
+        ];
+
+        if ($edit) {
+            unset($rules['cwatch_email']);
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Validates that the given email is unique in cWatch
+     *
+     * @param string $email The email name to validate
+     * @return bool True if the email is valid, false otherwise
+     */
+    public function validateEmail($email)
+    {
+        // Fetch any user matching this email from cWatch
+        $api = $this->getApi();
+        $user_response = $api->getUser($email);
+
+        if (empty($user_response->errorMsg)) {
+            $user = json_decode($user_response->resp);
+
+            if (!empty($user)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
