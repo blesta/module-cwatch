@@ -792,25 +792,37 @@ class cwatch extends Module
             }
         }
 
-        // Get cWatch sites
-        $sites_response = $api->getSiteProvisions($service_fields->cwatch_email);
+        // Get cWatch sites and site provisions
+        $site_list = [];
+        $provisions_response = $api->getSiteProvisions($service_fields->cwatch_email);
+        $sites_response = $api->getSites($service_fields->cwatch_email);
 
-        $site_provisions = [];
         if (empty($sites_response->errorMsg)) {
-            foreach (json_decode($sites_response->resp) as $site_provision) {
-                if (strtolower($site_provision->status) != 'add_site_fail') {
-                    $scanner = $api->getScanner($service_fields->cwatch_email, $site_provision->domain);
-                    if (empty($scanner->errorMsg)) {
-                        $site_provision->scanner = json_decode($scanner->resp);
-                    }
+            $site_list = array_merge($site_list, json_decode($sites_response->resp));
+        }
+        if (empty($provisions_response->errorMsg)) {
+            $site_list = array_merge($site_list, json_decode($provisions_response->resp));
+        }
 
-                    $license = $api->getLicense($site_provision->licenseKey);
-                    if (empty($license->errorMsg)) {
-                        $site_provision->license = json_decode($license->resp);
-                    }
-
-                    $site_provisions[] = $site_provision;
+        $sites = [];
+        foreach ($site_list as $site) {
+            // Add only fully provisioned sites or sites that are being added
+            if ((strtolower($site->status) != 'add_site_fail' && strtolower($site->status) != 'add_site_completed')
+                || !isset($site->siteProvisionId)
+            ) {
+                // Get the malware scanner for this site
+                $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
+                if (empty($scanner->errorMsg)) {
+                    $site->scanner = json_decode($scanner->resp);
                 }
+
+                // Get the license attached to this domain
+                $license = $api->getLicense($site->licenseKey);
+                if (empty($license->errorMsg)) {
+                    $site->license = json_decode($license->resp);
+                }
+
+                $sites[] = $site;
             }
         }
 
@@ -826,7 +838,7 @@ class cwatch extends Module
         }
 
         $this->view->set('site_statuses', $this->getSiteStatuses());
-        $this->view->set('site_provisions', $site_provisions);
+        $this->view->set('sites', $sites);
         $this->view->set('licenses', $licenses);
         $this->view->set('service', $service);
 

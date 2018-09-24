@@ -13,8 +13,8 @@
         <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
     </tr>
     <?php
-    if (!empty($this->Html->ifSet($site_provisions))) {
-        foreach ($site_provisions as $key => $site) {
+    if (!empty($this->Html->ifSet($sites))) {
+        foreach ($sites as $key => $site) {
         ?>
         <tr>
             <td><?php $this->Html->_($site->domain); ?></td>
@@ -23,7 +23,7 @@
             <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
             <td>
                 <?php
-                if ($this->Html->ifSet($site->status) == 'ADD_SITE_COMPLETED') {
+                if ($this->Html->ifSet($site->status) == 'Valid') {
                     $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites/');
                     $this->Form->fieldHidden('domain', $this->Html->ifSet($site->domain));
                     $this->Form->fieldHidden('action', 'remove_domain');
