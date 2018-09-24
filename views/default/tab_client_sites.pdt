@@ -53,10 +53,10 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-		// Handle confirmation on delete action
-		$('#sites a[rel]').blestaModalConfirm({
-			base_url: '<?php echo $this->base_uri;?>',
-			submit: true
-		});
+        // Handle confirmation on delete action
+        $('#sites a[rel]').blestaModalConfirm({
+            base_url: '<?php echo $this->base_uri;?>',
+            submit: true
+        });
     });
 </script>
