@@ -4,7 +4,7 @@
     foreach ($this->Html->ifSet($licenses, []) as $license) {
     ?>
     <tr class="expand">
-        <td><?php echo $this->Html->_($license->productTitle, true) . ' - ' . $this->Html->_($license->licenseKey, true); ?></td>
+        <td><?php echo $this->Html->_($license->productTitle, true) . ' - ' . $this->Html->_($license->licenseKey, true);?></td>
     </tr>
     <tr class="expand_details">
         <td class="subtable">
@@ -13,8 +13,8 @@
                 foreach ($license as $field => $value) {
                 ?>
                 <tr>
-                    <td><?php echo ucfirst($this->Html->_($field, true)); ?></td>
-                    <td><?php $this->Html->_($value); ?></td>
+                    <td><?php echo ucfirst($this->Html->_($field, true));?></td>
+                    <td><?php $this->Html->_($value);?></td>
                 </tr>
                 <?php
                 }

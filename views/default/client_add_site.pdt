@@ -37,4 +37,3 @@ $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($s
 </button>
 <?php
 $this->Form->end();
-?>

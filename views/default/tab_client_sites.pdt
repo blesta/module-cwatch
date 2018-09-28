@@ -1,26 +1,26 @@
 <div class="title_row first">
     <h3>
-        <?php $this->_('CWatch.tab_sites.sites'); ?>
+        <?php $this->_('CWatch.tab_sites.sites');?>
         <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
     </h3>
 </div>
 <table class="table table-bordered" id="sites">
     <tr>
-        <td><?php $this->_('CWatch.tab_sites.name'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.licenseKey'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.status'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.malware_scanner'); ?></td>
-        <td><?php $this->_('CWatch.tab_sites.actions'); ?></td>
+        <td><?php $this->_('CWatch.tab_sites.name');?></td>
+        <td><?php $this->_('CWatch.tab_sites.licenseKey');?></td>
+        <td><?php $this->_('CWatch.tab_sites.status');?></td>
+        <td><?php $this->_('CWatch.tab_sites.malware_scanner');?></td>
+        <td><?php $this->_('CWatch.tab_sites.actions');?></td>
     </tr>
     <?php
-    if (!empty($this->Html->ifSet($sites))) {
+    if (!empty($sites)) {
         foreach ($sites as $key => $site) {
         ?>
         <tr>
-            <td><?php $this->Html->_($site->domain); ?></td>
-            <td><?php $this->Html->_($site->license->productTitle); ?></td>
-            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$site->status], $site->status)); ?></td>
-            <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true); ?></td>
+            <td><?php $this->Html->_($site->domain);?></td>
+            <td><?php $this->Html->_($site->license->productTitle);?></td>
+            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$site->status], $site->status));?></td>
+            <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true);?></td>
             <td>
                 <?php
                 if ($this->Html->ifSet($site->status) == 'Valid') {

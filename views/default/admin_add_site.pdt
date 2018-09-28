@@ -39,4 +39,3 @@ $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet
 </button>
 <?php
 $this->Form->end();
-?>

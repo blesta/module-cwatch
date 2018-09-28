@@ -47,4 +47,3 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
 
 <?php
 $this->Widget->end();
-?>

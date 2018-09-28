@@ -4,7 +4,7 @@ require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cwatch_response.php';
 class CwatchApi
 {
     // API endpoint URL
-    private $API_URL;
+    private $apiUrl;
 
     // API Token for request authentication
     private $token = '';
@@ -19,17 +19,26 @@ class CwatchApi
     public function __construct($username, $password, $sandbox)
     {
         if ($sandbox) {
-            $this->API_URL = 'http://cwatchpartnerportalstaging-env.us-east-1.elasticbeanstalk.com';
+            $this->apiUrl = 'http://cwatchpartnerportalstaging-env.us-east-1.elasticbeanstalk.com';
         } else {
-            $this->API_URL = 'https://partner.cwatch.comodo.com';
+            $this->apiUrl = 'https://partner.cwatch.comodo.com';
         }
 
         $params = json_encode(['username' => $username, 'password' => $password]);
         $response = $this->apiRequest('login', $params, 'POST');
         if ($response) {
-            $auth = $response['headers'];
-            $this->token = $auth;
+            $this->setToken($response['headers']);
         }
+    }
+
+    /**
+     * Sets the API authorization token for all requests run through this API
+     *
+     * @param string $token
+     */
+    public function setToken($token)
+    {
+        $this->token = $token;
     }
 
     /**
@@ -147,9 +156,9 @@ class CwatchApi
     public function removeSite($email, $domain)
     {
         $params = ['domain' => $domain, 'engineSiteId' => ''];
-        $site_response = $this->getSite($email, $domain, '', 'GET');
-        if (empty($site_response->errorMsg)) {
-            $site = json_decode($site_response->resp);
+        $siteResponse = $this->getSite($email, $domain, '', 'GET');
+        if (empty($siteResponse->errorMsg)) {
+            $site = json_decode($siteResponse->resp);
             $params['engineSiteId'] = $site->engineSiteId;
         }
 
@@ -234,9 +243,9 @@ class CwatchApi
     public function getScanner($email, $domain)
     {
         $domainId = '';
-        $site_response = $this->getSite($email, $domain, '', 'GET');
-        if (empty($site_response->errorMsg)) {
-            $site = json_decode($site_response->resp);
+        $siteResponse = $this->getSite($email, $domain, '', 'GET');
+        if (empty($siteResponse->errorMsg)) {
+            $site = json_decode($siteResponse->resp);
             $domainId = $site->engineSiteId;
         }
 
@@ -255,9 +264,9 @@ class CwatchApi
     public function getMalware($email, $domain)
     {
         $domainId = '';
-        $site_response = $this->getSite($email, $domain, '', 'GET');
-        if (empty($site_response->errorMsg)) {
-            $site = json_decode($site_response->resp);
+        $siteResponse = $this->getSite($email, $domain, '', 'GET');
+        if (empty($siteResponse->errorMsg)) {
+            $site = json_decode($siteResponse->resp);
             $domainId = $site->engineSiteId;
         }
 
@@ -281,9 +290,9 @@ class CwatchApi
     public function addScanner($email, $params)
     {
         $domainId = '';
-        $site_response = $this->getSite($email, $params['domain'], '', 'GET');
-        if (empty($site_response->errorMsg)) {
-            $site = json_decode($site_response->resp);
+        $siteResponse = $this->getSite($email, $params['domain'], '', 'GET');
+        if (empty($siteResponse->errorMsg)) {
+            $site = json_decode($siteResponse->resp);
             $domainId = $site->engineSiteId;
         }
 
@@ -302,7 +311,7 @@ class CwatchApi
      */
     private function apiRequest($route, $body, $method)
     {
-        $url = $this->API_URL . '/' . $route;
+        $url = $this->apiUrl . '/' . $route;
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -343,9 +352,9 @@ class CwatchApi
         $authorization = '';
         $data = explode("\n", $result);
         foreach ($data as $part) {
-            $split_part = explode(':', $part);
-            if ($split_part[0] == 'Authorization' && isset($split_part[1])) {
-                $authorization = $split_part[1];
+            $splitPart = explode(':', $part);
+            if ($splitPart[0] == 'Authorization' && isset($splitPart[1])) {
+                $authorization = $splitPart[1];
                 break;
             }
         }

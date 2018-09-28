@@ -7,34 +7,34 @@ $this->Widget->create($this->_('CWatch.manage.boxtitle', true, $this->Html->_($m
 ?>
 
 <div class='title_row first'>
-    <h3><?php $this->_('CWatch.manage.title'); ?></h3>
+    <h3><?php $this->_('CWatch.manage.title');?></h3>
 </div>
 
 <?php
-$num_rows = count($this->Html->ifSet($module->rows));
+$num_rows = count($this->Html->ifSet($module->rows, []));
 
 if ($num_rows > 0) {
 ?>
 <table class='table'>
     <tr class='heading_row'>
-        <td><span><?php $this->_('CWatch.manage.heading_username'); ?></span></td>
-        <td><span><?php $this->_('CWatch.manage.heading_options'); ?></span></td>
+        <td><span><?php $this->_('CWatch.manage.heading_username');?></span></td>
+        <td><span><?php $this->_('CWatch.manage.heading_options');?></span></td>
     </tr>
 
     <?php
     for ($i = 0; $i < $num_rows; $i++) {
     ?>
-    <tr<?php echo ($i % 2 == 1) ? ' class="odd_row"' : ''; ?>>
-        <td><?php $this->Html->_($module->rows[$i]->meta->username); ?> </td>
+    <tr<?php echo ($i % 2 == 1) ? ' class="odd_row"' : '';?>>
+        <td><?php $this->Html->_($module->rows[$i]->meta->username);?></td>
         <td>
-            <a href="<?php echo $this->Html->safe($this->base_uri . 'settings/company/modules/editrow/' . $this->Html->ifSet($module->id) . '/' . $this->Html->ifSet($module->rows[$i]->id) . '/'); ?>"><?php $this->_('CWatch.manage.option_edit'); ?></a>
+            <a href="<?php echo $this->Html->safe($this->base_uri . 'settings/company/modules/editrow/' . $this->Html->ifSet($module->id) . '/' . $this->Html->ifSet($module->rows[$i]->id) . '/');?>"><?php $this->_('CWatch.manage.option_edit');?></a>
 
             <?php
             $this->Form->create($this->base_uri . 'settings/company/modules/deleterow/');
             $this->Form->fieldHidden('id', $this->Html->ifSet($module->id));
             $this->Form->fieldHidden('row_id', $this->Html->ifSet($module->rows[$i]->id));
             ?>
-            <a href="<?php echo $this->Html->safe($this->base_uri . 'settings/company/modules/deleterow/' . $this->Html->ifSet($module->id) . '/' . $this->Html->ifSet($module->rows[$i]->id) . '/'); ?>" class="manage" rel="<?php echo $this->Html->safe($this->_('CWatch.manage.confirm_delete', true)) . $module->rows[$i]->meta->username; ?>"><?php $this->_('CWatch.manage.delete'); ?></a>
+            <a href="<?php echo $this->Html->safe($this->base_uri . 'settings/company/modules/deleterow/' . $this->Html->ifSet($module->id) . '/' . $this->Html->ifSet($module->rows[$i]->id) . '/');?>" class="manage" rel="<?php echo $this->_('CWatch.manage.confirm_delete', true) . $this->Html->_($module->rows[$i]->meta->username, true);?>"><?php $this->_('CWatch.manage.delete');?></a>
             <?php
             $this->Form->end();
             ?>
@@ -49,7 +49,7 @@ if ($num_rows > 0) {
 ?>
 <div class='empty_section'>
     <div class='empty_box'>
-        <?php $this->_('CWatch.manage.no_results'); ?>
+        <?php $this->_('CWatch.manage.no_results');?>
     </div>
 </div>
 <?php
