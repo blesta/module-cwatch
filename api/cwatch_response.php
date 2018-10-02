@@ -2,30 +2,73 @@
 
 class CwatchResponse
 {
-
-    public $code;
-    public $errorMsg;
-    public $resp;
+    private $status;
+    private $raw;
+    private $response;
+    private $errors;
+    private $headers;
 
     /**
      * CwatchResponse constructor.
-     * @param string $msg
+     * @param array $api_response
      */
-    public function __construct($msg)
+    public function __construct($api_response)
     {
-        $response = json_decode($msg);
+        $this->raw = $api_response['content'];
+        $this->headers = $api_response['headers'];
+        $response = json_decode($api_response['content']);
         if (!isset($response->error)) {
             if (empty($response->validationErrors)) {
-                $this->code = 200;
-                $this->resp = $msg;
+                $this->status = 200;
+                $this->response = $response;
             } else {
-                $this->code = 500;
-                $this->errorMsg = $response->validationErrors;
+                $this->status = 500;
+                $this->errors = $response->validationErrors;
             }
         } else {
-            $this->code = $response->status;
-            $this->errorMsg = $response->message;
-            $this->resp = $msg;
+            $this->status = $response->status;
+            $this->errors = $response->message;
+            $this->response = $response;
         }
+    }
+
+    /**
+     * Get the status of this response
+     */
+    public function status()
+    {
+        return $this->status;
+    }
+
+    /**
+     * Get the raw data from this response
+     */
+    public function raw()
+    {
+        return $this->raw;
+    }
+
+    /**
+     * Get the data response from this response
+     */
+    public function response()
+    {
+        return $this->response;
+    }
+
+    /**
+     * Get any errors from this response
+     */
+    public function errors()
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Get the headers returned with this response
+     */
+    public function headers()
+    {
+        return $this->headers;
     }
 }

@@ -9,6 +9,9 @@ class CwatchApi
     // API Token for request authentication
     private $token = '';
 
+    // The data sent with the last request served by this API
+    private $lastRequest = [];
+
     /**
      * CwatchApi constructor.
      *
@@ -24,10 +27,9 @@ class CwatchApi
             $this->apiUrl = 'https://partner.cwatch.comodo.com';
         }
 
-        $params = json_encode(['username' => $username, 'password' => $password]);
-        $response = $this->apiRequest('login', $params, 'POST');
+        $response = $this->apiRequest('login', ['username' => $username, 'password' => $password], 'POST');
         if ($response) {
-            $this->setToken($response['headers']);
+            $this->setToken($response->headers());
         }
     }
 
@@ -52,10 +54,9 @@ class CwatchApi
      */
     public function addUser($email, $firstName, $lastName, $country)
     {
-        $params = json_encode(['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country]);
-        $response = $this->apiRequest('customer/add', $params, 'POST');
+        $params = ['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country];
 
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/add', $params, 'POST');
     }
 
     /**
@@ -66,9 +67,7 @@ class CwatchApi
      */
     public function deleteUser($email)
     {
-        $response = $this->apiRequest('customer/deleteCustomer?email=' . $email, '', 'DELETE');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/deleteCustomer?email=' . $email, [], 'DELETE');
     }
 
     /**
@@ -79,10 +78,7 @@ class CwatchApi
      */
     public function getUser($email)
     {
-        $params = json_encode(['customers' => [$email]]);
-        $response = $this->apiRequest('customer/list', $params, 'POST');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/list', ['customers' => [$email]], 'POST');
     }
 
     /**
@@ -100,7 +96,7 @@ class CwatchApi
      */
     public function addLicense($licenseType, $term, $email, $firstName, $lastName, $country)
     {
-        $array = [
+        $params = [
             'term' => $term,
             'product' => $licenseType,
             'customers' => [['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country]],
@@ -108,10 +104,7 @@ class CwatchApi
             'renewAutomatically' => false
         ];
 
-        $params = json_encode($array);
-        $response = $this->apiRequest('customer/distributeLicenseForCustomers', $params, 'POST');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/distributeLicenseForCustomers', $params, 'POST');
     }
 
     /**
@@ -122,10 +115,7 @@ class CwatchApi
      */
     public function deactivateLicense($licenseKey)
     {
-        $params = json_encode(['licenses' => [$licenseKey]]);
-        $response = $this->apiRequest('customer/deactivatelicense', $params, 'PUT');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/deactivatelicense', ['licenses' => [$licenseKey]], 'PUT');
     }
 
     /**
@@ -139,11 +129,9 @@ class CwatchApi
      *     - autoSsl Whether to install an ssl certificate
      * @return CwatchResponse
      */
-    public function addSite($params)
+    public function addSite(array $params)
     {
-        $response = $this->apiRequest('siteprovision/add', json_encode([$params]), 'POST');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('siteprovision/add', [$params], 'POST');
     }
 
     /**
@@ -156,15 +144,13 @@ class CwatchApi
     public function removeSite($email, $domain)
     {
         $params = ['domain' => $domain, 'engineSiteId' => ''];
-        $siteResponse = $this->getSite($email, $domain, '', 'GET');
-        if (empty($siteResponse->errorMsg)) {
-            $site = json_decode($siteResponse->resp);
+        $siteResponse = $this->getSite($email, $domain);
+        if (empty($siteResponse->errors())) {
+            $site = $siteResponse->response();
             $params['engineSiteId'] = $site->engineSiteId;
         }
 
-        $response = $this->apiRequest('admin/removeDomain', json_encode($params), 'POST');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('admin/removeDomain', $params, 'POST');
     }
 
     /**
@@ -175,9 +161,7 @@ class CwatchApi
      */
     public function getSites($email)
     {
-        $response = $this->apiRequest('customer/site/listByEmail?email=' . $email, '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/site/listByEmail?email=' . $email, [], 'GET');
     }
 
     /**
@@ -189,9 +173,11 @@ class CwatchApi
      */
     public function getSite($email, $domain)
     {
-        $response = $this->apiRequest('customer/site/listBySite?email=' . $email . '&siteName=' . $domain, '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest(
+            'customer/site/listBySite',
+            ['email' => $email, 'siteName' => $domain],
+            'GET'
+        );
     }
 
     /**
@@ -202,9 +188,11 @@ class CwatchApi
      */
     public function getSiteProvisions($email)
     {
-        $response = $this->apiRequest('siteprovision/item/getByCustomer?customerEmail=' . $email, '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest(
+            'siteprovision/item/getByCustomer',
+            ['customerEmail' => $email],
+            'GET'
+        );
     }
 
     /**
@@ -215,9 +203,7 @@ class CwatchApi
      */
     public function getLicense($licenseKey)
     {
-        $response = $this->apiRequest('customer/showLicenceByKey?licenseKey=' . $licenseKey, '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('customer/showLicenceByKey', ['licenseKey' => $licenseKey], 'GET');
     }
 
     /**
@@ -228,9 +214,11 @@ class CwatchApi
      */
     public function getLicenses($email)
     {
-        $response = $this->apiRequest('customer/listlicencebyemail?activeLicenseOnly=true&email=' . $email, '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest(
+            'customer/listlicencebyemail',
+            ['email' => $email, 'activeLicenseOnly' => 'true'],
+            'GET'
+        );
     }
 
     /**
@@ -243,15 +231,13 @@ class CwatchApi
     public function getScanner($email, $domain)
     {
         $domainId = '';
-        $siteResponse = $this->getSite($email, $domain, '', 'GET');
-        if (empty($siteResponse->errorMsg)) {
-            $site = json_decode($siteResponse->resp);
+        $siteResponse = $this->getSite($email, $domain);
+        if (empty($siteResponse->errors())) {
+            $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
 
-        $response = $this->apiRequest('/domain/' . $domainId . '/settings/scanner', '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('/domain/' . $domainId . '/settings/scanner', [], 'GET');
     }
 
     /**
@@ -264,20 +250,23 @@ class CwatchApi
     public function getMalware($email, $domain)
     {
         $domainId = '';
-        $siteResponse = $this->getSite($email, $domain, '', 'GET');
-        if (empty($siteResponse->errorMsg)) {
-            $site = json_decode($siteResponse->resp);
+        $siteResponse = $this->getSite($email, $domain);
+        if (empty($siteResponse->errors())) {
+            $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
 
-        $response = $this->apiRequest('/domain/' . $domainId . '/malwareremoval/?pageSize=25&pageNumber=1', '', 'GET');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest(
+            '/domain/' . $domainId . '/malwareremoval',
+            ['pageSize' => '25', 'pageNumber' => '1'],
+            'GET'
+        );
     }
 
     /**
      * Check a malware scanner for a given damin
      *
+     * @param string $email The customer to add the scanner for
      * @param array $params
      *     - domainname The domain to scan
      *     - login The username for FTP access
@@ -287,55 +276,54 @@ class CwatchApi
      *     - path The path to the web directory for this site
      * @return CwatchResponse
      */
-    public function addScanner($email, $params)
+    public function addScanner($email, array $params)
     {
         $domainId = '';
-        $siteResponse = $this->getSite($email, $params['domain'], '', 'GET');
-        if (empty($siteResponse->errorMsg)) {
-            $site = json_decode($siteResponse->resp);
+        $siteResponse = $this->getSite($email, $params['domain']);
+        if (empty($siteResponse->errors())) {
+            $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
 
-        $response = $this->apiRequest('/domain/' . $domainId . '/settings/scanner/ftp', json_encode($params), 'POST');
-
-        return new CwatchResponse($response['content']);
+        return $this->apiRequest('/domain/' . $domainId . '/settings/scanner/ftp', $params, 'POST');
     }
 
     /**
      * Send an API request to cWatch server
      *
      * @param string $route The path to the API method
-     * @param string $body The data to be sent
+     * @param array $body The data to be sent
      * @param string $method Data transfer method (POST, GET, PUT, DELETE)
      * @return array
      */
-    private function apiRequest($route, $body, $method)
+    private function apiRequest($route, array $body, $method)
     {
         $url = $this->apiUrl . '/' . $route;
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-
         if ($method == 'POST') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
             curl_setopt($ch, CURLOPT_POST, 1);
         }
 
         if ($method == 'PUT') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
         }
 
         if ($method == 'GET') {
+            $url .= empty($body) ? '' : '?' . urldecode(http_build_query($body));
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         }
 
         if ($method == 'DELETE') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         }
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
 
         $headers = [];
         $headers[] = 'Authorization: ' . $this->token;
@@ -343,9 +331,10 @@ class CwatchApi
         $headers[] = 'Content-Type: application/json';
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
+        $this->lastRequest = ['content' => $body, 'headers' => $headers];
         $result = curl_exec($ch);
         if (curl_errno($ch)) {
-            throw new Exception('Curl Error: ' . curl_error($ch));
+            return new CwatchResponse('{"error": "Curl Error", "message": "' . curl_error($ch) . '", "status": 500}');
         }
         curl_close($ch);
 
@@ -360,9 +349,16 @@ class CwatchApi
         }
 
         // Return request response
-        return [
-            'content' => $data[count($data) - 1],
-            'headers' => $authorization
-        ];
+        return new CwatchResponse(['content' => $data[count($data) - 1], 'headers' => $authorization]);
+    }
+
+    /**
+     * Returns the data sent in the last API request
+     *
+     * @return array The data sent in the last API request
+     */
+    public function lastRequest()
+    {
+        return $this->lastRequest;
     }
 }
