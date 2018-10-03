@@ -841,6 +841,7 @@ class Cwatch extends Module
         }
 
         $sites = [];
+        $taken_licenses = [];
         foreach ($site_list as $site) {
             // Add only fully provisioned sites or sites that are being added
             if ((strtolower($site->status) != 'add_site_fail' && strtolower($site->status) != 'add_site_completed')
@@ -859,6 +860,7 @@ class Cwatch extends Module
                     $site->license = $license->response();
                 }
 
+                $taken_licenses[] = $site->licenseKey;
                 $sites[] = $site;
             }
         }
@@ -869,7 +871,10 @@ class Cwatch extends Module
         $licenses = [];
         if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
-                if (strtolower($license->status) == 'valid' && $license->registeredDomainCount == 0) {
+                if (strtolower($license->status) == 'valid'
+                    && $license->registeredDomainCount == 0
+                    && !in_array($license->licenseKey, $taken_licenses)
+                ) {
                     $licenses[$license->licenseKey] = $license->productTitle;
                 }
             }
