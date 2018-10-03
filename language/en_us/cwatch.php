@@ -13,6 +13,7 @@ $lang['CWatch.!error.cwatch_firstname.empty'] = 'Enter a first name.';
 $lang['CWatch.!error.cwatch_lastname.empty'] = 'Enter a last name.';
 $lang['CWatch.!error.cwatch_country.length'] = 'Invalid county.';
 $lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
+$lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
 
 // Manage Module Row Meta
 $lang['CWatch.manage.boxtitle'] = 'Manage CWatch Credentials';

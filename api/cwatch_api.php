@@ -301,26 +301,18 @@ class CwatchApi
         $url = $this->apiUrl . '/' . $route;
         $ch = curl_init();
 
-        if ($method == 'POST') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-            curl_setopt($ch, CURLOPT_POST, 1);
+        switch (strtoupper($method)) {
+            case 'GET':
+                $url .= empty($body) ? '' : '?' . http_build_query($body);
+                break;
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, 1);
+            default:
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+                break;
         }
 
-        if ($method == 'PUT') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-        }
-
-        if ($method == 'GET') {
-            $url .= empty($body) ? '' : '?' . urldecode(http_build_query($body));
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-        }
-
-        if ($method == 'DELETE') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-        }
-
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -334,7 +326,13 @@ class CwatchApi
         $this->lastRequest = ['content' => $body, 'headers' => $headers];
         $result = curl_exec($ch);
         if (curl_errno($ch)) {
-            return new CwatchResponse('{"error": "Curl Error", "message": "' . curl_error($ch) . '", "status": 500}');
+            $error = [
+                'error' => 'Curl Error',
+                'message' => 'An internal error occurred, or the server did not respond to the request.',
+                'status' => 500
+            ];
+
+            return new CwatchResponse(['content' => json_encode($error)]);
         }
         curl_close($ch);
 

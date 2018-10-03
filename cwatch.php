@@ -390,7 +390,8 @@ class Cwatch extends Module
 
                 // Get cWatch licenses
                 $licenses_response = $api->getLicenses($service_fields->cwatch_email);
-                $licenses = empty($licenses_response->errors()) ? $licenses_response->response() : [];
+                $license_errors = $licenses_response->errors();
+                $licenses = empty($license_errors) ? $licenses_response->response() : [];
 
                 // Count how many licenses to add
                 foreach ($licenses as $license) {
@@ -705,23 +706,35 @@ class Cwatch extends Module
                     'protocol' => $post['port'] == '22' ? 'FTPS' : 'FTP'
                 ]
             );
-            $last_request = $api->lastRequest();
-            $last_request['password'] = isset($last_request) ? '***' : '';
-            $this->log('addmalwarescanner', serialize($last_request), 'input', true);
-            $this->log('addmalwarescanner', $scanner->raw(), 'output', empty($scanner->errors()));
 
-            if (!empty($scanner->errors())) {
-                $this->Input->setErrors(['api' => ['internal' => $scanner->errors()]]);
+            // Filter logging content
+            $scanner_errors = $scanner->errors();
+            $last_request = $api->lastRequest();
+            if (isset($last_request['content']['password'])) {
+                $last_request['content']['password'] = '***';
+            }
+
+            $scanner_raw = json_decode($scanner->raw());
+            if (isset($scanner_raw->password)) {
+                $scanner_raw->password = '***';
+            }
+
+            $this->log('addmalwarescanner', serialize($last_request), 'input', true);
+            $this->log('addmalwarescanner', json_encode($scanner_raw), 'output', empty($scanner_errors));
+
+            if (!empty($scanner_errors)) {
+                $this->Input->setErrors(['api' => ['internal' => $scanner_errors]]);
             }
         }
 
         $sites_response = $api->getSites($service_fields->cwatch_email);
+        $sites_errors = $sites_response->errors();
         $sites = ['' => Language::_('AppController.select.please', true)];
         $domains_ftp = [];
-        if (empty($sites_response->errors())) {
+        if (empty($sites_errors)) {
             foreach ($sites_response->response() as $site) {
                 $scanner_response = $api->getScanner($service_fields->cwatch_email, $site->domain);
-                if (empty($scanner_response->errors())) {
+                if (empty($sites_errors)) {
                     $scanner = $scanner_response->response();
                     $domains_ftp[$site->domain] = $scanner->ftp;
                 }
@@ -805,11 +818,11 @@ class Cwatch extends Module
                         'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
                     ]
                 );
-
+                $site_errors = $site->errors();
                 $this->log('addsite', serialize($api->lastRequest()), 'input', true);
-                $this->log('addsite', $site->raw(), 'output', empty($site->errors()));
-                if (!empty($site->errors())) {
-                    $this->Input->setErrors(['api' => ['internal' => $site->errors()]]);
+                $this->log('addsite', $site->raw(), 'output', empty($site_errors));
+                if (!empty($site_errors)) {
+                    $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
                 }
             }
         }
@@ -818,11 +831,12 @@ class Cwatch extends Module
         $site_list = [];
         $provisions_response = $api->getSiteProvisions($service_fields->cwatch_email);
         $sites_response = $api->getSites($service_fields->cwatch_email);
+        $sites_errors = $sites_response->errors();
 
-        if (empty($sites_response->errors())) {
+        if (empty($sites_errors)) {
             $site_list = array_merge($site_list, $sites_response->response());
         }
-        if (empty($provisions_response->errors())) {
+        if (empty($sites_errors)) {
             $site_list = array_merge($site_list, $provisions_response->response());
         }
 
@@ -834,13 +848,14 @@ class Cwatch extends Module
             ) {
                 // Get the malware scanner for this site
                 $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
-                if (empty($scanner->errors())) {
+                $scanner_errors = $scanner->errors();
+                if (empty($scanner_errors)) {
                     $site->scanner = $scanner->response();
                 }
 
                 // Get the license attached to this domain
                 $license = $api->getLicense($site->licenseKey);
-                if (empty($license->errors())) {
+                if (empty($scanner_errors)) {
                     $site->license = $license->response();
                 }
 
@@ -850,8 +865,9 @@ class Cwatch extends Module
 
         // Get cWatch licenses
         $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses_errors = $licenses_response->errors();
         $licenses = [];
-        if (empty($licenses_response->errors())) {
+        if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
                 if (strtolower($license->status) == 'valid' && $license->registeredDomainCount == 0) {
                     $licenses[$license->licenseKey] = $license->productTitle;
@@ -915,8 +931,9 @@ class Cwatch extends Module
 
         // Get cWatch licenses
         $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses_errors = $licenses_response->errors();
         $licenses = [];
-        if (empty($licenses_response->errors())) {
+        if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
                 if (strtolower($license->status) == 'valid') {
                     $licenses[] = $license;
@@ -1015,8 +1032,9 @@ class Cwatch extends Module
                         // Fetch any user matching this email from cWatch
                         $api = $this->getApi();
                         $user_response = $api->getUser($email);
+                        $user_errors = $user_response->errors();
 
-                        if (empty($user_response->errors())) {
+                        if (empty($user_errors)) {
                             $user = $user_response->response();
 
                             if (!empty($user)) {
