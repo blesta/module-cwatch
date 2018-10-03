@@ -33,10 +33,10 @@ your Blesta installation path.
     ```
     BASIC_DETECTION
     PRO
-    PRO_FREE_30D
+    PRO_FREE
     PRO_FREE_60D
     PREMIUM
-    PREMIUM_FREE_30D
+    PREMIUM_FREE
     PREMIUM_FREE_60D
     ```
 
@@ -47,9 +47,9 @@ your Blesta installation path.
     ```
     BASIC_DETECTION - any
     PRO - 1 Month, 12 Months, 24 Month, 36 Months
-    PRO_FREE_30D - 1 Month
+    PRO_FREE - 1 Month
     PRO_FREE_60D - 2 Months
     PREMIUM - 1 Month, 12 Months, 24 Month, 36 Months
-    PREMIUM_FREE_30D - 1 Month
+    PREMIUM_FREE - 1 Month
     PREMIUM_FREE_60D - 2 Months
     ```
