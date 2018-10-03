@@ -145,7 +145,8 @@ class CwatchApi
     {
         $params = ['domain' => $domain, 'engineSiteId' => ''];
         $siteResponse = $this->getSite($email, $domain);
-        if (empty($siteResponse->errors())) {
+        $siteErrors = $siteResponse->errors();
+        if (empty($siteErrors)) {
             $site = $siteResponse->response();
             $params['engineSiteId'] = $site->engineSiteId;
         }
@@ -232,7 +233,8 @@ class CwatchApi
     {
         $domainId = '';
         $siteResponse = $this->getSite($email, $domain);
-        if (empty($siteResponse->errors())) {
+        $siteErrors = $siteResponse->errors();
+        if (empty($siteErrors)) {
             $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
@@ -251,7 +253,8 @@ class CwatchApi
     {
         $domainId = '';
         $siteResponse = $this->getSite($email, $domain);
-        if (empty($siteResponse->errors())) {
+        $siteErrors = $siteResponse->errors();
+        if (empty($siteErrors)) {
             $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
@@ -280,7 +283,8 @@ class CwatchApi
     {
         $domainId = '';
         $siteResponse = $this->getSite($email, $params['domain']);
-        if (empty($siteResponse->errors())) {
+        $siteErrors = $siteResponse->errors();
+        if (empty($siteErrors)) {
             $site = $siteResponse->response();
             $domainId = $site->engineSiteId;
         }
