@@ -1,0 +1,62 @@
+<div class="title_row first">
+    <h3>
+        <?php $this->_('CWatch.tab_sites.sites');?>
+        <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_sites.add');?></a>
+    </h3>
+</div>
+<table class="table table-bordered" id="sites">
+    <tr>
+        <td><?php $this->_('CWatch.tab_sites.name');?></td>
+        <td><?php $this->_('CWatch.tab_sites.licenseKey');?></td>
+        <td><?php $this->_('CWatch.tab_sites.status');?></td>
+        <td><?php $this->_('CWatch.tab_sites.malware_scanner');?></td>
+        <td><?php $this->_('CWatch.tab_sites.actions');?></td>
+    </tr>
+    <?php
+    if (!empty($sites)) {
+        foreach ($sites as $key => $site) {
+        ?>
+        <tr>
+            <td><?php $this->Html->_($site->domain);?></td>
+            <td><?php $this->Html->_($site->license->productTitle);?></td>
+            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$site->status], $site->status));?></td>
+            <td><?php echo $this->Html->ifSet($site->scanner) ? $site->scanner->status : $this->_('CWatch.tab_sites.not_applicable', true);?></td>
+            <td>
+                <?php
+                if ($this->Html->ifSet($site->status) == 'Valid') {
+                    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites/');
+                    $this->Form->fieldHidden('domain', $this->Html->ifSet($site->domain));
+                    $this->Form->fieldHidden('action', 'remove_domain');
+                ?>
+                <a href="<?php echo $this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabSites/';?>" class="manage btn btn-xs btn-default" data-domain="<?php $this->Html->_($site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_sites.confirm_delete', true));?>">
+                    <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_sites.remove_site');?>
+                </a>
+                <?php
+                    $this->Form->end();
+                }
+                ?>
+            </td>
+        </tr>
+        <?php
+        }
+    } else {
+    ?>
+        <tr>
+            <td colspan="5">
+                <?php $this->_('CWatch.tab_sites.no_results');?>
+            </td>
+        </tr>
+    <?php
+    }
+    ?>
+</table>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Handle confirmation on delete action
+        $('#sites a[rel]').blestaModalConfirm({
+            base_url: '<?php echo $this->base_uri;?>',
+            submit: true
+        });
+    });
+</script>

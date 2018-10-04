@@ -24,6 +24,32 @@ your Blesta installation path.
 3. Log in to your admin Blesta account and navigate to
 > Settings > Modules
 
-4. Find the cWatch module and click the "Install" button to install it
+4. Find the cWatch module, click the "Install", and enter your cWatch username and password
 
-5. You're done!
+## When creating a package
+
+1. Add quantity configurable options for each license type you wish to offer.  Available products include:
+
+    ```
+    BASIC_DETECTION
+    PRO
+    PRO_FREE
+    PRO_FREE_60D
+    PREMIUM
+    PREMIUM_FREE
+    PREMIUM_FREE_60D
+    ```
+
+2. The 'Name' of your configurable option must match the product exactly as shown here (case-sensitive).
+
+3. The licenses are only available for the following payment terms:
+
+    ```
+    BASIC_DETECTION - any
+    PRO - 1 Month, 12 Months, 24 Month, 36 Months
+    PRO_FREE - 1 Month
+    PRO_FREE_60D - 2 Months
+    PREMIUM - 1 Month, 12 Months, 24 Month, 36 Months
+    PREMIUM_FREE - 1 Month
+    PREMIUM_FREE_60D - 2 Months
+    ```

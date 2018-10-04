@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "name": "CWatch.name",
     "description": "",
     "authors": [
@@ -9,7 +9,7 @@
         }
     ],
     "service": {
-        "name_key": "cwatch_license"
+        "name_key": "cwatch_email"
     },
     "module": {
         "row": "CWatch.module_row.name",

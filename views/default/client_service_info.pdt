@@ -1,14 +1,28 @@
-<div class='title_row first'>
-    <h3><?php $this->_('CWatch.service.info'); ?></h3>
-</div>
-
-<table class='table'>
-    <?php 
-        foreach($package as $key=>$pack){
+<table class="table table-striped-alt table-hover">
+    <?php
+    $i = 0;
+    foreach ($this->Html->ifSet($licenses, []) as $license) {
     ?>
-    <tr>
-        <td><?php echo ucfirst($key); ?></td>
-        <td><?php echo $pack;  ?></td>
+    <tr class="expand">
+        <td><?php echo $this->Html->_($license->productTitle, true) . ' - ' . $this->Html->_($license->licenseKey, true);?></td>
     </tr>
-    <?php } ?>
-</table>    
+    <tr class="expand_details">
+        <td class="subtable">
+            <table class="table">
+                <?php
+                foreach ($license as $field => $value) {
+                ?>
+                <tr>
+                    <td><?php echo ucfirst($this->Html->_($field, true));?></td>
+                    <td><?php $this->Html->_($value);?></td>
+                </tr>
+                <?php
+                }
+                ?>
+            </table>
+        </td>
+    </tr>
+    <?php
+    }
+    ?>
+</table>
