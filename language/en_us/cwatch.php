@@ -49,6 +49,9 @@ $lang['CWatch.edit_row.field_password'] = 'Password';
 $lang['CWatch.edit_row.field_sandbox'] = 'Enable SandBox';
 $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 
+// Service info
+$lang['CWatch.service_info.option_login'] = 'Log in to cWatch';
+
 // Tab sites
 $lang['CWatch.tab_sites.sites'] = 'Manage Sites';
 $lang['CWatch.tab_sites.add'] = 'Add New Site';

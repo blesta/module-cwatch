@@ -949,6 +949,21 @@ class Cwatch extends Module
         $this->view->set('licenses', $licenses);
         $this->log('viewinfo', serialize($licenses), 'output', true);
 
+        $login_url = 'http://cww-customerportal-stackpath-takeover.us-east-1.elasticbeanstalk.com/';
+        $user_response = $api->getUser($service_fields->cwatch_email);
+        $users = $user_response->response();
+        $user_errors = $user_response->errors();
+        if (empty($user_errors) && isset($users[0])) {
+            $login_response = $api->getLogin($users[0]->camId, $service_fields->cwatch_email);
+            $login_errors = $login_response->errors();
+            if (empty($login_errors)) {
+                $login = $login_response->response();
+                $login_url = $login->loginUrl;
+            }
+        }
+        $this->view->set('login_url', $login_url);
+        $this->view->set('service_fields', $service_fields);
+
         return $this->view->fetch();
     }
 
