@@ -4,6 +4,8 @@ $lang['CWatch.name'] = 'CWatch';
 $lang['CWatch.module_row.name'] = 'Credential';
 $lang['CWatch.module_row_plural.name'] = 'Credentials';
 
+$lang['CWatch.!success.sftp_test'] = 'SFTP connection was successful!';
+
 $lang['CWatch.!tooltip.initiateDns'] = 'Whether to start a scan of the DNS records.';
 $lang['CWatch.!tooltip.autoSsl'] = 'Whether to install a Comodo Free SSL Certificate.';
 
@@ -14,6 +16,7 @@ $lang['CWatch.!error.cwatch_lastname.empty'] = 'Enter a last name.';
 $lang['CWatch.!error.cwatch_country.length'] = 'Invalid county.';
 $lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
 $lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
+$lang['CWatch.!error.sftp_test'] = 'The SFTP connection failed! Please check your settings and try again.';
 
 // Manage Module Row Meta
 $lang['CWatch.manage.boxtitle'] = 'Manage CWatch Credentials';
@@ -71,6 +74,7 @@ $lang['CWatch.tab_sites.submit'] = 'Submit';
 // Tab malware
 $lang['CWatch.tab_malware.malware'] = 'Malware Control';
 $lang['CWatch.tab_malware.add_scanner'] = 'Add Scanner';
+$lang['CWatch.tab_malware.test_credentials'] = 'Test These Credentials';
 $lang['CWatch.tab_malware.domainname'] = 'Domain Name';
 $lang['CWatch.tab_malware.ftppassword'] = 'FTP Password';
 $lang['CWatch.tab_malware.ftpusername'] = 'FTP Username';
