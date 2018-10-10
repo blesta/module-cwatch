@@ -1,0 +1,69 @@
+<div class="title_row first">
+    <h3>
+        <?php $this->_('CWatch.tab_licenses.licenses');?>
+        <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site';?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_licenses.add');?></a>
+    </h3>
+</div>
+<table class="table table-bordered" id="licenses">
+    <tr class="heading_row">
+        <td><?php $this->_('CWatch.tab_licenses.licenseKey');?></td>
+        <td><?php $this->_('CWatch.tab_licenses.type');?></td>
+        <td><?php $this->_('CWatch.tab_licenses.domain');?></td>
+        <td><?php $this->_('CWatch.tab_licenses.status');?></td>
+        <td><?php $this->_('CWatch.tab_licenses.malware_scanner');?></td>
+        <td><?php $this->_('CWatch.tab_licenses.actions');?></td>
+    </tr>
+    <?php
+    if (!empty($licenses)) {
+        foreach ($licenses as $key => $license) {
+        ?>
+        <tr>
+            <td><?php $this->Html->_($license->licenseKey);?></td>
+            <td><?php $this->Html->_($license->productTitle);?></td>
+            <td><?php $this->Html->_($license->site->domain);?></td>
+            <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], $this->Html->ifSet($license->site->status)));?></td>
+            <td><?php echo $this->Html->ifSet($license->site->scanner) ? $license->site->scanner->status : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
+            <td>
+                <?php
+                if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                ?>
+                <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/';?>" class="manage" data-domain="<?php $this->Html->_($license->site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>"><?php $this->_('CWatch.tab_licenses.remove_site');?></a>
+                <?php
+                } else {
+                ?>
+                <a href="<?php echo $this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey);?>" ><?php $this->_('CWatch.tab_licenses.add_site');?></a>
+                <?php
+                }
+                ?>
+            </td>
+        </tr>
+        <?php
+        }
+    } else {
+    ?>
+        <tr>
+            <td colspan="5">
+                <?php $this->_('CWatch.tab_licenses.no_results');?>
+            </td>
+        </tr>
+    <?php
+    }
+    $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/', ['id' => 'remove_site']);
+    $this->Form->fieldHidden('domain', '', ['id' => 'remove_domain']);
+    $this->Form->fieldHidden('action', 'remove_domain');
+    $this->Form->end();
+    ?>
+</table>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Handle confirmation
+        $('#licenses a.manage[rel]').click(function() {
+            var domain = $(this).attr('data-domain');
+            $('#remove_domain').val(domain);
+        });
+        $('#licenses a.manage[rel]').each(function() {
+            $(this).blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', close: '<?php $this->_('AppController.modal.text_close');?>', submit: true, form: $('#remove_site')});
+        });
+    });
+</script>
