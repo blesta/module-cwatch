@@ -688,12 +688,35 @@ class Cwatch extends Module
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
+        Loader::loadComponents($this, ['Security']);
 
         // Get cWatch API
         $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
 
-        if (!empty($post)) {
+        if (isset($post['test_ftp'])) {
+            $error_message = Language::_('CWatch.!error.sftp_test', true);
+
+            try {
+                $this->Net_SFTP = $this->Security->create(
+                    'Net',
+                    'SFTP',
+                    [$post['host'], $post['port']]
+                );
+
+                // Attempt to login to test the connection and navigate to the given path. Show success or error
+                if ($this->Net_SFTP->login($post['username'], $post['password']) &&
+                    $this->Net_SFTP->chdir($post['path'])) {
+                    echo $this->setMessage('message', Language::_('CWatch.!success.sftp_test', true));
+                } else {
+                    echo $this->setMessage('error', $error_message);
+                }
+            } catch (Exception $e) {
+                $this->setMessage('error', $error_message);
+            }
+
+            $this->view->set('vars', $post);
+        } elseif (!empty($post)) {
             $scanner = $api->addScanner(
                 $service_fields->cwatch_email,
                 [
