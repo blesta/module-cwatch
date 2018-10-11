@@ -260,6 +260,7 @@ class Cwatch extends Module
                                 break 2;
                             }
 
+                            // Record which licenses are associated with this service
                             $license = $license_response->response();
                             $license_keys[] = $license->distributionResults[0]->licenseKeys;
                         }
@@ -270,10 +271,25 @@ class Cwatch extends Module
             }
         }
 
+        $module = $this->getModule();
+        $account_emails_meta = $this->ModuleClientMeta->get(
+            isset($vars['client_id']) ? $vars['client_id'] : 0,
+            'cwatch_account_emails',
+            $module->id
+        );
         if (!empty($errors)) {
-            // Delete the user if something went wrong
-            if (isset($vars['cwatch_email'])) {
+            // Error
+            if (isset($vars['cwatch_email'])
+                && array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
+                && $account_emails_meta->value[$vars['cwatch_email']] == 0
+            ) {
+                // Delete the user if this is the only service using this email
                 $this->deleteUser($vars['cwatch_email']);
+            } else {
+                // Deactivate any licenses that were added
+                foreach ($license_keys as $license_key) {
+                    $license_response = $api->deactivateLicense($license_key);
+                }
             }
 
             // Set errors and return
@@ -281,17 +297,13 @@ class Cwatch extends Module
             return;
         } else {
             // Success
-            $module = $this->getModule();
-
             // Record this email for this user so they can use the same email for future services
-            $account_emails = [$vars['cwatch_email']];
-            $account_emails_meta = $this->ModuleClientMeta->get(
-                $vars['client_id'],
-                'cwatch_account_emails',
-                $module->id
-            );
-
+            $account_emails = [$vars['cwatch_email'] => 1];
             if ($account_emails_meta) {
+                if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
+                    $account_emails_meta->value[$vars['cwatch_email']]++;
+                }
+
                 $account_emails = array_merge($account_emails, $account_emails_meta->value);
             }
 
@@ -429,7 +441,9 @@ class Cwatch extends Module
 
                 // Count how many licenses to add
                 foreach ($licenses as $license) {
-                    if (strtolower($license->status) == 'valid') {
+                    if (strtolower($license->status) == 'valid'
+                        && in_array($license->licenseKey, $service_fields->cwatch_licenses)
+                    ) {
                         $license_types[$license->pricingTerm]--;
                     }
 
@@ -474,6 +488,8 @@ class Cwatch extends Module
                             break 2;
                         }
 
+                        // Keep track of which licenses were created by this edit so they can be reverted or added to
+                        // the list of keys for this service
                         $license = $license_response->response();
                         $new_license_keys[] = $license->distributionResult[0]->licenseKeys[0];
                     }
@@ -519,9 +535,41 @@ class Cwatch extends Module
      */
     public function cancelService($package, $service, $parent_package = null, $parent_service = null)
     {
+        // Get cWatch API
+        $api = $this->getApi();
+        $module = $this->getModule();
+
+        $account_emails_meta = $this->ModuleClientMeta->get($service->client_id, 'cwatch_account_emails', $module->id);
         $service_fields = $this->serviceFieldsToObject($service->fields);
-        // Delete user
-        $this->deleteUser($service_fields->cwatch_email);
+        if ($account_emails_meta
+            && array_key_exists($service_fields->cwatch_email, $account_emails_meta->value)
+         ) {
+            // Only delete if there are no other services using this email
+            if (--$account_emails_meta->value[$service_fields->cwatch_email] == 0) {
+                // Delete user
+                $this->deleteUser($service_fields->cwatch_email);
+            } else {
+                foreach ($service_fields->cwatch_licenses as $license_key) {
+                    $license_response = $api->deactivateLicense($license_key);
+
+                    if ($license_response->status() != 200) {
+                        $errors['api'][$license->licenseKey] = $license_response->errors();
+                    }
+                }
+
+                // Set Errors
+                if (!empty($errors['api'])) {
+                    $this->Input->setErrors($errors);
+                }
+            }
+
+            $this->ModuleClientMeta->set(
+                $service->client_id,
+                $module->id,
+                0,
+                [['key' => 'cwatch_account_emails', 'value' => $account_emails_meta->value, 'encrypted' => 0]]
+            );
+        }
     }
 
     /**
@@ -551,6 +599,9 @@ class Cwatch extends Module
 
             // Remove user
             $response = $api->deleteUser($email);
+            if ($response->status() != 200) {
+                $errors['api'][$email] = $response->errors();
+            }
 
             $this->log('deleteuser', serialize($api->lastRequest()), 'input', true);
             $this->log('deleteuser', $response->raw(), 'output', $response->status() == 200);
@@ -974,7 +1025,9 @@ class Cwatch extends Module
         $licenses = [];
         if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
-                if (strtolower($license->status) == 'valid') {
+                if (strtolower($license->status) == 'valid'
+                    && in_array($license->licenseKey, $service_fields->cwatch_licenses)
+                ) {
                     $licenses[] = $license;
                 }
             }
@@ -1077,7 +1130,10 @@ class Cwatch extends Module
                             $module->id
                         );
 
-                        if ($account_emails && in_array($email, $account_emails->value)) {
+                        if ($account_emails
+                            && array_key_exists($email, $account_emails->value)
+                            && $account_emails->value[$email] > 0
+                        ) {
                             return true;
                         }
 
