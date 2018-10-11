@@ -1,7 +1,7 @@
 <table class="table table-striped-alt table-hover">
     <tr>
         <td>
-            <a href="<?php $this->Html->_($login_url);?>"><?php $this->_('CWatch.service_info.option_login');?></a>
+            <a traget="_blank" href="<?php $this->Html->_($login_url);?>"><?php $this->_('CWatch.service_info.option_login');?></a>
         </td>
     </tr>
     <?php

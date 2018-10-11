@@ -787,6 +787,7 @@ class Cwatch extends Module
      * @param string $template The name of the template to use
      * @param stdClass $service A stdClass object representing the current service
      * @param array $post Any POST parameters
+     * @param array $get Any GET parameters
      * @return string The string representing the contents of this tab
      */
     private function getLicensesTab($template, $service, $post, $get)
@@ -804,12 +805,9 @@ class Cwatch extends Module
         $api = $this->getApi();
 
         if (!empty($post)) {
-            if (isset($post['action']) && $post['action'] == 'remove_domain') {
+            $remove_site = isset($post['action']) && $post['action'] == 'remove_domain';
+            if ($remove_site) {
                 $site = $api->removeSite($service_fields->cwatch_email, $post['domain']);
-
-                ##
-                # TODO: Add error message if this does not work
-                ##
             } else {
                 $site = $api->addSite(
                     [
@@ -820,12 +818,13 @@ class Cwatch extends Module
                         'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
                     ]
                 );
-                $site_errors = $site->errors();
-                $this->log('addsite', serialize($api->lastRequest()), 'input', true);
-                $this->log('addsite', $site->raw(), 'output', empty($site_errors));
-                if (!empty($site_errors)) {
-                    $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
-                }
+            }
+
+            $site_errors = $site->errors();
+            $this->log($remove_site ? 'removesite' : 'addsite', serialize($api->lastRequest()), 'input', true);
+            $this->log($remove_site ? 'removesite' : 'addsite', $site->raw(), 'output', empty($site_errors));
+            if (!empty($site_errors)) {
+                $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
             }
         }
 
@@ -958,7 +957,7 @@ class Cwatch extends Module
         $this->view->set('licenses', $licenses);
         $this->log('viewinfo', serialize($licenses), 'output', true);
 
-        $login_url = 'http://cww-customerportal-stackpath-takeover.us-east-1.elasticbeanstalk.com/';
+        $login_url = 'https://partner.cwatch.comodo.com';
         $user_response = $api->getUser($service_fields->cwatch_email);
         $users = $user_response->response();
         $user_errors = $user_response->errors();
@@ -971,7 +970,6 @@ class Cwatch extends Module
             }
         }
         $this->view->set('login_url', $login_url);
-        $this->view->set('service_fields', $service_fields);
 
         return $this->view->fetch();
     }
