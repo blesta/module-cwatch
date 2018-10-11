@@ -82,6 +82,18 @@ class CwatchApi
     }
 
     /**
+     * Fetch customer info from cWatch
+     *
+     * @param int $camID The cWatch customer cam ID
+     * @param string $email The email by which to identify the customer and use for login
+     * @return CwatchResponse
+     */
+    public function getLogin($camID, $email)
+    {
+        return $this->apiRequest('admin/loginAsUrl', ['customerCamId' => $camID, 'customerEmail' => $email], 'GET');
+    }
+
+    /**
      * Create a license of the given type for the given user
      *
      * @param string $licenseType The type of license to create ("BASIC_DETECTION", "PRO", "PRO_FREE",
