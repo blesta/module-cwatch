@@ -949,7 +949,7 @@ class Cwatch extends Module
         $this->view->set('licenses', $licenses);
         $this->log('viewinfo', serialize($licenses), 'output', true);
 
-        $login_url = 'http://cww-customerportal-stackpath-takeover.us-east-1.elasticbeanstalk.com/';
+        $login_url = 'https://partner.cwatch.comodo.com';
         $user_response = $api->getUser($service_fields->cwatch_email);
         $users = $user_response->response();
         $user_errors = $user_response->errors();
@@ -962,7 +962,6 @@ class Cwatch extends Module
             }
         }
         $this->view->set('login_url', $login_url);
-        $this->view->set('service_fields', $service_fields);
 
         return $this->view->fetch();
     }
