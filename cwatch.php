@@ -262,7 +262,7 @@ class Cwatch extends Module
 
                             // Record which licenses are associated with this service
                             $license = $license_response->response();
-                            $license_keys[] = $license->distributionResults[0]->licenseKeys;
+                            $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
                         }
                     }
                 }
@@ -280,8 +280,10 @@ class Cwatch extends Module
         if (!empty($errors)) {
             // Error
             if (isset($vars['cwatch_email'])
-                && array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
-                && $account_emails_meta->value[$vars['cwatch_email']] == 0
+                && !$account_emails_meta
+                || (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
+                    && $account_emails_meta->value[$vars['cwatch_email']] == 0
+                )
             ) {
                 // Delete the user if this is the only service using this email
                 $this->deleteUser($vars['cwatch_email']);
@@ -535,6 +537,7 @@ class Cwatch extends Module
      */
     public function cancelService($package, $service, $parent_package = null, $parent_service = null)
     {
+        Loader::loadModels($this, ['ModuleClientMeta']);
         // Get cWatch API
         $api = $this->getApi();
         $module = $this->getModule();
