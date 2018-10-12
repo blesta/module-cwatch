@@ -11,8 +11,8 @@
  */
 class Cwatch extends Module
 {
-    private const $basic_product = 'BASIC_DETECTION';
-    private const $basic_term = 'UNLIMITED';
+    const BASICPRODUCT = 'BASIC_DETECTION';
+    const BASICTERM = 'UNLIMITED';
 
     /**
      * Initialize the Module.
@@ -389,7 +389,7 @@ class Cwatch extends Module
                 for ($i = 0; $i < $quantity; $i++) {
                     $license_response = $api->addLicense(
                         $license_type,
-                        $license_type == $basic_product ? $basic_term : $license_term,
+                        $license_type == self::BASICPRODUCT ? self::BASICTERM : $license_term,
                         $vars['cwatch_email'],
                         $vars['cwatch_firstname'],
                         $vars['cwatch_lastname'],
