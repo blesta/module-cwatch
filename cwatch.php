@@ -908,6 +908,7 @@ class Cwatch extends Module
         Loader::loadHelpers($this, ['Form', 'Html']);
 
         $service_fields = $this->serviceFieldsToObject($service->fields);
+        $service_licenses = $service_fields->cwatch_licenses;
 
         // Get cWatch API
         $api = $this->getApi();
@@ -947,7 +948,9 @@ class Cwatch extends Module
         // Sort provisions by license
         $provisions_by_license = [];
         foreach ($site_provisions as $site_provision) {
-            if (strtolower($site_provision->status) != 'add_site_fail') {
+            if (strtolower($site_provision->status) != 'add_site_fail'
+                && in_array($site_provision->licenseKey, $service_licenses)
+            ) {
                 $provisions_by_license[$site_provision->licenseKey] = $site_provision;
             }
         }
@@ -963,6 +966,10 @@ class Cwatch extends Module
         // Sort sites by license
         $sites_by_license = [];
         foreach ($sites as $site) {
+            if (!in_array($site->licenseKey, $service_licenses)) {
+                continue;
+            }
+
             // Get the malware scanner for this site
             $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
             $scanner_errors = $scanner->errors();
@@ -980,6 +987,10 @@ class Cwatch extends Module
         $available_licenses = [];
         if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
+                if (!in_array($license->licenseKey, $service_licenses)) {
+                    continue;
+                }
+
                 if (isset($sites_by_license[$license->licenseKey])) {
                     // Use the associated site for domain info
                     $license->site = $sites_by_license[$license->licenseKey];
