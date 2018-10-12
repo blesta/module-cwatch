@@ -11,6 +11,8 @@
  */
 class Cwatch extends Module
 {
+    private const $basic_product = 'BASIC_DETECTION';
+    private const $basic_term = 'UNLIMITED';
 
     /**
      * Initialize the Module.
@@ -199,13 +201,17 @@ class Cwatch extends Module
 
         // Get a list of which email accounts are associated with this client
         $module = $this->getModule();
-        $account_emails_meta = $this->ModuleClientMeta->get(
-            isset($vars['client_id']) ? $vars['client_id'] : 0,
-            'cwatch_account_emails',
-            $module->id
-        );
+        $account_emails_meta = null;
+        if (isset($vars['client_id'])) {
+            $account_emails_meta = $this->ModuleClientMeta->get(
+                $vars['client_id'],
+                'cwatch_account_emails',
+                $module->id
+            );
+        }
 
         $license_keys = [];
+        $vars['cwatch_email'] = isset($vars['cwatch_email']) ? strtolower($vars['cwatch_email']) : null;
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Add user and licenses
             $license_keys = $this->pushUserAndLicenses($vars);
@@ -213,7 +219,7 @@ class Cwatch extends Module
             if ($this->Input->errors()) {
                 // Error
                 // Delete the user if this is the only service using this email
-                if (isset($vars['cwatch_email'])
+                if ($vars['cwatch_email']
                     && !$account_emails_meta
                     || (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
                         && $account_emails_meta->value[$vars['cwatch_email']] == 0
@@ -226,22 +232,24 @@ class Cwatch extends Module
             }
         }
 
-        // Record this email for this user so they can use the same email for future services
-        $account_emails = [$vars['cwatch_email'] => 1];
-        if ($account_emails_meta) {
-            if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
-                $account_emails_meta->value[$vars['cwatch_email']]++;
+        if ($vars['cwatch_email']) {
+            // Record this email for this user so they can use the same email for future services
+            $account_emails = [$vars['cwatch_email'] => 1];
+            if ($account_emails_meta) {
+                if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
+                    $account_emails_meta->value[$vars['cwatch_email']]++;
+                }
+
+                $account_emails = array_merge($account_emails, $account_emails_meta->value);
             }
 
-            $account_emails = array_merge($account_emails, $account_emails_meta->value);
+            $this->ModuleClientMeta->set(
+                $vars['client_id'],
+                $module->id,
+                0,
+                [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
+            );
         }
-
-        $this->ModuleClientMeta->set(
-            $vars['client_id'],
-            $module->id,
-            0,
-            [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
-        );
 
         $return = [['key' => 'cwatch_licenses', 'value' => $license_keys, 'encrypted' => 0]];
         $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
@@ -284,6 +292,7 @@ class Cwatch extends Module
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
         }
+        $vars['cwatch_email'] = strtolower($vars['cwatch_email']);
 
         $new_license_keys = [];
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
@@ -316,7 +325,7 @@ class Cwatch extends Module
      * @param array $vars An array of user supplied info to satisfy the request
      * @return array A list of licenses keys added
      */
-    public function pushUserAndLicenses($vars, array $service_licenses = null)
+    private function pushUserAndLicenses($vars, array $service_licenses = null)
     {
         Loader::loadModels($this, ['Services']);
 
@@ -380,7 +389,7 @@ class Cwatch extends Module
                 for ($i = 0; $i < $quantity; $i++) {
                     $license_response = $api->addLicense(
                         $license_type,
-                        $license_type == 'BASIC_DETECTION' ? 'UNLIMITED' : $license_term,
+                        $license_type == $basic_product ? $basic_term : $license_term,
                         $vars['cwatch_email'],
                         $vars['cwatch_firstname'],
                         $vars['cwatch_lastname'],
