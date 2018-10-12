@@ -708,7 +708,7 @@ class Cwatch extends Module
     public function getClientTabs($package)
     {
         return [
-            'tabClientSites' => Language::_('CWatch.tab_sites.sites', true),
+            'tabClientLicenses' => Language::_('CWatch.tab_licenses.licenses', true),
             'tabClientMalware' => Language::_('CWatch.tab_malware.malware', true)
         ];
     }
@@ -724,7 +724,7 @@ class Cwatch extends Module
     public function getAdminTabs($package)
     {
         return [
-            'tabSites' => Language::_('CWatch.tab_sites.sites', true),
+            'tabLicenses' => Language::_('CWatch.tab_licenses.licenses', true),
             'tabMalware' => Language::_('CWatch.tab_malware.malware', true)
         ];
     }
@@ -774,12 +774,35 @@ class Cwatch extends Module
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
+        Loader::loadComponents($this, ['Security']);
 
         // Get cWatch API
         $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
 
-        if (!empty($post)) {
+        if (isset($post['test_ftp'])) {
+            $error_message = Language::_('CWatch.!error.sftp_test', true);
+
+            try {
+                $this->Net_SFTP = $this->Security->create(
+                    'Net',
+                    'SFTP',
+                    [$post['host'], $post['port']]
+                );
+
+                // Attempt to login to test the connection and navigate to the given path. Show success or error
+                if ($this->Net_SFTP->login($post['username'], $post['password']) &&
+                    $this->Net_SFTP->chdir($post['path'])) {
+                    echo $this->setMessage('message', Language::_('CWatch.!success.sftp_test', true));
+                } else {
+                    echo $this->setMessage('error', $error_message);
+                }
+            } catch (Exception $e) {
+                $this->setMessage('error', $error_message);
+            }
+
+            $this->view->set('vars', $post);
+        } elseif (!empty($post)) {
             $scanner = $api->addScanner(
                 $service_fields->cwatch_email,
                 [
@@ -836,7 +859,7 @@ class Cwatch extends Module
     }
 
     /**
-     * Manage customer sites
+     * Manage customer licenses
      *
      * @param stdClass $package A stdClass object representing the current package
      * @param stdClass $service A stdClass object representing the current service
@@ -845,14 +868,14 @@ class Cwatch extends Module
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientSites($package, $service, array $get = null, array $post = null, array $files = null)
+    public function tabClientLicenses($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_sites';
-        return $this->getSitesTab($template, $service, $post);
+        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_licenses';
+        return $this->getLicensesTab($template, $service, $post, $get);
     }
 
     /**
-     * Manage customer sites
+     * Manage customer licenses
      *
      * @param stdClass $package A stdClass object representing the current package
      * @param stdClass $service A stdClass object representing the current service
@@ -861,21 +884,22 @@ class Cwatch extends Module
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabSites($package, $service, array $get = null, array $post = null, array $files = null)
+    public function tabLicenses($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_sites';
-        return $this->getSitesTab($template, $service, $post);
+        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_licenses';
+        return $this->getLicensesTab($template, $service, $post, $get);
     }
 
     /**
-     * Manage customer sites
+     * Manage customer licenses
      *
      * @param string $template The name of the template to use
      * @param stdClass $service A stdClass object representing the current service
      * @param array $post Any POST parameters
+     * @param array $get Any GET parameters
      * @return string The string representing the contents of this tab
      */
-    private function getSitesTab($template, $service, $post)
+    private function getLicensesTab($template, $service, $post, $get)
     {
         // Load view
         $this->view = $this->getView($template);
@@ -889,10 +913,9 @@ class Cwatch extends Module
         $api = $this->getApi();
 
         if (!empty($post)) {
-            if (isset($post['action']) && $post['action'] == 'remove_domain') {
+            $remove_site = isset($post['action']) && $post['action'] == 'remove_domain';
+            if ($remove_site) {
                 $site = $api->removeSite($service_fields->cwatch_email, $post['domain']);
-
-                // Error message if this does not work
             } else {
                 $site = $api->addSite(
                     [
@@ -903,72 +926,80 @@ class Cwatch extends Module
                         'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
                     ]
                 );
-                $site_errors = $site->errors();
-                $this->log('addsite', serialize($api->lastRequest()), 'input', true);
-                $this->log('addsite', $site->raw(), 'output', empty($site_errors));
-                if (!empty($site_errors)) {
-                    $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
-                }
+            }
+
+            $site_errors = $site->errors();
+            $this->log($remove_site ? 'removesite' : 'addsite', serialize($api->lastRequest()), 'input', true);
+            $this->log($remove_site ? 'removesite' : 'addsite', $site->raw(), 'output', empty($site_errors));
+            if (!empty($site_errors)) {
+                $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
             }
         }
 
-        // Get cWatch sites and site provisions
-        $site_list = [];
+        // Get cWatch site provisions
+        $site_provisions = [];
         $provisions_response = $api->getSiteProvisions($service_fields->cwatch_email);
+        $provisions_errors = $provisions_response->errors();
+        if (empty($provisions_errors)) {
+            $site_provisions = $provisions_response->response();
+        }
+
+        // Sort provisions by license
+        $provisions_by_license = [];
+        foreach ($site_provisions as $site_provision) {
+            if (strtolower($site_provision->status) != 'add_site_fail') {
+                $provisions_by_license[$site_provision->licenseKey] = $site_provision;
+            }
+        }
+
+        // Get cWatch sites
+        $sites = [];
         $sites_response = $api->getSites($service_fields->cwatch_email);
         $sites_errors = $sites_response->errors();
-
         if (empty($sites_errors)) {
-            $site_list = array_merge($site_list, $sites_response->response());
-        }
-        if (empty($sites_errors)) {
-            $site_list = array_merge($site_list, $provisions_response->response());
+            $sites = $sites_response->response();
         }
 
-        $sites = [];
-        $taken_licenses = [];
-        foreach ($site_list as $site) {
-            // Add only fully provisioned sites or sites that are being added
-            if ((strtolower($site->status) != 'add_site_fail' && strtolower($site->status) != 'add_site_completed')
-                || !isset($site->siteProvisionId)
-            ) {
-                // Get the malware scanner for this site
-                $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
-                $scanner_errors = $scanner->errors();
-                if (empty($scanner_errors)) {
-                    $site->scanner = $scanner->response();
-                }
-
-                // Get the license attached to this domain
-                $license = $api->getLicense($site->licenseKey);
-                if (empty($scanner_errors)) {
-                    $site->license = $license->response();
-                }
-
-                $taken_licenses[] = $site->licenseKey;
-                $sites[] = $site;
+        // Sort sites by license
+        $sites_by_license = [];
+        foreach ($sites as $site) {
+            // Get the malware scanner for this site
+            $scanner = $api->getScanner($service_fields->cwatch_email, $site->domain);
+            $scanner_errors = $scanner->errors();
+            if (empty($scanner_errors)) {
+                $site->scanner = $scanner->response();
             }
+
+            $sites_by_license[$site->licenseKey] = $site;
         }
 
         // Get cWatch licenses
         $licenses_response = $api->getLicenses($service_fields->cwatch_email);
         $licenses_errors = $licenses_response->errors();
         $licenses = [];
+        $available_licenses = [];
         if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
-                if (strtolower($license->status) == 'valid'
-                    && $license->registeredDomainCount == 0
-                    && !in_array($license->licenseKey, $taken_licenses)
-                ) {
-                    $licenses[$license->licenseKey] = $license->productTitle;
+                if (isset($sites_by_license[$license->licenseKey])) {
+                    // Use the associated site for domain info
+                    $license->site = $sites_by_license[$license->licenseKey];
+                } elseif (isset($provisions_by_license[$license->licenseKey])) {
+                    // Use the associated provision for site info
+                    $license->site = $provisions_by_license[$license->licenseKey];
+                } else {
+                    // Mark this license available for attaching a new domain
+                    $available_licenses[$license->licenseKey] = $license->productTitle;
                 }
+
+                $licenses[] = $license;
             }
         }
 
         $this->view->set('site_statuses', $this->getSiteStatuses());
-        $this->view->set('sites', $sites);
         $this->view->set('licenses', $licenses);
+        $this->view->set('available_licenses', $available_licenses);
         $this->view->set('service', $service);
+        $this->view->set('license_key', isset($get['key']) ? $get['key'] : '');
 
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
         return $this->view->fetch();
@@ -1035,6 +1066,20 @@ class Cwatch extends Module
 
         $this->view->set('licenses', $licenses);
         $this->log('viewinfo', serialize($licenses), 'output', true);
+
+        $login_url = 'https://partner.cwatch.comodo.com';
+        $user_response = $api->getUser($service_fields->cwatch_email);
+        $users = $user_response->response();
+        $user_errors = $user_response->errors();
+        if (empty($user_errors) && isset($users[0])) {
+            $login_response = $api->getLogin($users[0]->camId, $service_fields->cwatch_email);
+            $login_errors = $login_response->errors();
+            if (empty($login_errors)) {
+                $login = $login_response->response();
+                $login_url = $login->loginUrl;
+            }
+        }
+        $this->view->set('login_url', $login_url);
 
         return $this->view->fetch();
     }
