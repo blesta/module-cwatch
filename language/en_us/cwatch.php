@@ -55,24 +55,26 @@ $lang['CWatch.edit_row.add_btn'] = 'Edit Credentials';
 // Service info
 $lang['CWatch.service_info.option_login'] = 'Log in to cWatch';
 
-// Tab sites
-$lang['CWatch.tab_sites.sites'] = 'Manage Sites';
-$lang['CWatch.tab_sites.add'] = 'Add New Site';
-$lang['CWatch.tab_sites.name'] = 'Site Name';
-$lang['CWatch.tab_sites.status'] = 'Status';
-$lang['CWatch.tab_sites.malware_scanner'] = 'Malware Scanner';
-$lang['CWatch.tab_sites.actions'] = 'Actions';
-$lang['CWatch.tab_sites.no_results'] = 'No sites have been provisioned for this customer.';
+// Tab licenses
+$lang['CWatch.tab_licenses.licenses'] = 'Manage Licenses';
+$lang['CWatch.tab_licenses.add'] = 'Add New Site';
+$lang['CWatch.tab_licenses.licenseKey'] = 'License Key';
+$lang['CWatch.tab_licenses.type'] = 'License Type';
+$lang['CWatch.tab_licenses.domain'] = 'Domain';
+$lang['CWatch.tab_licenses.status'] = 'Domain Status';
+$lang['CWatch.tab_licenses.malware_scanner'] = 'Malware Scanner';
+$lang['CWatch.tab_licenses.actions'] = 'Actions';
+$lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for this customer.';
 
-$lang['CWatch.tab_sites.not_applicable'] = 'N/A';
-$lang['CWatch.tab_sites.remove_site'] = 'Remove';
-$lang['CWatch.tab_sites.confirm_delete'] = 'Are you sure you want to remove this domain?';
+$lang['CWatch.tab_licenses.not_applicable'] = 'N/A';
+$lang['CWatch.tab_licenses.remove_site'] = 'Remove Site';
+$lang['CWatch.tab_licenses.add_site'] = 'Add Site';
+$lang['CWatch.tab_licenses.confirm_delete'] = 'Are you sure you want to remove this domain?';
 
-$lang['CWatch.tab_sites.licenseKey'] = 'License';
-$lang['CWatch.tab_sites.domain'] = 'Domain Name';
-$lang['CWatch.tab_sites.initiateDns'] = 'Initial DNS';
-$lang['CWatch.tab_sites.autoSsl'] = 'AutoSSL';
-$lang['CWatch.tab_sites.submit'] = 'Submit';
+$lang['CWatch.tab_licenses.domain'] = 'Domain Name';
+$lang['CWatch.tab_licenses.initiateDns'] = 'Initial DNS';
+$lang['CWatch.tab_licenses.autoSsl'] = 'AutoSSL';
+$lang['CWatch.tab_licenses.submit'] = 'Submit';
 
 // Tab malware
 $lang['CWatch.tab_malware.malware'] = 'Malware Control';
