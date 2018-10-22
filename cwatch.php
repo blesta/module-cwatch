@@ -9,8 +9,13 @@
  * @license http://blesta.com/license/ The Blesta License Agreement
  * @link http://blesta.com/ Blesta
  */
+use Blesta\Core\Util\Common\Traits\Container;
+
 class Cwatch extends Module
 {
+    // Load traits
+    use Container;
+
     const BASICPRODUCT = 'BASIC_DETECTION';
     const BASICTERM = 'UNLIMITED';
 
