@@ -526,7 +526,7 @@ class Cwatch extends Module
             }
 
             if (!empty($vars['cwatch_domain'])
-                && !empty($vars['$license_keys'])
+                && !empty($license_keys)
                 && isset($package->meta->cwatch_package_type)
                 && $package->meta->cwatch_package_type == 'single_license'
             ) {
