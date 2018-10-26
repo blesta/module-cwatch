@@ -9,8 +9,13 @@
  * @license http://blesta.com/license/ The Blesta License Agreement
  * @link http://blesta.com/ Blesta
  */
+use Blesta\Core\Util\Common\Traits\Container;
+
 class Cwatch extends Module
 {
+    // Load traits
+    use Container;
+
     const BASICPRODUCT = 'BASIC_DETECTION';
     const BASICTERM = 'UNLIMITED';
 
@@ -142,6 +147,98 @@ class Cwatch extends Module
     }
 
     /**
+     * Returns all fields used when adding/editing a package, including any
+     * javascript to execute when the page is rendered with these fields.
+     *
+     * @param $vars stdClass A stdClass object representing a set of post fields
+     * @return ModuleFields A ModuleFields object, containing the fields to
+     *  render as well as any additional HTML markup to include
+     */
+    public function getPackageFields($vars = null)
+    {
+        Loader::loadHelpers($this, ['Html']);
+
+        $fields = new ModuleFields();
+        $fields->setHtml("
+            <script type=\"text/javascript\">
+                $(document).ready(function() {
+                    toggleLicenseField();
+                    $('#cwatch_package_type').change(function () {
+                        toggleLicenseField();
+                    });
+                });
+
+                function toggleLicenseField() {
+                    // Hide/show license types based on package type
+                    if ($('#cwatch_package_type').val() == 'single_license') {
+                        $('#cwatch_license_type').show();
+                        $('#cwatch_license_type').parent().find('label').show();
+                    } else {
+                        $('#cwatch_license_type').hide();
+                        $('#cwatch_license_type').parent().find('label').hide();
+                    }
+                }
+            </script>
+        ");
+
+        // Set the package types
+        $package_type = $fields->label(
+            Language::_('CWatch.package_fields.package_type', true),
+            'cwatch_package_type'
+        );
+        $package_type->attach(
+            $fields->fieldSelect(
+                'meta[cwatch_package_type]',
+                $this->getPackageTypes(),
+                $this->Html->ifSet($vars->meta['cwatch_package_type'], 'multi_license'),
+                ['id' => 'cwatch_package_type']
+            )
+        );
+        // Add tooltip
+        $tooltip = $fields->tooltip(Language::_('CWatch.package_fields.tooltip.package_type', true));
+        $package_type->attach($tooltip);
+        $fields->setField($package_type);
+
+        // Set the license types
+        $license_types = Configure::get('cwatch.products');
+        foreach ($license_types as $license_type => $terms) {
+            $license_types[$license_type] = Language::_(
+                'CWatch.package_fields.license_' . strtolower($license_type),
+                true
+            );
+        }
+
+        $license_type = $fields->label(
+            Language::_('CWatch.package_fields.license_type', true),
+            'cwatch_license_type'
+        );
+        $license_type->attach(
+            $fields->fieldSelect(
+                'meta[cwatch_license_type]',
+                $license_types,
+                $this->Html->ifSet($vars->meta['cwatch_license_type'], ''),
+                ['id' => 'cwatch_license_type']
+            )
+        );
+        $fields->setField($license_type);
+
+        return $fields;
+    }
+
+    /**
+     * Gets a list of package types
+     *
+     * return array A list of cWatch package types
+     */
+    private function getPackageTypes()
+    {
+        return [
+            'multi_license' => Language::_('CWatch.packagetypes.multi_license', true),
+            'single_license' => Language::_('CWatch.packagetypes.single_license', true)
+        ];
+    }
+
+    /**
      * Returns an array of key values for fields stored for a module, package,
      * and service under this module, used to substitute those keys with their
      * actual module, package, or service meta values in related emails.
@@ -214,7 +311,7 @@ class Cwatch extends Module
         $vars['cwatch_email'] = isset($vars['cwatch_email']) ? strtolower($vars['cwatch_email']) : null;
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Add user and licenses
-            $license_keys = $this->pushUserAndLicenses($vars);
+            $license_keys = $this->pushUserAndLicenses($vars, [], $package);
 
             if ($this->Input->errors()) {
                 // Error
@@ -297,7 +394,7 @@ class Cwatch extends Module
         $new_license_keys = [];
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Edit user and add licenses
-            $new_license_keys = $this->pushUserAndLicenses($vars, $service_fields->cwatch_licenses);
+            $new_license_keys = $this->pushUserAndLicenses($vars, $service_fields->cwatch_licenses, $package);
         }
 
         if ($this->Input->errors()) {
@@ -323,9 +420,11 @@ class Cwatch extends Module
      * Add/edit a cwatch user and add any requested licenses
      *
      * @param array $vars An array of user supplied info to satisfy the request
+     * @param array $service_licenses A list of licenses already belonging to the service
+     * @param stdClass $package The package this service is using
      * @return array A list of licenses keys added
      */
-    private function pushUserAndLicenses($vars, array $service_licenses = null)
+    private function pushUserAndLicenses($vars, array $service_licenses = null, $package = null)
     {
         Loader::loadModels($this, ['Services']);
 
@@ -353,6 +452,15 @@ class Cwatch extends Module
                 $license_types[$license_type] = isset($vars['configoptions'][$license_type])
                     ? $vars['configoptions'][$license_type]
                     : 0;
+            }
+
+            // Provision the license assigned to this package
+            if (isset($package->meta->cwatch_license_type)
+                && isset($package->meta->cwatch_package_type)
+                && $package->meta->cwatch_package_type == 'single_license'
+                && array_key_exists($package->meta->cwatch_license_type, $license_types)
+            ) {
+                $license_types = [$package->meta->cwatch_license_type => 1];
             }
 
             // Get cWatch licenses
@@ -415,6 +523,25 @@ class Cwatch extends Module
                     $license = $license_response->response();
                     $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
                 }
+            }
+
+            if (!empty($vars['cwatch_domain'])
+                && !empty($license_keys)
+                && isset($package->meta->cwatch_package_type)
+                && $package->meta->cwatch_package_type == 'single_license'
+            ) {
+                // Add the domain submitted for a single license package
+                $site_response = $api->addSite(
+                    [
+                        'email' => $vars['cwatch_email'],
+                        'domain' => $vars['cwatch_domain'],
+                        'licenseKey' => $license_keys[0],
+                        'initiateDns' => false,
+                        'autoSsl' => false
+                    ]
+                );
+
+                $this->log('addsite', $site_response->raw(), 'output', $site_response->status() == 200);
             }
         }
 
@@ -544,15 +671,36 @@ class Cwatch extends Module
     public function getAdminAddFields($package, $vars = null)
     {
         Loader::loadHelpers($this, ['Html', 'Form']);
-        Loader::loadModels($this, ['Countries']);
+        Loader::loadModels($this, ['Countries', 'Clients']);
+        Loader::loadComponents($this, ['Session']);
 
         $fields = new ModuleFields();
+
+        $requestor = $this->getFromContainer('requestor');
+        $client_id = $this->Html->ifSet($requestor->client_id, $this->Session->read('blesta_client_id'));
+        $client = $this->Clients->get($client_id);
+
+        // Provision the license assigned to this package
+        if ($package->meta->cwatch_package_type == 'single_license') {
+            // Create domain label
+            $domain = $fields->label(Language::_('Cwatch.service_field.domain', true), 'cwatch_domain');
+            // Create domain field and attach to domain label
+            $domain->attach(
+                $fields->fieldText('cwatch_domain', $this->Html->ifSet($vars->cwatch_domain), ['id' => 'cwatch_domain'])
+            );
+            // Set the label as a field
+            $fields->setField($domain);
+        }
 
         // Create email label
         $email = $fields->label(Language::_('Cwatch.service_field.email', true), 'cwatch_email');
         // Create email field and attach to email label
         $email->attach(
-            $fields->fieldText('cwatch_email', $this->Html->ifSet($vars->cwatch_email), ['id' => 'cwatch_email'])
+            $fields->fieldText(
+                'cwatch_email',
+                $this->Html->ifSet($vars->cwatch_email, $this->Html->ifSet($client->email)),
+                ['id' => 'cwatch_email']
+            )
         );
         // Set the label as a field
         $fields->setField($email);
@@ -563,7 +711,7 @@ class Cwatch extends Module
         $firstname->attach(
             $fields->fieldText(
                 'cwatch_firstname',
-                $this->Html->ifSet($vars->cwatch_firstname),
+                $this->Html->ifSet($vars->cwatch_firstname, $this->Html->ifSet($client->first_name)),
                 ['id' => 'cwatch_firstname']
             )
         );
@@ -576,7 +724,7 @@ class Cwatch extends Module
         $lastname->attach(
             $fields->fieldText(
                 'cwatch_lastname',
-                $this->Html->ifSet($vars->cwatch_lastname),
+                $this->Html->ifSet($vars->cwatch_lastname, $this->Html->ifSet($client->last_name)),
                 ['id' => 'cwatch_lastname']
             )
         );
@@ -590,7 +738,7 @@ class Cwatch extends Module
             $fields->fieldSelect(
                 'cwatch_country',
                 $this->Form->collapseObjectArray($this->Countries->getList(), ['name', 'alt_name'], 'alpha2', ' - '),
-                $this->Html->ifSet($vars->cwatch_country),
+                $this->Html->ifSet($vars->cwatch_country, $this->Html->ifSet($client->country)),
                 ['id' => 'cwatch_country']
             )
         );
@@ -1150,6 +1298,22 @@ class Cwatch extends Module
                     'rule' => ['maxLength', 3],
                     'message' => Language::_('CWatch.!error.cwatch_country.length', true)
                 ]
+            ],
+            'cwatch_domain' => [
+                'format' => [
+                    'if_set' => true,
+                    'rule' => function ($host_name) {
+                        if (strlen($host_name) > 255) {
+                            return false;
+                        }
+
+                        return $this->Input->matches(
+                            $host_name,
+                            "/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/"
+                        );
+                    },
+                    'message' => Language::_('Cpanel.!error.cpanel_domain.format', true)
+                ],
             ]
         ];
 
