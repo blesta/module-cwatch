@@ -349,7 +349,7 @@ class Cwatch extends Module
         }
 
         $return = [['key' => 'cwatch_licenses', 'value' => $license_keys, 'encrypted' => 0]];
-        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
+        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_domain'];
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
         }
@@ -408,7 +408,7 @@ class Cwatch extends Module
                 'encrypted' => 0
             ]
         ];
-        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
+        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_domain'];
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
         }
