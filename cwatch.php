@@ -160,21 +160,26 @@ class Cwatch extends Module
 
         $fields = new ModuleFields();
         $fields->setHtml("
-			<script type=\"text/javascript\">
-				$(document).ready(function() {
-                    // Hide/show license types based on package type
+            <script type=\"text/javascript\">
+                $(document).ready(function() {
+                    toggleLicenseField();
                     $('#cwatch_package_type').change(function () {
-                        if ($(this).val() == 'single_license') {
-                            $('#cwatch_license_type').show();
-                            $('#cwatch_license_type').parent().find('label').show();
-                        } else {
-                            $('#cwatch_license_type').hide();
-                            $('#cwatch_license_type').parent().find('label').hide();
-                        }
+                        toggleLicenseField();
                     });
-				});
-			</script>
-		");
+                });
+
+                function toggleLicenseField() {
+                    // Hide/show license types based on package type
+                    if ($('#cwatch_package_type').val() == 'single_license') {
+                        $('#cwatch_license_type').show();
+                        $('#cwatch_license_type').parent().find('label').show();
+                    } else {
+                        $('#cwatch_license_type').hide();
+                        $('#cwatch_license_type').parent().find('label').hide();
+                    }
+                }
+            </script>
+        ");
 
         // Set the package types
         $package_type = $fields->label(
@@ -185,7 +190,7 @@ class Cwatch extends Module
             $fields->fieldSelect(
                 'meta[cwatch_package_type]',
                 $this->getPackageTypes(),
-                $this->Html->ifSet($vars->meta['cwatch_package_type'], 'Package Type'),
+                $this->Html->ifSet($vars->meta['cwatch_package_type'], 'multi_license'),
                 ['id' => 'cwatch_package_type']
             )
         );
@@ -228,8 +233,8 @@ class Cwatch extends Module
     private function getPackageTypes()
     {
         return [
-            'single_license' => Language::_('CWatch.packagetypes.single_license', true),
-            'multi_license' => Language::_('CWatch.packagetypes.multi_license', true)
+            'multi_license' => Language::_('CWatch.packagetypes.multi_license', true),
+            'single_license' => Language::_('CWatch.packagetypes.single_license', true)
         ];
     }
 
@@ -415,7 +420,8 @@ class Cwatch extends Module
      * Add/edit a cwatch user and add any requested licenses
      *
      * @param array $vars An array of user supplied info to satisfy the request
-     * @param stdClass $package
+     * @param array $service_licenses A list of licenses already belonging to the service
+     * @param stdClass $package The package this service is using
      * @return array A list of licenses keys added
      */
     private function pushUserAndLicenses($vars, array $service_licenses = null, $package = null)
@@ -449,7 +455,9 @@ class Cwatch extends Module
             }
 
             // Provision the license assigned to this package
-            if ($package->meta->cwatch_package_type == 'single_license'
+            if (isset($package->meta->cwatch_license_type)
+                && isset($package->meta->cwatch_package_type)
+                && $package->meta->cwatch_package_type == 'single_license'
                 && array_key_exists($package->meta->cwatch_license_type, $license_types)
             ) {
                 $license_types = [$package->meta->cwatch_license_type => 1];
@@ -517,7 +525,11 @@ class Cwatch extends Module
                 }
             }
 
-            if (!empty($vars['cwatch_domain']) && $package->meta->cwatch_package_type == 'single_license') {
+            if (!empty($vars['cwatch_domain'])
+                && !empty($vars['$license_keys'])
+                && isset($package->meta->cwatch_package_type)
+                && $package->meta->cwatch_package_type == 'single_license'
+            ) {
                 // Add the domain submitted for a single license package
                 $site_response = $api->addSite(
                     [
@@ -1290,7 +1302,16 @@ class Cwatch extends Module
             'cwatch_domain' => [
                 'format' => [
                     'if_set' => true,
-                    'rule' => [[$this, 'validateHostName']],
+                    'rule' => function ($host_name) {
+                        if (strlen($host_name) > 255) {
+                            return false;
+                        }
+
+                        return $this->Input->matches(
+                            $host_name,
+                            "/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/"
+                        );
+                    },
                     'message' => Language::_('Cpanel.!error.cpanel_domain.format', true)
                 ],
             ]
@@ -1301,23 +1322,5 @@ class Cwatch extends Module
         }
 
         return $rules;
-    }
-
-    /**
-     * Validates that the given hostname is valid
-     *
-     * @param string $host_name The host name to validate
-     * @return bool True if the hostname is valid, false otherwise
-     */
-    public function validateHostName($host_name)
-    {
-        if (strlen($host_name) > 255) {
-            return false;
-        }
-
-        return $this->Input->matches(
-            $host_name,
-            "/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/"
-        );
     }
 }
