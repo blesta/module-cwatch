@@ -67,7 +67,7 @@ class CwatchApi
      */
     public function deleteUser($email)
     {
-        return $this->apiRequest('customer/deleteCustomer?email=' . $email, [], 'DELETE');
+        return $this->apiRequest('customer/deleteCustomer', ['email' => $email], 'DELETE');
     }
 
     /**
@@ -174,7 +174,7 @@ class CwatchApi
      */
     public function getSites($email)
     {
-        return $this->apiRequest('customer/site/listByEmail?email=' . $email, [], 'GET');
+        return $this->apiRequest('customer/site/listByEmail', ['email' => $email], 'GET');
     }
 
     /**
@@ -319,6 +319,7 @@ class CwatchApi
 
         switch (strtoupper($method)) {
             case 'GET':
+            case 'DELETE':
                 $url .= empty($body) ? '' : '?' . http_build_query($body);
                 break;
             case 'POST':
