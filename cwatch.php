@@ -443,6 +443,7 @@ class Cwatch extends Module
         $this->log($edit ? 'edituser' : 'adduser', serialize($api->lastRequest()), 'input', true);
         $this->log($edit ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
 
+        $license_keys = [];
         if ($response->status() != 200) {
             $this->Input->setErrors(['api' => ['internal' => $response->errors()]]);
         } else {
@@ -491,7 +492,6 @@ class Cwatch extends Module
                 $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
             }
 
-            $license_keys = [];
             // Add licenses to the customer account according to the config options provided
             foreach ($license_types as $license_type => $quantity) {
                 for ($i = 0; $i < $quantity; $i++) {
