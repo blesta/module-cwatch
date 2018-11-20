@@ -27,11 +27,13 @@ your Blesta installation path.
 4. Find the cWatch module, click the "Install", and enter your cWatch username and password
 
 ## When creating a package
+#### For multi-license packages
 
 1. Add quantity configurable options for each license type you wish to offer.  Available products include:
 
     ```
     BASIC_DETECTION
+    STARTER
     PRO
     PRO_FREE
     PRO_FREE_60D
@@ -42,10 +44,26 @@ your Blesta installation path.
 
 2. The 'Name' of your configurable option must match the product exactly as shown here (case-sensitive).
 
-3. The licenses are only available for the following payment terms:
+3. The licenses are only available for the following payment terms, set config option payment terms accordingly:
 
     ```
     BASIC_DETECTION - any
+    STARTER - 1 Month, 12 Months, 24 Month, 36 Months
+    PRO - 1 Month, 12 Months, 24 Month, 36 Months
+    PRO_FREE - 1 Month
+    PRO_FREE_60D - 2 Months
+    PREMIUM - 1 Month, 12 Months, 24 Month, 36 Months
+    PREMIUM_FREE - 1 Month
+    PREMIUM_FREE_60D - 2 Months
+    ```
+
+#### For single-license packages
+
+1. The licenses are only available for the following payment terms, set package payment terms accordingly:
+
+    ```
+    BASIC_DETECTION - any
+    STARTER - 1 Month, 12 Months, 24 Month, 36 Months
     PRO - 1 Month, 12 Months, 24 Month, 36 Months
     PRO_FREE - 1 Month
     PRO_FREE_60D - 2 Months
