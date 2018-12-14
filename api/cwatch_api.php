@@ -55,8 +55,13 @@ class CwatchApi
     public function addUser($email, $firstName, $lastName, $country)
     {
         $params = ['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country];
+        $user_response = $this->getUser($email);
 
-        return $this->apiRequest('customer/add', $params, 'POST');
+        if ($user_response->status() == 200 && ($users = $user_response->response())) {
+            return $this->apiRequest('customer/update/' . $users[0]->id, $params, 'PUT');
+        } else {
+            return $this->apiRequest('customer/add', $params, 'POST');
+        }
     }
 
     /**

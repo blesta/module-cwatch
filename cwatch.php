@@ -631,7 +631,10 @@ class Cwatch extends Module
         try {
             // Fetch all licenses for the user
             $list_response = $api->getLicenses($email);
-            $licenses = $list_response->response();
+            $licenses = [];
+            if ($list_response->status() == 200) {
+                $licenses = $list_response->response();
+            }
 
             // Deactivate all licenses for the user
             foreach ($licenses as $license) {
