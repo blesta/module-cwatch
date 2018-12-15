@@ -55,13 +55,24 @@ class CwatchApi
     public function addUser($email, $firstName, $lastName, $country)
     {
         $params = ['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country];
-        $user_response = $this->getUser($email);
 
-        if ($user_response->status() == 200 && ($users = $user_response->response())) {
-            return $this->apiRequest('customer/update/' . $users[0]->id, $params, 'PUT');
-        } else {
-            return $this->apiRequest('customer/add', $params, 'POST');
-        }
+        return $this->apiRequest('customer/add', $params, 'POST');
+    }
+
+    /**
+     * Edit a customer account in cWatch
+     *
+     * @param int $customer_id The cWatch ID of the customer being modified
+     * @param string $firstName The customer's first name
+     * @param string $lastName The customer's last name
+     * @param string $country The 3-character country code of the customer
+     * @return CwatchResponse
+     */
+    public function editUser($customer_id, $firstName, $lastName, $country)
+    {
+        $params = ['name' => $firstName, 'surname' => $lastName, 'country' => $country];
+
+        return $this->apiRequest('customer/update/' . $customer_id, $params, 'PUT');
     }
 
     /**
