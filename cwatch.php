@@ -348,7 +348,26 @@ class Cwatch extends Module
             );
         }
 
-        $return = [['key' => 'cwatch_licenses', 'value' => $license_keys, 'encrypted' => 0]];
+        // Get user customer ID
+        $api = $this->getApi();
+
+        $customer_id = null;
+        $user_response = $api->getUser($vars['cwatch_email']);
+        if ($user_response->status() == 200
+            && ($users = $user_response->response())
+            && isset($users[0]->id)
+        ) {
+            $customer_id = $users[0]->id;
+        }
+
+        $return = [
+            ['key' => 'cwatch_licenses', 'value' => $license_keys, 'encrypted' => 0],
+            [
+                'key' => 'cwatch_customer_id',
+                'value' => $customer_id,
+                'encrypted' => 0
+            ]
+        ];
         $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_domain'];
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
@@ -385,7 +404,7 @@ class Cwatch extends Module
 
         // Set input based on service fields if a field is not set
         $service_fields = $this->serviceFieldsToObject($service->fields);
-        $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
+        $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_customer_id'];
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
         }
@@ -408,7 +427,10 @@ class Cwatch extends Module
                 'encrypted' => 0
             ]
         ];
-        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_domain'];
+        $return_fields = [
+            'cwatch_email', 'cwatch_firstname', 'cwatch_lastname',
+            'cwatch_country', 'cwatch_domain', 'cwatch_customer_id'
+        ];
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
         }
@@ -430,16 +452,27 @@ class Cwatch extends Module
 
         $api = $this->getApi();
 
-        // Add a customer account in cWatch
-        $response = $api->addUser(
-            $vars['cwatch_email'],
-            $vars['cwatch_firstname'],
-            $vars['cwatch_lastname'],
-            $vars['cwatch_country']
-        );
+        $edit = $service_licenses != null;
+        $response = null;
+        if ($edit) {
+            // Edit a customer account in cWatch
+            $response = $api->editUser(
+                $vars['cwatch_customer_id'],
+                $vars['cwatch_firstname'],
+                $vars['cwatch_lastname'],
+                $vars['cwatch_country']
+            );
+        } else {
+            // Add a customer account in cWatch
+            $response = $api->addUser(
+                $vars['cwatch_email'],
+                $vars['cwatch_firstname'],
+                $vars['cwatch_lastname'],
+                $vars['cwatch_country']
+            );
+        }
 
         // Log request data
-        $edit = $service_licenses === null;
         $this->log($edit ? 'edituser' : 'adduser', serialize($api->lastRequest()), 'input', true);
         $this->log($edit ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
 
@@ -631,7 +664,10 @@ class Cwatch extends Module
         try {
             // Fetch all licenses for the user
             $list_response = $api->getLicenses($email);
-            $licenses = $list_response->response();
+            $licenses = [];
+            if ($list_response->status() == 200) {
+                $licenses = $list_response->response();
+            }
 
             // Deactivate all licenses for the user
             foreach ($licenses as $license) {
