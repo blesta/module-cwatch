@@ -353,7 +353,10 @@ class Cwatch extends Module
 
         $customer_id = null;
         $user_response = $api->getUser($vars['cwatch_email']);
-        if ($user_response->status() == 200 && ($users = $user_response->response())) {
+        if ($user_response->status() == 200
+            && ($users = $user_response->response())
+            && isset($users[0]->id)
+        ) {
             $customer_id = $users[0]->id;
         }
 
