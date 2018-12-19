@@ -403,7 +403,18 @@ class Cwatch extends Module
         }
 
         // Set input based on service fields if a field is not set
+        $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
+        if (!property_exists($service_fields, 'cwatch_customer_id')) {
+            $user_response = $api->getUser($service_fields->cwatch_email);
+            if ($user_response->status() == 200
+                && ($users = $user_response->response())
+                && isset($users[0]->id)
+            ) {
+                $service_fields->cwatch_customer_id = $users[0]->id;
+            }
+        }
+
         $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_customer_id'];
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
@@ -413,7 +424,7 @@ class Cwatch extends Module
         $new_license_keys = [];
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Edit user and add licenses
-            $new_license_keys = $this->pushUserAndLicenses($vars, $service_fields->cwatch_licenses, $package);
+            $new_license_keys = $this->pushUserAndLicenses($vars, $service_fields->cwatch_licenses, $package, true);
         }
 
         if ($this->Input->errors()) {
@@ -444,15 +455,14 @@ class Cwatch extends Module
      * @param array $vars An array of user supplied info to satisfy the request
      * @param array $service_licenses A list of licenses already belonging to the service
      * @param stdClass $package The package this service is using
+     * @param bool $edit Whether the user is being edited
      * @return array A list of licenses keys added
      */
-    private function pushUserAndLicenses($vars, array $service_licenses = null, $package = null)
+    private function pushUserAndLicenses($vars, array $service_licenses = null, $package = null, $edit = false)
     {
         Loader::loadModels($this, ['Services']);
 
         $api = $this->getApi();
-
-        $edit = $service_licenses != null;
         $response = null;
         if ($edit) {
             // Edit a customer account in cWatch
