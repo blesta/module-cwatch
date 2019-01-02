@@ -368,7 +368,12 @@ class Cwatch extends Module
                 'encrypted' => 0
             ]
         ];
-        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_domain'];
+
+        $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
+        if ($package->meta->cwatch_package_type !== 'single_license') {
+            $return_fields[] = 'cwatch_domain';
+        }
+
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
         }
@@ -396,7 +401,7 @@ class Cwatch extends Module
      */
     public function editService($package, $service, array $vars = [], $parent_package = null, $parent_service = null)
     {
-        $this->validateServiceEdit($package, $vars);
+        $this->validateServiceEdit($service, $vars);
 
         if ($this->Input->errors()) {
             return;
@@ -438,10 +443,15 @@ class Cwatch extends Module
                 'encrypted' => 0
             ]
         ];
+
         $return_fields = [
             'cwatch_email', 'cwatch_firstname', 'cwatch_lastname',
-            'cwatch_country', 'cwatch_domain', 'cwatch_customer_id'
+            'cwatch_country', 'cwatch_customer_id'
         ];
+        if ($package->meta->cwatch_package_type !== 'single_license') {
+            $return_fields[] = 'cwatch_domain';
+        }
+
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
         }
@@ -1268,7 +1278,16 @@ class Cwatch extends Module
      */
     public function validateServiceEdit($service, array $vars = null)
     {
-        $this->Input->setRules($this->getServiceRules($vars, true));
+        Loader::loadModels($this, ['Packages']);
+        $rules = $this->getServiceRules($vars, true);
+
+        if (($package = $this->Packages->getByPricingID($service->pricing_id))
+            && $package->meta->cwatch_package_type !== 'single_license'
+        ) {
+            unset($rules['cwatch_domain']);
+        }
+
+        $this->Input->setRules($rules);
         return $this->Input->validates($vars);
     }
 
@@ -1358,7 +1377,7 @@ class Cwatch extends Module
                             "/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/"
                         );
                     },
-                    'message' => Language::_('Cpanel.!error.cpanel_domain.format', true)
+                    'message' => Language::_('CWatch.!error.cwatch_domain.format', true)
                 ],
             ]
         ];
