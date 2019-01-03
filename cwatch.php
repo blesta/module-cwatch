@@ -296,6 +296,10 @@ class Cwatch extends Module
             return;
         }
 
+        if (isset($vars['cwatch_domain'])) {
+            $vars['cwatch_domain'] = strtolower($vars['cwatch_domain']);
+        }
+
         // Get a list of which email accounts are associated with this client
         $module = $this->getModule();
         $account_emails_meta = null;
@@ -370,7 +374,7 @@ class Cwatch extends Module
         ];
 
         $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
-        if ($package->meta->cwatch_package_type !== 'single_license') {
+        if ($package->meta->cwatch_package_type == 'single_license') {
             $return_fields[] = 'cwatch_domain';
         }
 
@@ -421,10 +425,17 @@ class Cwatch extends Module
         }
 
         $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_customer_id'];
+        if ($package->meta->cwatch_package_type == 'single_license') {
+            $fields[] = 'cwatch_domain';
+        }
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
         }
+
         $vars['cwatch_email'] = strtolower($vars['cwatch_email']);
+        if (isset($vars['cwatch_domain'])) {
+            $vars['cwatch_domain'] = strtolower($vars['cwatch_domain']);
+        }
 
         $new_license_keys = [];
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
@@ -448,7 +459,7 @@ class Cwatch extends Module
             'cwatch_email', 'cwatch_firstname', 'cwatch_lastname',
             'cwatch_country', 'cwatch_customer_id'
         ];
-        if ($package->meta->cwatch_package_type !== 'single_license') {
+        if ($package->meta->cwatch_package_type == 'single_license') {
             $return_fields[] = 'cwatch_domain';
         }
 
@@ -1374,7 +1385,8 @@ class Cwatch extends Module
 
                         return $this->Input->matches(
                             $host_name,
-                            "/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/"
+                            '/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])'
+                            . '(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/i'
                         );
                     },
                     'message' => Language::_('CWatch.!error.cwatch_domain.format', true)
