@@ -1241,7 +1241,7 @@ class Cwatch extends Module
         $row = $this->getModuleRow();
         $username = isset($row->meta->username) ? $row->meta->username : '';
         $password = isset($row->meta->password) ? $row->meta->password : '';
-        $sandbox = isset($row->meta->cwatch_sandbox) ? $row->meta->cwatch_sandbox : 'true';
+        $sandbox = isset($row->meta->cwatch_sandbox) ? $row->meta->cwatch_sandbox : 'false';
 
         return new CwatchApi($username, $password, $sandbox == 'true');
     }
