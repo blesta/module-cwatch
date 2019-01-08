@@ -1082,6 +1082,7 @@ class Cwatch extends Module
         $provisions_by_license = [];
         foreach ($site_provisions as $site_provision) {
             if (strtolower($site_provision->status) != 'add_site_fail'
+                && strtolower($site_provision->status) != 'add_site_completed'
                 && in_array($site_provision->licenseKey, $service_licenses)
             ) {
                 $provisions_by_license[$site_provision->licenseKey] = $site_provision;

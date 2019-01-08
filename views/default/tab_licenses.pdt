@@ -26,9 +26,15 @@
             <td>
                 <?php
                 if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                    $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');
+                    $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
+                    $this->Form->fieldHidden('action', 'remove_domain');
                 ?>
-                <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage" data-domain="<?php $this->Html->_($license->site->domain);?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>"><?php $this->_('CWatch.tab_licenses.remove_site');?></a>
+                <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
+                    <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                </a>
                 <?php
+                    $this->Form->end();
                 } else {
                 ?>
                 <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" ><?php $this->_('CWatch.tab_licenses.add_site');?></a>
@@ -48,10 +54,6 @@
         </tr>
     <?php
     }
-    $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabSites/', ['id' => 'remove_site']);
-    $this->Form->fieldHidden('domain', '', ['id' => 'remove_domain']);
-    $this->Form->fieldHidden('action', 'remove_domain');
-    $this->Form->end();
     ?>
 </table>
 
@@ -63,7 +65,7 @@
             $('#remove_domain').val(domain);
         });
         $('#licenses a.manage[rel]').each(function() {
-            $(this).blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', close: '<?php $this->_('AppController.modal.text_close');?>', submit: true, form: $('#remove_site')});
+            $(this).blestaModalConfirm({base_url: '<?php echo $this->base_uri;?>', submit: true});
         });
     });
 </script>
