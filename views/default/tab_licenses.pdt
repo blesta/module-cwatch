@@ -1,7 +1,7 @@
 <div class="title_row first">
     <h3>
         <?php $this->_('CWatch.tab_licenses.licenses');?>
-        <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site');?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_licenses.add');?></a>
+        <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site');?>" class="btn btn-sm btn-default pull-right"><?php $this->_('CWatch.tab_licenses.add');?></a>
     </h3>
 </div>
 <table class="table table-bordered" id="licenses">
