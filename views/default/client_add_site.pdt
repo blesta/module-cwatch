@@ -2,7 +2,7 @@
     <h3><?php $this->_('CWatch.tab_licenses.add');?></h3>
 </div>
 <?php
-$this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientSites/');
+$this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
 ?>
 <div class="col-md-12">
     <div class="form-group">

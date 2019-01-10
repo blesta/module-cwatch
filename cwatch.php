@@ -1082,6 +1082,7 @@ class Cwatch extends Module
         $provisions_by_license = [];
         foreach ($site_provisions as $site_provision) {
             if (strtolower($site_provision->status) != 'add_site_fail'
+                && strtolower($site_provision->status) != 'add_site_completed'
                 && in_array($site_provision->licenseKey, $service_licenses)
             ) {
                 $provisions_by_license[$site_provision->licenseKey] = $site_provision;
@@ -1262,7 +1263,7 @@ class Cwatch extends Module
         $row = $this->getModuleRow();
         $username = isset($row->meta->username) ? $row->meta->username : '';
         $password = isset($row->meta->password) ? $row->meta->password : '';
-        $sandbox = isset($row->meta->cwatch_sandbox) ? $row->meta->cwatch_sandbox : 'true';
+        $sandbox = isset($row->meta->cwatch_sandbox) ? $row->meta->cwatch_sandbox : 'false';
 
         return new CwatchApi($username, $password, $sandbox == 'true');
     }
