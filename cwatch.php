@@ -914,19 +914,33 @@ class Cwatch extends Module
         $service_fields = $this->serviceFieldsToObject($service->fields);
 
         if (isset($post['test_ftp'])) {
-            $error_message = Language::_('CWatch.!error.sftp_test', true);
+            $use_sftp = isset($post['sftp']);
+            $error_message = Language::_('CWatch.!error.' . ($use_sftp ? 's' : '') .'ftp_test', true);
 
             try {
-                $this->Net_SFTP = $this->Security->create(
-                    'Net',
-                    'SFTP',
-                    [$post['host'], $post['port']]
-                );
+                if ($use_sftp) {
+                    $ftp = $this->Security->create(
+                        'Net',
+                        'SFTP',
+                        [$post['host'], $post['port']]
+                    );
+                } else {
+                    $ftp = new \FtpClient\FtpClient();
+                    $ftp->connect(
+                        $this->Html->ifSet($post['host']),
+                        false,
+                        $this->Html->ifSet($post['port'])
+                    );
+                }
 
                 // Attempt to login to test the connection and navigate to the given path. Show success or error
-                if ($this->Net_SFTP->login($post['username'], $post['password']) &&
-                    $this->Net_SFTP->chdir($post['path'])) {
-                    echo $this->setMessage('message', Language::_('CWatch.!success.sftp_test', true));
+                if ($ftp->login($this->Html->ifSet($post['username']), $this->Html->ifSet($post['password'])) &&
+                    $ftp->chdir($post['path'])
+                ) {
+                    echo $this->setMessage(
+                        'message',
+                        Language::_('CWatch.!success.' . ($use_sftp ? 's' : '') .'ftp_test', true)
+                    );
                 } else {
                     echo $this->setMessage('error', $error_message);
                 }
@@ -939,13 +953,13 @@ class Cwatch extends Module
             $scanner = $api->addScanner(
                 $service_fields->cwatch_email,
                 [
-                    'domain' => $post['domainname'],
-                    'password' => $post['password'],
-                    'login' => $post['username'],
-                    'host' => $post['host'],
-                    'port' => $post['port'],
-                    'path' => $post['path'],
-                    'protocol' => $post['port'] == '22' ? 'FTPS' : 'FTP'
+                    'domain' => $this->Html->ifSet($post['domainname']),
+                    'password' => $this->Html->ifSet($post['password']),
+                    'login' => $this->Html->ifSet($post['username']),
+                    'host' => $this->Html->ifSet($post['host']),
+                    'port' => $this->Html->ifSet($post['port']),
+                    'path' => $this->Html->ifSet($post['path']),
+                    'protocol' => isset($post['sftp']) ? 'FTPS' : 'FTP'
                 ]
             );
 
