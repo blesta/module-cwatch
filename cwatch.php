@@ -918,6 +918,7 @@ class Cwatch extends Module
             $error_message = Language::_('CWatch.!error.ftp' . ($use_ftps ? 's' : '') . '_test', true);
 
             try {
+                // Set regular FTP options
                 $ftp_options = array(
                     'passive' => true,
                     'port' => $this->Html->ifSet($post['port']),
@@ -928,6 +929,7 @@ class Cwatch extends Module
                 );
                 $protocol = 'ftp://';
 
+                // Update options for FTPS
                 if ($use_ftps) {
                     $protocol = 'ftps://';
                     $ftp_options['curlOptions'][CURLOPT_PROTOCOLS] = CURLPROTO_FTPS;
