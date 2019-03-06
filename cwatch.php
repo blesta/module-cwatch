@@ -956,7 +956,6 @@ class Cwatch extends Module
                     echo $this->setMessage('error', $error_message);
                 }
             } catch (Exception $e) {
-                var_dump($e->getMessage());
                 $this->setMessage('error', $error_message);
             }
 
