@@ -112,7 +112,7 @@ class CwatchApi
     /**
      * Create a license of the given type for the given user
      *
-     * @param string $licenseType The type of license to create ("BASIC_DETECTION", "PRO", "PRO_FREE",
+     * @param string $licenseType The type of license to create ("STARTER", "BASIC_DETECTION", "PRO", "PRO_FREE",
      *  "PRO_FREE_60D", "PREMIUM", "PREMIUM_FREE", "PREMIUM_FREE_60D")
      * @param string $term The term for which the license will remain valid before renewal ("MONTH_1", "MONTH_12",
      *  "MONTH_24", "MONTH_36", "MONTH_2", "UNLIMITED")
@@ -133,6 +133,25 @@ class CwatchApi
         ];
 
         return $this->apiRequest('customer/distributeLicenseForCustomers', $params, 'POST');
+    }
+
+    /**
+     * Changes the pricing level of the given license
+     *
+     * @param string $licenseType The type of license to create ("STARTER", "PRO", "PREMIUM")
+     * @param string $customerId The ID of the customer in cWatch
+     * @param string $licenseKey The key of the license to change pricing for
+     * @return CwatchResponse
+     */
+    public function changeLicensePricing($licenseType, $customerId, $licenseKey)
+    {
+        $params = [
+            'product' => $licenseType,
+            'customerId' => $customerId,
+            'licenseKey' => $licenseKey
+        ];
+
+        return $this->apiRequest('customer/changeLicensePricing', $params, 'POST');
     }
 
     /**
@@ -160,6 +179,21 @@ class CwatchApi
     public function addSite(array $params)
     {
         return $this->apiRequest('siteprovision/add', [$params], 'POST');
+    }
+
+    /**
+     * Provision a site for a license in Cwatch
+     *
+     * @param array $params
+     *     - renew
+     *     - email The email of the customer to change this site for
+     *     - site The domain of the site to be changed
+     *     - licenseKeyNew The key for the new license to associate with this site
+     * @return CwatchResponse
+     */
+    public function changeSiteLicense(array $params)
+    {
+        return $this->apiRequest('siteprovision/upgradeLicenseForSite', $params, 'POST');
     }
 
     /**
@@ -191,6 +225,21 @@ class CwatchApi
     public function getSites($email)
     {
         return $this->apiRequest('customer/site/listByEmail', ['email' => $email], 'GET');
+    }
+
+    /**
+     * Checks the existence of a domain in cWatch
+     *
+     * @param string $domain The domain of the site to check
+     * @return CwatchResponse
+     */
+    public function checkSite($domain)
+    {
+        return $this->apiRequest(
+            'customer/site/check/' . urlencode($domain),
+            [],
+            'GET'
+        );
     }
 
     /**
