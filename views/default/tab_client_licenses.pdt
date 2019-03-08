@@ -24,25 +24,37 @@
             <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], $this->Html->ifSet($license->site->status)));?></td>
             <td><?php echo $this->Html->ifSet($license->site->scanner) ? $this->Html->_($license->site->scanner->status, true) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
             <td>
-                <?php
-                if ($this->Html->ifSet($license->site->status) == 'Valid') {
-                    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
-                    $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
-                    $this->Form->fieldHidden('action', 'remove_domain');
-                ?>
-                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" class="manage btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
-                    <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
-                </a>
-                <?php
-                    $this->Form->end();
-                } else {
-                ?>
-                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-default">
-                    <i class="fa fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
-                </a>
-                <?php
-                }
-                ?>
+                <div class="btn-group">
+                    <?php
+                    if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                        $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
+                        $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
+                        $this->Form->fieldHidden('action', 'remove_domain');
+                    ?>
+                    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" class="manage btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
+                        <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                    </a>
+                    <?php
+                        $this->Form->end();
+                    } else {
+                    ?>
+                    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-default">
+                        <i class="fa fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
+                    </a>
+                    <?php
+                    }
+                    ?>
+                    <button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#" class="change_license_type" data-license_key="<?php $this->Html->_($license->licenseKey);?>" data-license_type="<?php $this->Html->_($license->pricingTerm);?>" data-toggle="modal" data-target="#change_license_type">
+                                <?php $this->_('CWatch.tab_licenses.change_license_type');?>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </td>
         </tr>
         <?php
@@ -59,12 +71,48 @@
     ?>
 </table>
 
+<div id="change_license_type" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="global_modal_title"><?php $this->_('CWatch.tab_licenses.license_type_modal');?></h4>
+            </div>
+            <?php
+            $this->Form->create();
+            ?>
+            <div class="modal-body">
+                <?php
+                $this->Form->fieldHidden('license_key', $this->Html->ifSet($license_key), ['id' => 'license_key']);
+                $this->Form->fieldHidden('action', 'change_license_type');
+                $this->Form->label($this->_('CWatch.tab_licenses.new_license_type'), 'license_type');
+                $this->Form->fieldSelect('license_type', $this->Html->ifSet($license_types), null, ['id' => 'license_type', 'class' => 'form-control']);
+                ?>
+            </div>
+            <div class="modal-footer">
+                <?php
+                $this->Form->fieldButton('cancel', $this->_('CWatch.tab_licenses.cancel', true), ['class' => 'btn btn-default', 'data-dismiss' => 'modal']);
+                $this->Form->fieldSubmit('submit', $this->_('CWatch.tab_licenses.change_type', true), ['class' => 'btn btn-primary']);
+                ?>
+            </div>
+            <?php
+            $this->Form->end();
+            ?>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
     $(document).ready(function() {
         // Handle confirmation on delete action
         $('#licenses a[rel]').blestaModalConfirm({
             base_url: '<?php echo $this->base_uri;?>',
             submit: true
+        });
+
+        $(".change_license_type").on('click', function () {
+            console.log('hi');
+            $('#license_key').val($(this).attr('data-license_key'));
+            $('#license_type').val($(this).attr('data-license_type'));
         });
     });
 </script>

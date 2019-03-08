@@ -193,7 +193,7 @@ class CwatchApi
      */
     public function changeSiteLicense(array $params)
     {
-        return $this->apiRequest('siteprovision/upgradeLicenseForSite', $params, 'POST');
+        return $this->apiRequest('customer/upgradeLicenseForSite', $params, 'POST');
     }
 
     /**
@@ -296,6 +296,22 @@ class CwatchApi
             'customer/listlicencebyemail',
             ['email' => $email, 'activeLicenseOnly' => 'true'],
             'GET'
+        );
+    }
+
+    /**
+     * Fetch discount information for upgrading a license
+     *
+     * @param string $email The customer email to fetch license info for
+     * @param string $licenseKey The key of the license
+     * @return CwatchResponse
+     */
+    public function getDiscountInfo($email, $licenseKey)
+    {
+        return $this->apiRequest(
+            'customer/getDiscountInfo',
+            ['email' => $email, 'licenseKey' => $licenseKey],
+            'POST'
         );
     }
 

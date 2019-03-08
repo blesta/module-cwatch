@@ -89,7 +89,13 @@ $lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for
 $lang['CWatch.tab_licenses.not_applicable'] = 'N/A';
 $lang['CWatch.tab_licenses.remove_site'] = 'Remove Site';
 $lang['CWatch.tab_licenses.add_site'] = 'Add Site';
+$lang['CWatch.tab_licenses.change_license_type'] = 'Change License Type';
 $lang['CWatch.tab_licenses.confirm_delete'] = 'Are you sure you want to remove this domain?';
+
+$lang['CWatch.tab_licenses.license_type_modal'] = 'Change License Type';
+$lang['CWatch.tab_licenses.new_license_type'] = 'New License Type';
+$lang['CWatch.tab_licenses.cancel'] = 'Cancel';
+$lang['CWatch.tab_licenses.change_type'] = 'Change Type';
 
 $lang['CWatch.tab_licenses.domain'] = 'Domain Name';
 $lang['CWatch.tab_licenses.initiateDns'] = 'Initial DNS';

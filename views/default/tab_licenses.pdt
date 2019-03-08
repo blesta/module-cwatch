@@ -30,8 +30,8 @@
                     $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
                     $this->Form->fieldHidden('action', 'remove_domain');
                 ?>
-                <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
-                    <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
+                    <?php $this->_('CWatch.tab_licenses.remove_site');?>
                 </a>
                 <?php
                     $this->Form->end();
