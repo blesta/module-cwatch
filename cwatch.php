@@ -1164,7 +1164,7 @@ class Cwatch extends Module
     public function tabClientLicenses($package, $service, array $get = null, array $post = null, array $files = null)
     {
         $template = isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_licenses';
-        return $this->getLicensesTab($template, $service, $post, $get);
+        return $this->getLicensesTab($template, $service, $post, $get, $package);
     }
 
     /**
@@ -1199,6 +1199,7 @@ class Cwatch extends Module
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
+        Loader::loadModels($this, ['PackageOptions', 'Services']);
 
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $service_licenses = $service_fields->cwatch_licenses;
@@ -1217,6 +1218,10 @@ class Cwatch extends Module
                         isset($post['license_key']) ? $post['license_key'] : '',
                         isset($post['license_type']) ? $post['license_type'] : ''
                     );
+
+                    ##
+                    # TODO: Make the pricing change
+                    ##
                     break;
                 case 'remove_domain':
                     $api_response = $api->removeSite(
@@ -1349,11 +1354,14 @@ class Cwatch extends Module
     {
         Loader::loadModels($this, ['Services']);
 
-        $license_keys = [];
+        $new_license_key = null;
         $api = $this->getApi();
 
         // Get fields from the service
         $service_fields = $this->serviceFieldsToObject($service->fields);
+
+        // Set pricing for later reference
+        $pricing = $this->Services->getPackagePricing($service->pricing_id);
 
         // Fetch the cWatch license
         $licenses_response = $api->getLicense($license_key);
@@ -1366,123 +1374,155 @@ class Cwatch extends Module
         $users = empty($user_errors) ? $user_response->response() : [];
         $user = $users[0];
 
-//        // Fetch the cWatch customer
-//        $discount_response = $api->getDiscountInfo($service_fields->cwatch_email, $license_key);
-//        $discount_errors = $discount_response->errors();
-//        $discounts = empty($discount_errors) ? $discount_response->response() : [];
-
-        if (!$current_license || $current_license->pricingTerm == $new_license_type) {
-            $this->Input->setErrors();
+        // Give an error if the license does not exist
+        if (!$current_license) {
+            $this->Input->setErrors('CWatch.changelicensetype.license_not_found');
             return;
         }
 
-        // If this is an upgrade to a paid plan, make an upgrade request
+        // Give an error if the current license type is the same as the new one
+        if ($current_license->pricingTerm == $new_license_type) {
+            $this->Input->setErrors('CWatch.changelicensetype.license_unchanged');
+            return;
+        }
+
+        // If this is an upgrade FROM a paid plan TO a higher paid plan, make an upgrade request
         $paid_license_types = [1 => 'STARTER', 2 => 'PRO', 3 => 'PREMIUM'];
-        if (in_array($new_license_type, $paid_license_types)) {
-            // If the license type of the package selected package is different than that of the current license
-            // upgrade the current license to the new type if it is a higher plan
-            if (array_search($new_license_type, $paid_license_types)
-                    > array_search($current_license->pricingTerm, $paid_license_types)
-            ) {
-                // Make a request to change the pricing level (type) for this license
-                $price_change_response = $api->changeLicensePricing(
-                    $new_license_type,
-                    isset($user->id) ? $user->id : '',
-                    $license_key
-                );
-
-                // Log the request and response
-                $this->log('upgradesite', json_encode($api->lastRequest()), 'input', true);
-                $this->log(
-                    'upgradesite',
-                    $price_change_response->raw(),
-                    'output',
-                    $price_change_response->status() == 200
-                );
-
-                // Record errors
-                if ($price_change_response->status() != 200) {
-                    $this->Input->setErrors(['api' => ['internal' => $price_change_response->errors()]]);
-                } else {
-                    // Success! Record the key of the license that was created
-                    $license_keys[] = $license_key;
-                }
-
-                return $license_keys;
-            }
-        }
-
-        // Determine what term to add these licenses for
-        $license_term = $current_license->term;
-        if ($new_license_type == 'BASIC_DETECTION') {
-            $license_term = self::BASICTERM;
-        } elseif ($current_license->term == 'BASIC_DETECTION'
-            && ($pricing = $this->Services->getPackagePricing($service->pricing_id))
+        if (in_array($new_license_type, $paid_license_types)
+            && in_array($current_license->pricingTerm, $paid_license_types)
+            && (array_search($new_license_type, $paid_license_types)
+                > array_search($current_license->pricingTerm, $paid_license_types))
         ) {
-            $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
-        }
-
-        // Add licenses to the customer account according to the config options provided
-        $license_response = $api->addLicense(
-            $new_license_type,
-            $license_term,
-            $service_fields->cwatch_email,
-            isset($user->name) ? $user->name : '',
-            isset($user->surname) ? $user->surname : '',
-            isset($user->country) ? $user->country : ''
-        );
-        $license = $license_response->response();
-
-        // Log the request and response
-        $this->log('addlicense', json_encode($api->lastRequest()), 'input', true);
-        $this->log(
-            'addlicense',
-            $license_response->raw(),
-            'output',
-            $license_response->status() == 200
-        );
-
-        // Break on error
-        if ($license_response->status() != 200) {
-            $this->Input->setErrors(['api' => ['internal' => $license_response->errors()]]);
-
-            return;
-        } else {
-            // Success! Record the key of the license that was created
-            $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
-        }
-
-        // Change the current domain over to the new license
-        if (!empty($service_fields->cwatch_domain)) {
-            $site_response = $api->changeSiteLicense(
-                [
-                    'renew' => false,
-                    'email' => $service_fields->cwatch_email,
-                    'site' => $service_fields->cwatch_domain,
-                    'licenseKeyNew' => $license->distributionResult[0]->licenseKeys[0]
-                ]
+            // Make a request to change the license type
+            $price_change_response = $api->changeLicensePricing(
+                $new_license_type,
+                isset($user->id) ? $user->id : '',
+                $license_key
             );
 
-            // Log the site downgrade
-            $this->log('downgradesite', json_encode($api->lastRequest()), 'input', true);
-            $this->log('downgradesite', $site_response->raw(), 'output', $site_response->status() == 200);
+            // Log the request and response
+            $this->log('upgradesite', json_encode($api->lastRequest()), 'input', true);
+            $this->log(
+                'upgradesite',
+                $price_change_response->raw(),
+                'output',
+                $price_change_response->status() == 200
+            );
+
+            // Record errors
+            if ($price_change_response->status() != 200) {
+                $this->Input->setErrors(['api' => ['internal' => $price_change_response->errors()]]);
+            } else {
+                // Success! Record the key of the license that was created
+                $new_license_key = $license_key;
+            }
+        } else {
+            // If this is a change from a non-paid license type, to a license type (paid or not) that is lower than the
+            // current one, provision a new license, switch over any existing domain, and cancel the old license
+
+            // Determine what term to give the new license
+            // Use the current license term by default
+            $license_term = $current_license->term;
+            if ($new_license_type == 'BASIC_DETECTION') {
+                // Always use the basic (unlimited) term for basic licenses
+                $license_term = self::BASICTERM;
+            } elseif ($current_license->term == self::BASICTERM && $pricing) {
+                // If the current license term is basic, replace it based on the service pricing
+                $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
+            }
+
+            // Add licenses to the customer account according to the config options provided
+            $license_response = $api->addLicense(
+                $new_license_type,
+                $license_term,
+                $service_fields->cwatch_email,
+                isset($user->name) ? $user->name : '',
+                isset($user->surname) ? $user->surname : '',
+                isset($user->country) ? $user->country : ''
+            );
+            $license = $license_response->response();
+
+            // Log the request and response
+            $this->log('addlicense', json_encode($api->lastRequest()), 'input', true);
+            $this->log(
+                'addlicense',
+                $license_response->raw(),
+                'output',
+                $license_response->status() == 200
+            );
+
+            // Break on error
+            if ($license_response->status() != 200) {
+                $this->Input->setErrors(['api' => ['internal' => $license_response->errors()]]);
+
+                return;
+            } else {
+                // Success! Record the key of the license that was created
+                $new_license_key = $license->distributionResult[0]->licenseKeys[0];
+            }
+
+            // Change the current domain over to the new license
+            if (!empty($service_fields->cwatch_domain)) {
+                $site_response = $api->changeSiteLicense(
+                    [
+                        'renew' => false,
+                        'email' => $service_fields->cwatch_email,
+                        'site' => $service_fields->cwatch_domain,
+                        'licenseKeyNew' => $new_license_key
+                    ]
+                );
+
+                // Log the site license change
+                $this->log('changesitelicense', json_encode($api->lastRequest()), 'input', true);
+                $this->log('changesitelicense', $site_response->raw(), 'output', $site_response->status() == 200);
+            }
+
+            // Deactivate the old license
+            $deactivate_response = $api->deactivateLicense($current_license->licenseKey);
+
+            // Log the request and response
+            $this->log('deactivatelicense', json_encode($api->lastRequest()), 'input', true);
+            $this->log(
+                'deactivatelicense',
+                $deactivate_response->raw(),
+                'output',
+                $deactivate_response->status() == 200
+            );
+
+            // Swap the old license key for the new one in the service fields
+            foreach ($service->fields as &$field) {
+                if ($field->key == 'cwatch_licenses') {
+                    $field->value[array_search($current_license->licenseKey, $field->value)] = $new_license_key;
+                }
+                $field = (array)$field;
+            }
+            $this->Services->setFields($service->id, $service->fields);
         }
 
-        // Deactivate the old license
-        $deactivate_response = $api->deactivateLicense($current_license->licenseKey);
+        if ($pricing && ($package_options = $this->PackageOptions->getByPackageId($pricing->package_id))) {
+            $options = [];
+            foreach ($service->options as $option) {
+                $options[$option->option_id] = $option->qty;
+            }
 
-        // Log the request and response
-        $this->log('deactivatelicense', json_encode($api->lastRequest()), 'input', true);
-        $this->log('deactivatelicense', $deactivate_response->raw(), 'output', $deactivate_response->status() == 200);
+            foreach ($package_options as $package_option) {
+                if ($package_option->name == $current_license->pricingTerm && isset($options[$package_option->id])) {
+                    $options[$package_option->id] -= 1;
+                }
 
-        ##
-        # TODO: Make the pricing change
-        ##
+                if ($package_option->name == $new_license_type) {
+                    if (!isset($options[$package_option->id])) {
+                        $options[$package_option->id] = 0;
+                    }
 
-        ##
-        # TODO: implement a way to unset licenses from the service that are are removed because of a downgrade
-        ##
-        return $license_keys;
+                    $options[$package_option->id] += 1;
+                }
+            }
+
+            $this->Services->edit($service->id, ['configoptions' => $options]);
+        }
+
+        return $license_key;
     }
 
     /**

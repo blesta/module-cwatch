@@ -115,6 +115,10 @@ $lang['CWatch.tab_malware.path'] = 'Site Directory';
 
 $lang['CWatch.tab_malware.submit'] = 'Submit';
 
+// Change license type
+$lang['CWatch.changelicensetype.license_not_found'] = 'License not found on the account.';
+$lang['CWatch.changelicensetype.license_unchanged'] = 'The selected term is the same as the current one.';
+
 // Get site statuses
 $lang['CWatch.getsitestatuses.waiting'] = 'Waiting';
 $lang['CWatch.getsitestatuses.site_inprogress'] = 'Site Provision in Progress';

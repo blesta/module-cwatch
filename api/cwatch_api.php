@@ -311,7 +311,7 @@ class CwatchApi
         return $this->apiRequest(
             'customer/getDiscountInfo',
             ['email' => $email, 'licenseKey' => $licenseKey],
-            'POST'
+            'GET'
         );
     }
 
