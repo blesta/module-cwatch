@@ -49,8 +49,8 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#" class="change_license_type" data-license_key="<?php $this->Html->_($license->licenseKey);?>" data-license_type="<?php $this->Html->_($license->pricingTerm);?>" data-toggle="modal" data-target="#change_license_type">
-                                <?php $this->_('CWatch.tab_licenses.change_license_type');?>
+                            <a href="#" class="transfer_site" data-license_key="<?php $this->Html->_($license->licenseKey);?>" data-toggle="modal" data-target="#transfer_site">
+                                <?php $this->_('CWatch.tab_licenses.transfer_site');?>
                             </a>
                         </li>
                     </ul>
@@ -71,12 +71,12 @@
     ?>
 </table>
 
-<div id="change_license_type" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="transfer_site" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="global_modal_title"><?php $this->_('CWatch.tab_licenses.license_type_modal');?></h4>
+                <h4 class="global_modal_title"><?php $this->_('CWatch.tab_licenses.transfer_site');?></h4>
             </div>
             <?php
             $this->Form->create();
@@ -84,15 +84,15 @@
             <div class="modal-body">
                 <?php
                 $this->Form->fieldHidden('license_key', $this->Html->ifSet($license_key), ['id' => 'license_key']);
-                $this->Form->fieldHidden('action', 'change_license_type');
-                $this->Form->label($this->_('CWatch.tab_licenses.new_license_type'), 'license_type');
-                $this->Form->fieldSelect('license_type', $this->Html->ifSet($license_types), null, ['id' => 'license_type', 'class' => 'form-control']);
+                $this->Form->fieldHidden('action', 'transfer_site');
+                $this->Form->label($this->_('CWatch.tab_licenses.new_license_key'), 'new_license_key');
+                $this->Form->fieldSelect('new_license_key', $this->Html->ifSet($available_licenses), null, ['id' => 'new_license_key', 'class' => 'form-control']);
                 ?>
             </div>
             <div class="modal-footer">
                 <?php
                 $this->Form->fieldButton('cancel', $this->_('CWatch.tab_licenses.cancel', true), ['class' => 'btn btn-default', 'data-dismiss' => 'modal']);
-                $this->Form->fieldSubmit('submit', $this->_('CWatch.tab_licenses.change_type', true), ['class' => 'btn btn-primary']);
+                $this->Form->fieldSubmit('submit', $this->_('CWatch.tab_licenses.transfer_site', true), ['class' => 'btn btn-primary']);
                 ?>
             </div>
             <?php
@@ -109,10 +109,9 @@
             submit: true
         });
 
-        $(".change_license_type").on('click', function () {
-            console.log('hi');
+        $(".transfer_site").on('click', function () {
             $('#license_key').val($(this).attr('data-license_key'));
-            $('#license_type').val($(this).attr('data-license_type'));
+            $('#new_license_key').val($(this).attr('data-license_key'));
         });
     });
 </script>
