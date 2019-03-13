@@ -10,6 +10,7 @@
  * @link http://blesta.com/ Blesta
  */
 use Blesta\Core\Util\Common\Traits\Container;
+use Blesta\Core\Util\Ftp\Ftp;
 
 class Cwatch extends Module
 {
@@ -907,7 +908,6 @@ class Cwatch extends Module
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
-        Loader::loadComponents($this, ['Security', 'FtpFactory']);
 
         // Get cWatch API
         $api = $this->getApi();
@@ -938,7 +938,7 @@ class Cwatch extends Module
                     $ftp_options['curlOptions'][CURLOPT_FTPSSLAUTH] = CURLFTPAUTH_DEFAULT;
                 }
 
-                $ftp = $this->FtpFactory->create('ftp');
+                $ftp = new Ftp();
                 $ftp->setServer($protocol . $this->Html->ifSet($post['host']));
                 $ftp->setCredentials(
                     $this->Html->ifSet($post['username']),
