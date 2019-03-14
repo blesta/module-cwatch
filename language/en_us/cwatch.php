@@ -16,7 +16,7 @@ $lang['CWatch.!error.cwatch_lastname.empty'] = 'Enter a last name.';
 $lang['CWatch.!error.cwatch_country.length'] = 'Invalid county.';
 $lang['CWatch.!error.cwatch_domain.format'] = 'Please enter a valid domain name, e.g. domain.com.';
 $lang['CWatch.!error.cwatch_domain.unique'] = 'Domain already registered. Please select a different domain.';
-$lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
+$lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently assigned to domains exceeds the limit entered.  Please free licenses by removing domains before reducing your limit.';
 $lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
 $lang['CWatch.!error.sftp_test'] = 'The SFTP connection failed! Please check your settings and try again.';
 $lang['CWatch.!error.license_type.empty'] = 'No license type was given.  Double check the package settings.';
@@ -89,7 +89,7 @@ $lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for
 $lang['CWatch.tab_licenses.not_applicable'] = 'N/A';
 $lang['CWatch.tab_licenses.remove_site'] = 'Remove Site';
 $lang['CWatch.tab_licenses.add_site'] = 'Add Site';
-$lang['CWatch.tab_licenses.transfer_site'] = 'Transfer Site';
+$lang['CWatch.tab_licenses.upgrade_site'] = 'Upgrade Site License';
 $lang['CWatch.tab_licenses.confirm_delete'] = 'Are you sure you want to remove this domain?';
 
 $lang['CWatch.tab_licenses.new_license_key'] = 'New License';

@@ -9,7 +9,7 @@ $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet
         <li class="form-group">
             <?php
             $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
-            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($license_key), ['class' => 'form-control', 'id' => 'licenseKey']);
+            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($selected_license->licenseKey), ['class' => 'form-control', 'id' => 'licenseKey']);
             ?>
         </li>
         <li class="form-group">

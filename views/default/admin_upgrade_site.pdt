@@ -1,0 +1,28 @@
+<div class="title_row first">
+    <h3><?php $this->_('CWatch.tab_licenses.upgrade_site');?></h3>
+</div>
+<?php
+$this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tablicenses/');
+$this->Form->fieldHidden('action', 'upgrade_site');
+?>
+<div class="pad">
+    <ul>
+        <li class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_licenses.domain', true), 'domain');
+            $this->Form->fieldSelect('domain', $this->Html->ifSet($domains), $this->Html->ifSet($license->site->domain), ['class' => 'form-control', 'id' => 'domain']);
+            ?>
+        </li>
+        <li class="form-group">
+            <?php
+            $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
+            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($license->licenseKey), ['class' => 'form-control', 'id' => 'licenseKey']);
+            ?>
+        </li>
+    </ul>
+</div>
+<button class="btn btn-default pull-right">
+    <i class="fa fa-edit"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
+</button>
+<?php
+$this->Form->end();

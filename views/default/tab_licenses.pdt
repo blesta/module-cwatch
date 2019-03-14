@@ -32,7 +32,15 @@
                 ?>
                 <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
                     <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                </a><?php
+                if ($this->Html->ifSet($package_type) == 'multi_license') {
+                ?>,
+                <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>">
+                    <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                 </a>
+                <?php
+                }
+                ?>
                 <?php
                     $this->Form->end();
                 } else {

@@ -191,7 +191,7 @@ class CwatchApi
      *     - licenseKeyNew The key for the new license to associate with this site
      * @return CwatchResponse
      */
-    public function changeSiteLicense(array $params)
+    public function upgradeLicenseForSite(array $params)
     {
         return $this->apiRequest('customer/upgradeLicenseForSite', $params, 'POST');
     }
