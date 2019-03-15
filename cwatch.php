@@ -322,8 +322,9 @@ class Cwatch extends Module
                 // Delete the user if this is the only service using this email
                 if ($vars['cwatch_email']
                     && !$account_emails_meta
+                    || !array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
                     || (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)
-                        && $account_emails_meta->value[$vars['cwatch_email']] == 0
+                        && $account_emails_meta->value[$vars['cwatch_email']] <= 0
                     )
                 ) {
                     $this->deleteUser($vars['cwatch_email']);
@@ -611,9 +612,7 @@ class Cwatch extends Module
 
         if ($this->Input->errors()) {
             // Deactivate any licenses that were added
-            foreach ($license_keys as $license_key) {
-                $api->deactivateLicense($license_key);
-            }
+            $this->deactivateLicenses($license_keys, isset($vars['cwatch_email']) ? $vars['cwatch_email'] : '');
         }
 
         return $license_keys;
@@ -641,7 +640,6 @@ class Cwatch extends Module
     {
         Loader::loadModels($this, ['ModuleClientMeta']);
         // Get cWatch API
-        $api = $this->getApi();
         $module = $this->getModule();
 
         $account_emails_meta = $this->ModuleClientMeta->get($service->client_id, 'cwatch_account_emails', $module->id);
@@ -650,18 +648,11 @@ class Cwatch extends Module
             && array_key_exists($service_fields->cwatch_email, $account_emails_meta->value)
          ) {
             // Deactivate licenses
-            $errors = [];
-            foreach ($service_fields->cwatch_licenses as $license_key) {
-                $license_response = $api->deactivateLicense($license_key);
-
-                if ($license_response->status() != 200) {
-                    $errors['api'][$license->licenseKey] = $license_response->errors();
-                }
-            }
+            $api_errors = $this->deactivateLicenses($service_fields->cwatch_licenses, $service_fields->cwatch_email);
 
             // Set Errors
-            if (!empty($errors['api'])) {
-                $this->Input->setErrors($errors);
+            if (!empty($api_errors)) {
+                $this->Input->setErrors(['api' => $api_errors]);
                 return;
             }
 
@@ -679,6 +670,56 @@ class Cwatch extends Module
                 [['key' => 'cwatch_account_emails', 'value' => $account_emails_meta->value, 'encrypted' => 0]]
             );
         }
+    }
+
+    /**
+     * Deactives the given licenses and removes any domains associated with them
+     *
+     * @param type $license_keys The keys of the licenses being deactivated
+     * @param string $email The email these licenses are associated with
+     * @return array A list of error messages returned by the API
+     */
+    private function deactivateLicenses($license_keys, $email)
+    {
+        $api = $this->getApi();
+        // Get cWatch sites for the given email
+        $sites = [];
+        $sites_response = $api->getSites($email);
+        $sites_errors = $sites_response->errors();
+        if (empty($sites_errors)) {
+            $sites = $sites_response->response();
+        }
+
+        $errors = [];
+        // Remove any sites associated with the given licenses
+        foreach ($sites as $site) {
+            if (!in_array($site->licenseKey, $license_keys)) {
+                continue;
+            }
+
+            $site_response = $api->removeSite($email, $site->domain);
+
+            // Record errors
+            if ($site_response->status() != 200) {
+                $errors[$site->licenseKey] = $license_response->errors();
+            }
+        }
+
+        // Deactivate each license if there was no problem removing the domain associated with it
+        foreach ($license_keys as $license_key) {
+            if (!empty($errors[$license_key])) {
+                continue;
+            }
+
+            $license_response = $api->deactivateLicense($license_key);
+
+            // Record errors
+            if ($license_response->status() != 200) {
+                $errors[$license_key] = $license_response->errors();
+            }
+        }
+
+        return $errors;
     }
 
     /**
@@ -700,13 +741,10 @@ class Cwatch extends Module
                 $licenses = $list_response->response();
             }
 
-            // Deactivate all licenses for the user
-            foreach ($licenses as $license) {
-                $license_response = $api->deactivateLicense($license->licenseKey);
-
-                if ($license_response->status() != 200) {
-                    $errors['api'][$license->licenseKey] = $license_response->errors();
-                }
+            // Deactivate licenses
+            $api_errors = $this->deactivateLicenses($licenses, $email);
+            if (!empty($api_errors)) {
+                $errors['api'] = $api_errors;
             }
 
             // Remove user
