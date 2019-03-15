@@ -551,9 +551,6 @@ class Cwatch extends Module
         if ($this->Input->errors()) {
             // Deactivate any licenses that were added
             $this->deactivateLicenses($license_keys, isset($vars['cwatch_email']) ? $vars['cwatch_email'] : '');
-            foreach ($license_keys as $license_key) {
-                $api->deactivateLicense($license_key);
-            }
 
             $license_keys = [];
         }
