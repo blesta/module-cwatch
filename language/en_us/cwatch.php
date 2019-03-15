@@ -19,7 +19,6 @@ $lang['CWatch.!error.cwatch_domain.unique'] = 'Domain already registered. Please
 $lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently assigned to domains exceeds the limit entered.  Please free licenses by removing domains before reducing your limit.';
 $lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
 $lang['CWatch.!error.sftp_test'] = 'The SFTP connection failed! Please check your settings and try again.';
-$lang['CWatch.!error.license_type.empty'] = 'No license type was given.  Double check the package settings.';
 
 // Manage Module Row Meta
 $lang['CWatch.manage.boxtitle'] = 'Manage CWatch Credentials';
@@ -92,7 +91,6 @@ $lang['CWatch.tab_licenses.add_site'] = 'Add Site';
 $lang['CWatch.tab_licenses.upgrade_site'] = 'Upgrade Site License';
 $lang['CWatch.tab_licenses.confirm_delete'] = 'Are you sure you want to remove this domain?';
 
-$lang['CWatch.tab_licenses.new_license_key'] = 'New License';
 $lang['CWatch.tab_licenses.cancel'] = 'Cancel';
 
 $lang['CWatch.tab_licenses.license_name'] = '%1$s (%2$s)'; // %1$s is the license key, %2$s is the license type
@@ -114,10 +112,6 @@ $lang['CWatch.tab_malware.port'] = 'FTP Port';
 $lang['CWatch.tab_malware.path'] = 'Site Directory';
 
 $lang['CWatch.tab_malware.submit'] = 'Submit';
-
-// Change license type
-$lang['CWatch.changelicensetype.license_not_found'] = 'License not found on the account.';
-$lang['CWatch.changelicensetype.license_unchanged'] = 'The selected term is the same as the current one.';
 
 // Get site statuses
 $lang['CWatch.getsitestatuses.waiting'] = 'Waiting';

@@ -138,7 +138,7 @@ class CwatchApi
     /**
      * Changes the pricing level of the given license
      *
-     * @param string $licenseType The type of license to create ("STARTER", "PRO", "PREMIUM")
+     * @param string $licenseType The type of license to upgrade to ("STARTER", "PRO", "PREMIUM")
      * @param string $customerId The ID of the customer in cWatch
      * @param string $licenseKey The key of the license to change pricing for
      * @return CwatchResponse
