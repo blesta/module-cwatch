@@ -693,6 +693,14 @@ class Cwatch extends Module
             $license_keys[] = $license_key;
         }
 
+        // If we are changing licenses, deactivate the old one
+        if (isset($current_license->licenseKey)) {
+            $api->deactivateLicense($current_license->licenseKey);
+
+            // Replace the old license with the new one
+            unset($service_licenses[array_search($current_license->licenseKey, $service_licenses)]);
+        }
+
         if (!empty($vars['cwatch_domain'])) {
             // Change the current domain over to the new license
             $site_response = $api->upgradeLicenseForSite(
@@ -707,20 +715,6 @@ class Cwatch extends Module
             // Log the site upgrade
             $this->log('upgradesitelicense', json_encode($api->lastRequest()), 'input', true);
             $this->log('upgradesitelicense', $site_response->raw(), 'output', $site_response->status() == 200);
-
-            if ($site_response->status() != 200) {
-                $this->Input->setErrors(['api' => ['internal' => $site_response->errors()]]);
-
-                return $license_keys;
-            }
-        }
-
-        // If we are changing licenses, deactivate the old one
-        if (isset($current_license->licenseKey)) {
-            $api->deactivateLicense($current_license->licenseKey);
-
-            // Replace the old license with the new one
-            unset($service_licenses[array_search($current_license->licenseKey, $service_licenses)]);
         }
 
         return $license_keys;
