@@ -24,14 +24,14 @@
             <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], $this->Html->ifSet($license->site->status)));?></td>
             <td><?php echo $this->Html->ifSet($license->site->scanner) ? $this->Html->_($license->site->scanner->status, true) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
             <td>
+                <?php
+                if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
+                    $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
+                    $this->Form->fieldHidden('action', 'remove_domain');
+                ?>
                 <div class="btn-group">
-                    <?php
-                    if ($this->Html->ifSet($license->site->status) == 'Valid') {
-                        $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
-                        $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
-                        $this->Form->fieldHidden('action', 'remove_domain');
-                    ?>
-                    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" class="manage btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
+                    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" class="btn btn-xs btn-default" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
                         <i class="fa fa-times-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
                     </a>
                     <button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" type="button">
@@ -42,23 +42,25 @@
                         ?>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&domain=' . $this->Html->ifSet($license->site->domain));?>" class="manage">
+                            <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&domain=' . $this->Html->ifSet($license->site->domain));?>">
                                 <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                             </a>
                         </li>
                     </ul>
                         <?php
                         }
-                        $this->Form->end();
-                    } else {
-                    ?>
-                    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-default">
-                        <i class="fa fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
-                    </a>
-                    <?php
-                    }
-                    ?>
+                        ?>
                 </div>
+                <?php
+                    $this->Form->end();
+                } else {
+                ?>
+                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-default">
+                    <i class="fa fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
+                </a>
+                <?php
+                }
+                ?>
             </td>
         </tr>
         <?php
