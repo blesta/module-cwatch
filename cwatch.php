@@ -914,8 +914,8 @@ class Cwatch extends Module
         $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
 
+        $use_sftp = isset($post['sftp']);
         if (isset($post['test_ftp'])) {
-            $use_sftp = isset($post['sftp']);
             $error_message = Language::_('CWatch.!error.' . ($use_sftp ? 's' : '') . 'ftp_test', true);
 
             try {
@@ -923,10 +923,11 @@ class Cwatch extends Module
                     $ftp = $this->Security->create(
                         'Net',
                         'SFTP',
-                        [$post['host'], $post['port']]
+                        [$this->Html->ifSet($post['host']), $this->Html->ifSet($post['port'])]
                     );
 
-                    $success = $ftp->login($post['username'], $post['password']) && $ftp->chdir($post['path']);
+                    $success = $ftp->login($this->Html->ifSet($post['username']), $this->Html->ifSet($post['password']))
+                        && $ftp->chdir($this->Html->ifSet($post['path']));
                 } else {
                     // Set regular FTP options
                     $ftp_options = array(
@@ -974,7 +975,7 @@ class Cwatch extends Module
                     'host' => $this->Html->ifSet($post['host']),
                     'port' => $this->Html->ifSet($post['port']),
                     'path' => $this->Html->ifSet($post['path']),
-                    'protocol' => isset($post['sftp']) ? 'SFTP' : 'FTP'
+                    'protocol' => $use_sftp ? 'SFTP' : 'FTP'
                 ]
             );
 
