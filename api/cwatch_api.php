@@ -129,7 +129,7 @@ class CwatchApi
             'product' => $licenseType,
             'customers' => [['email' => $email, 'name' => $firstName, 'surname' => $lastName, 'country' => $country]],
             'autoLicenseUpgrade' => false,
-            'renewAutomatically' => false
+            'renewAutomatically' => true
         ];
 
         return $this->apiRequest('customer/distributeLicenseForCustomers', $params, 'POST');
