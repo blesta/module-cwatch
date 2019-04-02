@@ -998,7 +998,6 @@ class Cwatch extends Module
                 $this->Input->setErrors(['api' => ['internal' => $scanner_errors]]);
             }
 
-            unset($post['password']);
             $this->view->set('vars', $post);
         }
 
