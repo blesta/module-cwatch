@@ -7,16 +7,16 @@ $this->Form->fieldHidden('action', 'upgrade_site');
 ?>
 <div class="pad">
     <ul>
-        <li class="form-group">
+        <li>
             <?php
             $this->Form->label($this->_('CWatch.tab_licenses.domain', true), 'domain');
-            $this->Form->fieldSelect('domain', $this->Html->ifSet($domains), $this->Html->ifSet($selected_license->site->domain), ['class' => 'form-control', 'id' => 'domain']);
+            $this->Form->fieldSelect('domain', $this->Html->ifSet($domains), $this->Html->ifSet($selected_license->site->domain), ['id' => 'domain']);
             ?>
         </li>
-        <li class="form-group">
+        <li>
             <?php
             $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
-            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($selected_license->licenseKey), ['class' => 'form-control', 'id' => 'licenseKey']);
+            $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($selected_license->licenseKey), ['id' => 'licenseKey']);
             ?>
         </li>
     </ul>

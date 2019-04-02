@@ -4,7 +4,7 @@
         <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=add_site');?>" class="btn btn-sm btn-default pull-right"><?php $this->_('CWatch.tab_licenses.add');?></a>
     </h3>
 </div>
-<table class="table table-bordered" id="licenses">
+<table class="table table-bordered table-striped" id="licenses">
     <tr class="heading_row">
         <td><?php $this->_('CWatch.tab_licenses.licenseKey');?></td>
         <td><?php $this->_('CWatch.tab_licenses.type');?></td>
@@ -15,9 +15,10 @@
     </tr>
     <?php
     if (!empty($licenses)) {
+        $odd_row = false;
         foreach ($licenses as $key => $license) {
         ?>
-        <tr>
+        <tr<?php echo $odd_row ? ' class="odd_row"' : '';?>>
             <td><?php $this->Html->_($license->licenseKey);?></td>
             <td><?php $this->Html->_($license->productTitle);?></td>
             <td><?php $this->Html->_($license->site->domain);?></td>
@@ -31,8 +32,7 @@
                     $this->Form->fieldHidden('action', 'remove_domain');
                 ?>
                 <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/');?>" class="manage" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
-                    <?php $this->_('CWatch.tab_licenses.remove_site');?>
-                </a><?php
+                    <?php $this->_('CWatch.tab_licenses.remove_site');?></a><?php
                 if ($this->Html->ifSet($package_type) == 'multi_license') {
                 ?>,
                 <a href="<?php echo $this->Html->safe($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet($service->client_id) . '/' . $this->Html->ifSet($service->id) . '/tabLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>">
@@ -52,6 +52,7 @@
             </td>
         </tr>
         <?php
+            $odd_row = !$odd_row;
         }
     } else {
     ?>
