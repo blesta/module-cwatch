@@ -3,8 +3,10 @@ echo $this->Html->ifSet($message);
 ?>
 <h3>
     <?php $this->_('CWatch.tab_licenses.licenses');?>
-    <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses?action=add_site');?>" class="btn btn-default pull-right"><?php $this->_('CWatch.tab_licenses.add');?></a>
 </h3>
+<?php
+if (!empty($licenses)) {
+?>
 <table class="table table-curved table-striped" id="licenses">
     <thead>
         <tr>
@@ -18,9 +20,8 @@ echo $this->Html->ifSet($message);
     </thead>
     <tbody>
     <?php
-    if (!empty($licenses)) {
-        foreach ($licenses as $key => $license) {
-        ?>
+    foreach ($licenses as $key => $license) {
+    ?>
         <tr>
             <td><?php $this->Html->_($license->licenseKey);?></td>
             <td><?php $this->Html->_($license->productTitle);?></td>
@@ -81,20 +82,19 @@ echo $this->Html->ifSet($message);
                 ?>
             </td>
         </tr>
-        <?php
-        }
-    } else {
-    ?>
-        <tr>
-            <td colspan="6">
-                <?php $this->_('CWatch.tab_licenses.no_results');?>
-            </td>
-        </tr>
     <?php
     }
     ?>
     </tbody>
 </table>
+<?php
+} else {
+?>
+<p><?php $this->_('CWatch.tab_licenses.no_results');?></p>
+<?php
+}
+?>
+
 <?php
 if (!empty($inactive_licenses)) {
 ?>

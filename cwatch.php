@@ -342,25 +342,25 @@ class Cwatch extends Module
 
                 return;
             }
-        }
 
-        if ($vars['cwatch_email']) {
-            // Record this email for this user so they can use the same email for future services
-            $account_emails = [$vars['cwatch_email'] => 1];
-            if ($account_emails_meta) {
-                if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
-                    $account_emails_meta->value[$vars['cwatch_email']]++;
+            if ($vars['cwatch_email']) {
+                // Record this email for this user so they can use the same email for future services
+                $account_emails = [$vars['cwatch_email'] => 1];
+                if ($account_emails_meta) {
+                    if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
+                        $account_emails_meta->value[$vars['cwatch_email']]++;
+                    }
+
+                    $account_emails = array_merge($account_emails, $account_emails_meta->value);
                 }
 
-                $account_emails = array_merge($account_emails, $account_emails_meta->value);
+                $this->ModuleClientMeta->set(
+                    $vars['client_id'],
+                    $module->id,
+                    0,
+                    [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
+                );
             }
-
-            $this->ModuleClientMeta->set(
-                $vars['client_id'],
-                $module->id,
-                0,
-                [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
-            );
         }
 
         // Get user customer ID
@@ -385,7 +385,7 @@ class Cwatch extends Module
         ];
 
         $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
-        if ($package->meta->cwatch_package_type == 'single_license') {
+        if ($package->meta->cwatch_package_type == 'single_license' && $status != 'active') {
             $return_fields[] = 'cwatch_domain';
         }
 
@@ -436,17 +436,11 @@ class Cwatch extends Module
         }
 
         $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_customer_id'];
-        if ($package->meta->cwatch_package_type == 'single_license') {
-            $fields[] = 'cwatch_domain';
-        }
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
         }
 
         $vars['cwatch_email'] = strtolower($vars['cwatch_email']);
-        if (isset($vars['cwatch_domain'])) {
-            $vars['cwatch_domain'] = strtolower($vars['cwatch_domain']);
-        }
 
         $license_keys = $service_fields->cwatch_licenses;
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
@@ -470,9 +464,6 @@ class Cwatch extends Module
             'cwatch_email', 'cwatch_firstname', 'cwatch_lastname',
             'cwatch_country', 'cwatch_customer_id'
         ];
-        if ($package->meta->cwatch_package_type == 'single_license') {
-            $return_fields[] = 'cwatch_domain';
-        }
 
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
@@ -513,7 +504,8 @@ class Cwatch extends Module
         }
 
         $response = null;
-        if ($edit || array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
+        $edit_user = $edit || array_key_exists($vars['cwatch_email'], $account_emails_meta->value);
+        if ($edit_user) {
             // Edit a customer account in cWatch
             $response = $api->editUser(
                 isset($users[0]) ? $users[0]->id : '',
@@ -532,8 +524,8 @@ class Cwatch extends Module
         }
 
         // Log request data
-        $this->log($edit ? 'edituser' : 'adduser', json_encode($api->lastRequest()), 'input', true);
-        $this->log($edit ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
+        $this->log($edit_user ? 'edituser' : 'adduser', json_encode($api->lastRequest()), 'input', true);
+        $this->log($edit_user ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
 
         if ($response->status() != 200) {
             $this->Input->setErrors(['api' => ['internal' => $response->errors()]]);
@@ -639,6 +631,24 @@ class Cwatch extends Module
             }
         }
 
+        if ($current_license) {
+            // Get cWatch sites
+            $sites = [];
+            $sites_response = $api->getSites($vars['cwatch_email']);
+            $sites_errors = $sites_response->errors();
+            if (empty($sites_errors)) {
+                $sites = $sites_response->response();
+            }
+
+            // Attach the site for this license
+            foreach ($sites as $site) {
+                if ($site->licenseKey == $current_license->licenseKey) {
+                    $current_license->site = $site;
+                    break;
+                }
+            }
+        }
+
         // If this is an upgrade to a paid plan, make an upgrade request
         // If the license type of the package selected package is different than that of the current license
         // upgrade the current license to the new type if it is a higher plan
@@ -692,13 +702,13 @@ class Cwatch extends Module
             $api->deactivateLicense($current_license->licenseKey);
         }
 
-        if ($current_license && !empty($vars['cwatch_domain'])) {
+        if ($current_license && isset($current_license->site)) {
             // Change the current domain over to the new license
             $site_response = $api->upgradeLicenseForSite(
                 [
                     'renew' => false,
                     'email' => $vars['cwatch_email'],
-                    'site' => $vars['cwatch_domain'],
+                    'site' => $current_license->site->domain,
                     'licenseKeyNew' => $license_keys[0]
                 ]
             );
@@ -1501,7 +1511,6 @@ class Cwatch extends Module
                 if (!in_array($license->licenseKey, $service_licenses)) {
                     continue;
                 }
-
 
                 if (isset($sites_by_license[$license->licenseKey])) {
                     // Use the associated site for domain info
