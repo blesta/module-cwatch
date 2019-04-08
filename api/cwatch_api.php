@@ -290,11 +290,11 @@ class CwatchApi
      * @param string $email The customer email to fetch licenses for
      * @return CwatchResponse
      */
-    public function getLicenses($email)
+    public function getLicenses($email, $active_only = true)
     {
         return $this->apiRequest(
             'customer/listlicencebyemail',
-            ['email' => $email, 'activeLicenseOnly' => 'true'],
+            ['email' => $email, 'activeLicenseOnly' => ($active_only ? 'true' : 'false')],
             'GET'
         );
     }
