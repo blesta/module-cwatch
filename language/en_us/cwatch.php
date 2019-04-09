@@ -1,14 +1,18 @@
 <?php
 
 $lang['CWatch.name'] = 'CWatch';
-$lang['CWatch.module_row.name'] = 'Credential';
-$lang['CWatch.module_row_plural.name'] = 'Credentials';
+$lang['CWatch.module_row.name'] = 'API Account';
+$lang['CWatch.module_row_plural.name'] = 'API Accounts';
 
 $lang['CWatch.!success.sftp_test'] = 'SFTP connection was successful!';
 $lang['CWatch.!success.ftp_test'] = 'FTP connection was successful!';
 
 $lang['CWatch.!tooltip.initiateDns'] = 'Whether to start a scan of the DNS records.';
 $lang['CWatch.!tooltip.autoSsl'] = 'Whether to install a Comodo Free SSL Certificate.';
+
+$lang['CWatch.!error.username.valid'] = 'Please enter a username.';
+$lang['CWatch.!error.password.valid'] = 'Please enter a password.';
+$lang['CWatch.!error.password.valid_connection'] = 'Unable to make a connection using the given credentials.';
 
 $lang['CWatch.!error.cwatch_email.format'] = 'Invalid email format.';
 $lang['CWatch.!error.cwatch_email.unique'] = 'A customer with the given email already exists.';
@@ -23,9 +27,9 @@ $lang['CWatch.!error.sftp_test'] = 'The SFTP connection failed! Please check you
 $lang['CWatch.!error.ftp_test'] = 'The FTP connection failed! Please check your settings and try again.';
 
 // Manage Module Row Meta
-$lang['CWatch.manage.boxtitle'] = 'Manage CWatch Credentials';
+$lang['CWatch.manage.boxtitle'] = 'Manage CWatch';
 $lang['CWatch.manage.title'] = 'API Accounts';
-$lang['CWatch.manage.add_module_row'] = 'Add API Credentials';
+$lang['CWatch.manage.add_module_row'] = 'Add API Account';
 $lang['CWatch.manage.option_edit'] = 'Edit';
 $lang['CWatch.manage.delete'] = 'Delete';
 $lang['CWatch.manage.confirm_delete'] = 'Are you sure you want to delete this user? ';
@@ -66,7 +70,7 @@ $lang['CWatch.add_row.field_sandbox'] = 'Enable SandBox';
 $lang['CWatch.add_row.add_btn'] = 'Add Account';
 
 // Edit Module Row
-$lang['CWatch.edit_row.box_title'] = 'Edit Credentials';
+$lang['CWatch.edit_row.box_title'] = 'Edit API Account';
 $lang['CWatch.edit_row.basic_title'] = 'User Settings';
 $lang['CWatch.edit_row.field_username'] = 'Username';
 $lang['CWatch.edit_row.field_password'] = 'Password';

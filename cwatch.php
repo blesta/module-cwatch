@@ -102,6 +102,90 @@ class Cwatch extends Module
     }
 
     /**
+     * Adds the module row on the remote server. Sets Input errors on failure,
+     * preventing the row from being added. Returns a set of data, which may be
+     * a subset of $vars, that is stored for this module row
+     *
+     * @param array $vars An array of module info to add
+     * @return array A numerically indexed array of meta fields for the module row containing:
+     *
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     */
+    public function addModuleRow(array &$vars)
+    {
+        $meta_fields = ['username', 'password', 'cwatch_sandbox'];
+        $encrypted_fields = ['password'];
+
+        // Set unspecified checkboxes
+        if (empty($vars['cwatch_sandbox'])) {
+            $vars['cwatch_sandbox'] = 'false';
+        }
+
+        $this->Input->setRules($this->getRowRules($vars));
+
+        // Validate module row
+        if ($this->Input->validates($vars)) {
+            // Build the meta data for this row
+            $meta = [];
+            foreach ($vars as $key => $value) {
+                if (in_array($key, $meta_fields)) {
+                    $meta[] = [
+                        'key' => $key,
+                        'value' => $value,
+                        'encrypted' => in_array($key, $encrypted_fields) ? 1 : 0
+                    ];
+                }
+            }
+
+            return $meta;
+        }
+    }
+
+    /**
+     * Edits the module row on the remote server. Sets Input errors on failure,
+     * preventing the row from being updated. Returns a set of data, which may be
+     * a subset of $vars, that is stored for this module row
+     *
+     * @param stdClass $module_row The stdClass representation of the existing module row
+     * @param array $vars An array of module info to update
+     * @return array A numerically indexed array of meta fields for the module row containing:
+     *  - key The key for this meta field
+     *  - value The value for this key
+     *  - encrypted Whether or not this field should be encrypted (default 0, not encrypted)
+     */
+    public function editModuleRow($module_row, array &$vars)
+    {
+        $meta_fields = ['username', 'password', 'cwatch_sandbox'];
+        $encrypted_fields = ['password'];
+
+        // Set unspecified checkboxes
+        if (empty($vars['cwatch_sandbox'])) {
+            $vars['cwatch_sandbox'] = 'false';
+        }
+
+        $this->Input->setRules($this->getRowRules($vars));
+
+        // Validate module row
+        if ($this->Input->validates($vars)) {
+            // Build the meta data for this row
+            $meta = [];
+            foreach ($vars as $key => $value) {
+                if (in_array($key, $meta_fields)) {
+                    $meta[] = [
+                        'key' => $key,
+                        'value' => $value,
+                        'encrypted' => in_array($key, $encrypted_fields) ? 1 : 0
+                    ];
+                }
+            }
+
+            return $meta;
+        }
+    }
+
+    /**
      * Load the view
      *
      * @param string $view The name of the view to load
@@ -1867,5 +1951,63 @@ class Cwatch extends Module
         }
 
         return $rules;
+    }
+
+    /**
+     * Builds and returns the rules required to add/edit a module row (e.g. server)
+     *
+     * @param array $vars An array of key/value data pairs
+     * @return array An array of Input rules suitable for Input::setRules()
+     */
+    private function getRowRules(&$vars)
+    {
+        $rules = [
+            'username' => [
+                'valid' => [
+                    'rule' => 'isEmpty',
+                    'negate' => true,
+                    'message' => Language::_('CWatch.!error.username.valid', true)
+                ]
+            ],
+            'password' => [
+                'valid' => [
+                    'last' => true,
+                    'rule' => 'isEmpty',
+                    'negate' => true,
+                    'message' => Language::_('CWatch.!error.password.valid', true)
+                ],
+                'valid_connection' => [
+                    'rule' => [
+                        [$this, 'validateConnection'],
+                        $vars['username'],
+                        $vars['cwatch_sandbox'],
+                    ],
+                    'message' => Language::_('CWatch.!error.password.valid_connection', true)
+                ]
+            ],
+        ];
+
+        return $rules;
+    }
+
+    /**
+     * Validates whether or not the connection details are valid by attempting to fetch
+     * the number of accounts that currently reside on the server
+     *
+     * @return bool True if the connection is valid, false otherwise
+     */
+    public function validateConnection($password, $username, $sandbox)
+    {
+        try {
+            $api = new CwatchApi($username, $password, $sandbox == 'true');
+
+            $summary_response = $api->getAdmin();
+            if (!$summary_response->errors()) {
+                return true;
+            }
+        } catch (Exception $e) {
+            // Trap any errors encountered, could not validate connection
+        }
+        return false;
     }
 }
