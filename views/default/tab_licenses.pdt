@@ -73,7 +73,7 @@ if (!empty($licenses)) {
 <?php
 } else {
 ?>
-<p><?php $this->_('CWatch.tab_licenses.no_results');?></p>
+<div class="empty_section"><div class="empty_box"><?php $this->_('CWatch.tab_licenses.no_results');?></div></div>
 <?php
 }
 ?>

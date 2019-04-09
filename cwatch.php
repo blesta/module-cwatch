@@ -924,6 +924,7 @@ class Cwatch extends Module
 
             // Only delete if there are no other services using this email
             if (--$account_emails_meta->value[$service_fields->cwatch_email] == 0) {
+                unset($account_emails_meta->value[$service_fields->cwatch_email]);
                 // Delete user
                 $this->deleteUser($service_fields->cwatch_email);
             }
@@ -1703,6 +1704,18 @@ class Cwatch extends Module
      */
     public function validateService($package, array $vars = null)
     {
+        // Set the module row to use if not given
+        if (!isset($vars['module_row_id'])) {
+            // Set module row to that defined for the package if available
+            if ($package->module_row) {
+                $vars['module_row_id'] = $package->module_row;
+            } else {
+                // If no module row defined for the package, let the module decide which row to use
+                $vars['module_row_id'] = $this->selectModuleRow($package->module_group);
+            }
+        }
+        $this->setModuleRow($this->getModuleRow($vars['module_row_id']));
+
         $this->Input->setRules($this->getServiceRules($vars));
         return $this->Input->validates($vars);
     }
@@ -1768,9 +1781,9 @@ class Cwatch extends Module
                         $user_response = $api->getUser($email);
                         $user_errors = $user_response->errors();
 
-                        if (empty($user_errors)
-                            && ($user = $user_response->response())
-                            && !empty($user)
+                        if ($user_errors
+                            || (($user = $user_response->response())
+                                && !empty($user))
                         ) {
                             return false;
                         }

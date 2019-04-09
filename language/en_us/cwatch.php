@@ -86,7 +86,7 @@ $lang['CWatch.tab_licenses.domain'] = 'Domain';
 $lang['CWatch.tab_licenses.status'] = 'Domain Status';
 $lang['CWatch.tab_licenses.malware_scanner'] = 'Scanner';
 $lang['CWatch.tab_licenses.options'] = 'Options';
-$lang['CWatch.tab_licenses.no_upgrade_options'] = 'No licenses available for upgrade.';
+$lang['CWatch.tab_licenses.no_upgrade_options'] = 'There are no licenses available for upgrade.';
 $lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for this service.';
 $lang['CWatch.tab_licenses.upgrade_delay'] = 'Upgrades may take some time to propogate, so the old license type may still be shown.';
 

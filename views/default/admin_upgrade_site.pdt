@@ -37,7 +37,7 @@ $this->Form->fieldHidden('action', 'upgrade_site');
         } else {
         ?>
     </ul>
-    <p><?php $this->_('CWatch.tab_licenses.no_upgrade_options');?></p>
+    <div class="empty_section"><div class="empty_box"><?php $this->_('CWatch.tab_licenses.no_upgrade_options');?></div></div>
     <?php
     }
     ?>
