@@ -316,7 +316,7 @@ class Cwatch extends Module
         $vars['cwatch_email'] = isset($vars['cwatch_email']) ? strtolower($vars['cwatch_email']) : null;
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Add user and licenses
-            $license_keys = $this->pushUserAndLicenses($vars, [], $package);
+            $license_keys = $this->pushUserAndLicenses($vars, $package);
 
             if ($this->Input->errors()) {
                 // Error
@@ -329,29 +329,38 @@ class Cwatch extends Module
                     )
                 ) {
                     $this->deleteUser($vars['cwatch_email']);
+
+                    // Remove this account from the client module meta
+                    unset($account_emails_meta->value[$vars['cwatch_email']]);
+                    $this->ModuleClientMeta->set(
+                        $vars['client_id'],
+                        $module->id,
+                        0,
+                        [['key' => 'cwatch_account_emails', 'value' => $account_emails_meta->value, 'encrypted' => 0]]
+                    );
                 }
 
                 return;
             }
-        }
 
-        if ($vars['cwatch_email']) {
-            // Record this email for this user so they can use the same email for future services
-            $account_emails = [$vars['cwatch_email'] => 1];
-            if ($account_emails_meta) {
-                if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
-                    $account_emails_meta->value[$vars['cwatch_email']]++;
+            if ($vars['cwatch_email']) {
+                // Record this email for this user so they can use the same email for future services
+                $account_emails = [$vars['cwatch_email'] => 1];
+                if ($account_emails_meta) {
+                    if (array_key_exists($vars['cwatch_email'], $account_emails_meta->value)) {
+                        $account_emails_meta->value[$vars['cwatch_email']]++;
+                    }
+
+                    $account_emails = array_merge($account_emails, $account_emails_meta->value);
                 }
 
-                $account_emails = array_merge($account_emails, $account_emails_meta->value);
+                $this->ModuleClientMeta->set(
+                    $vars['client_id'],
+                    $module->id,
+                    0,
+                    [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
+                );
             }
-
-            $this->ModuleClientMeta->set(
-                $vars['client_id'],
-                $module->id,
-                0,
-                [['key' => 'cwatch_account_emails', 'value' => $account_emails, 'encrypted' => 0]]
-            );
         }
 
         // Get user customer ID
@@ -376,7 +385,7 @@ class Cwatch extends Module
         ];
 
         $return_fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country'];
-        if ($package->meta->cwatch_package_type == 'single_license') {
+        if ($package->meta->cwatch_package_type == 'single_license' && $status != 'active') {
             $return_fields[] = 'cwatch_domain';
         }
 
@@ -427,22 +436,16 @@ class Cwatch extends Module
         }
 
         $fields = ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country', 'cwatch_customer_id'];
-        if ($package->meta->cwatch_package_type == 'single_license') {
-            $fields[] = 'cwatch_domain';
-        }
         foreach ($fields as $field) {
             $vars[$field] = isset($vars[$field]) ? $vars[$field] : $service_fields->{$field};
         }
 
         $vars['cwatch_email'] = strtolower($vars['cwatch_email']);
-        if (isset($vars['cwatch_domain'])) {
-            $vars['cwatch_domain'] = strtolower($vars['cwatch_domain']);
-        }
 
-        $new_license_keys = [];
+        $license_keys = $service_fields->cwatch_licenses;
         if (isset($vars['use_module']) && $vars['use_module'] == 'true') {
             // Edit user and add licenses
-            $new_license_keys = $this->pushUserAndLicenses($vars, $service_fields->cwatch_licenses, $package, true);
+            $license_keys = $this->pushUserAndLicenses($vars, $package, $service_fields->cwatch_licenses, true);
         }
 
         if ($this->Input->errors()) {
@@ -452,7 +455,7 @@ class Cwatch extends Module
         $return = [
             [
                 'key' => 'cwatch_licenses',
-                'value' => array_merge($new_license_keys, $service_fields->cwatch_licenses),
+                'value' => $license_keys,
                 'encrypted' => 0
             ]
         ];
@@ -461,9 +464,6 @@ class Cwatch extends Module
             'cwatch_email', 'cwatch_firstname', 'cwatch_lastname',
             'cwatch_country', 'cwatch_customer_id'
         ];
-        if ($package->meta->cwatch_package_type == 'single_license') {
-            $return_fields[] = 'cwatch_domain';
-        }
 
         foreach ($return_fields as $field) {
             $return[] = ['key' => $field, 'value' => isset($vars[$field]) ? $vars[$field] : '', 'encrypted' => 0];
@@ -476,21 +476,39 @@ class Cwatch extends Module
      * Add/edit a cwatch user and add any requested licenses
      *
      * @param array $vars An array of user supplied info to satisfy the request
-     * @param array $service_licenses A list of licenses already belonging to the service
      * @param stdClass $package The package this service is using
-     * @param bool $edit Whether the user is being edited
+     * @param array $service_licenses A list of licenses already belonging to the service
+     * @param bool $edit Whether the user/license is being edited
      * @return array A list of licenses keys added
      */
-    private function pushUserAndLicenses($vars, array $service_licenses = null, $package = null, $edit = false)
+    private function pushUserAndLicenses($vars, $package, array $service_licenses = [], $edit = false)
     {
         Loader::loadModels($this, ['Services']);
 
         $api = $this->getApi();
+
+        // Fetch the customer to get their ID
+        $user_response = $api->getUser($vars['cwatch_email']);
+        $user_errors = $user_response->errors();
+        $users = empty($user_errors) ? $user_response->response() : null;
+
+        // Get a list of which email accounts are associated with this client
+        $module = $this->getModule();
+        $account_emails_meta = null;
+        if (isset($vars['client_id'])) {
+            $account_emails_meta = $this->ModuleClientMeta->get(
+                $vars['client_id'],
+                'cwatch_account_emails',
+                $module->id
+            );
+        }
+
         $response = null;
-        if ($edit) {
+        $edit_user = $edit || array_key_exists($vars['cwatch_email'], $account_emails_meta->value);
+        if ($edit_user) {
             // Edit a customer account in cWatch
             $response = $api->editUser(
-                $vars['cwatch_customer_id'],
+                isset($users[0]) ? $users[0]->id : '',
                 $vars['cwatch_firstname'],
                 $vars['cwatch_lastname'],
                 $vars['cwatch_country']
@@ -506,114 +524,361 @@ class Cwatch extends Module
         }
 
         // Log request data
-        $this->log($edit ? 'edituser' : 'adduser', serialize($api->lastRequest()), 'input', true);
-        $this->log($edit ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
+        $this->log($edit_user ? 'edituser' : 'adduser', json_encode($api->lastRequest()), 'input', true);
+        $this->log($edit_user ? 'edituser' : 'adduser', $response->raw(), 'output', $response->status() == 200);
 
-        $license_keys = [];
         if ($response->status() != 200) {
             $this->Input->setErrors(['api' => ['internal' => $response->errors()]]);
+
+            return [];
+        }
+
+        // Add or upgrade licenses
+        $license_keys = [];
+        if (isset($package->meta->cwatch_package_type) && $package->meta->cwatch_package_type == 'single_license') {
+            $license_keys = $edit
+                ? $this->upgradeSingleLicense($vars, $package, $service_licenses)
+                : $this->provisionSingleLicense($vars, $package);
         } else {
-            $license_types = Configure::get('cwatch.products');
-            // Get a count of licenses to provide for each type
-            foreach ($license_types as $license_type => $value) {
-                $license_types[$license_type] = isset($vars['configoptions'][$license_type])
-                    ? $vars['configoptions'][$license_type]
-                    : 0;
-            }
-
-            // Provision the license assigned to this package
-            if (isset($package->meta->cwatch_license_type)
-                && isset($package->meta->cwatch_package_type)
-                && $package->meta->cwatch_package_type == 'single_license'
-                && array_key_exists($package->meta->cwatch_license_type, $license_types)
-            ) {
-                $license_types = [$package->meta->cwatch_license_type => 1];
-            }
-
-            // Get cWatch licenses
-            $licenses_response = $api->getLicenses($vars['cwatch_email']);
-            $license_errors = $licenses_response->errors();
-            $licenses = empty($license_errors) ? $licenses_response->response() : [];
-
-            // Count how many licenses to add
-            foreach ($licenses as $license) {
-                if (strtolower($license->status) == 'valid'
-                    && ($service_licenses === null || in_array($license->licenseKey, $service_licenses))
-                ) {
-                    $license_types[$license->pricingTerm]--;
-                }
-
-                if ($license_types[$license->pricingTerm] < 0) {
-                    // Give an error if the config option has a value lower than the current number of licenses
-                    // for this type
-                    $this->Input->setErrors(
-                        ['licenses' => ['limit_exceeded' => Language::_('CWatch.!error.limit_exceeded', true)]]
-                    );
-                }
-            }
-
-            // Determine what term to add these licenses for
-            $license_term = 'MONTH_1';
-            if (($pricing = $this->Services->getPackagePricing($vars['pricing_id']))) {
-                $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
-            }
-
-            // Add licenses to the customer account according to the config options provided
-            foreach ($license_types as $license_type => $quantity) {
-                for ($i = 0; $i < $quantity; $i++) {
-                    $license_response = $api->addLicense(
-                        $license_type,
-                        $license_type == self::BASICPRODUCT ? self::BASICTERM : $license_term,
-                        $vars['cwatch_email'],
-                        $vars['cwatch_firstname'],
-                        $vars['cwatch_lastname'],
-                        $vars['cwatch_country']
-                    );
-
-                    $this->log(
-                        'addlicense',
-                        $license_response->raw(),
-                        'output',
-                        $license_response->status() == 200
-                    );
-
-                    // Break on error
-                    if ($license_response->status() != 200) {
-                        $this->Input->setErrors(['api' => ['internal' => $license_response->errors()]]);
-
-                        break 2;
-                    }
-
-                    // Keep track of which licenses were created by this edit so they can be reverted or added to
-                    // the list of keys for this service
-                    $license = $license_response->response();
-                    $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
-                }
-            }
-
-            if (!empty($vars['cwatch_domain'])
-                && !empty($license_keys)
-                && isset($package->meta->cwatch_package_type)
-                && $package->meta->cwatch_package_type == 'single_license'
-            ) {
-                // Add the domain submitted for a single license package
-                $site_response = $api->addSite(
-                    [
-                        'email' => $vars['cwatch_email'],
-                        'domain' => $vars['cwatch_domain'],
-                        'licenseKey' => $license_keys[0],
-                        'initiateDns' => false,
-                        'autoSsl' => false
-                    ]
-                );
-
-                $this->log('addsite', $site_response->raw(), 'output', $site_response->status() == 200);
-            }
+            $license_keys = $this->provisionMultiLicense($vars, $service_licenses);
         }
 
         if ($this->Input->errors()) {
-            // Deactivate any licenses that were added
+            // On error, deactivate any licenses that were added
             $this->deactivateLicenses($license_keys, isset($vars['cwatch_email']) ? $vars['cwatch_email'] : '');
+
+            $license_keys = [];
+        }
+
+        return array_merge($license_keys, $service_licenses);
+    }
+
+    /**
+     * Provision a cwatch license for a service on a single license package
+     *
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param stdClass $package The package this service is using
+     * @return array A list of licenses keys added
+     */
+    private function provisionSingleLicense(array $vars, $package)
+    {
+        $api = $this->getApi();
+
+        // Make sure we have a type for the license
+        if (!isset($package->meta->cwatch_license_type)) {
+            $this->Input->setErrors(['api' => ['internal' => Language::_('Cwatch.license_type.empty')]]);
+
+            return [];
+        }
+
+        // Attempt to provision the requested license
+        $license_key = $this->provisionLicense($vars, $package);
+        if ($this->Input->errors()) {
+            return [];
+        }
+
+        if (!empty($vars['cwatch_domain'])) {
+            // Add the domain submitted for a single license package
+            $site_response = $api->addSite(
+                [
+                    'email' => $vars['cwatch_email'],
+                    'domain' => $vars['cwatch_domain'],
+                    'licenseKey' => $license_key,
+                    'initiateDns' => false,
+                    'autoSsl' => false
+                ]
+            );
+
+            // Log the site add
+            $this->log('addsite', json_encode($api->lastRequest()), 'input', true);
+            $this->log('addsite', $site_response->raw(), 'output', $site_response->status() == 200);
+
+            if ($site_response->status() != 200) {
+                $this->Input->setErrors(['api' => ['internal' => $site_response->errors()]]);
+            }
+        }
+
+        return [$license_key];
+    }
+
+    /**
+     * Upgrades a cwatch license or site for a service on single license package
+     *
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param stdClass $package The package this service is using
+     * @param array $service_licenses A list of licenses already belonging to the service
+     * @return array A list of licenses keys added
+     */
+    private function upgradeSingleLicense(array $vars, $package, array $service_licenses)
+    {
+        Loader::loadModels($this, ['Services']);
+
+        $api = $this->getApi();
+
+        // Get cWatch licenses
+        $licenses_response = $api->getLicenses($vars['cwatch_email'], false);
+        $licenses_errors = $licenses_response->errors();
+        $licenses = empty($licenses_errors) ? $licenses_response->response() : [];
+
+        // Get the current license if there is one
+        $current_license = null;
+        foreach ($licenses as $license) {
+            if (strtolower($license->status) == 'valid'
+                && ($service_licenses === null || in_array($license->licenseKey, $service_licenses))
+            ) {
+                $current_license = $license;
+                break;
+            }
+        }
+
+        if ($current_license) {
+            // Get cWatch sites
+            $sites = [];
+            $sites_response = $api->getSites($vars['cwatch_email']);
+            $sites_errors = $sites_response->errors();
+            if (empty($sites_errors)) {
+                $sites = $sites_response->response();
+            }
+
+            // Attach the site for this license
+            foreach ($sites as $site) {
+                if ($site->licenseKey == $current_license->licenseKey) {
+                    $current_license->site = $site;
+                    break;
+                }
+            }
+        }
+
+        // If this is an upgrade to a paid plan, make an upgrade request
+        // If the license type of the package selected package is different than that of the current license
+        // upgrade the current license to the new type if it is a higher plan
+        $paid_license_types = [1 => 'STARTER', 2 => 'PRO', 3 => 'PREMIUM'];
+        if (in_array($package->meta->cwatch_license_type, $paid_license_types)
+            && $current_license
+            && array_search($current_license->pricingTerm, $paid_license_types)
+            && array_search($package->meta->cwatch_license_type, $paid_license_types)
+                >= array_search($current_license->pricingTerm, $paid_license_types)
+        ) {
+            // Fetch the customer to get their ID
+            $user_response = $api->getUser($vars['cwatch_email']);
+            $user_errors = $user_response->errors();
+            $users = empty($user_errors) ? $user_response->response() : null;
+
+            // Make a request to change the pricing level (type) for this license
+            $price_change_response = $api->changeLicensePricing(
+                $package->meta->cwatch_license_type,
+                isset($users[0]->id) ? $users[0]->id : '',
+                $current_license->licenseKey
+            );
+
+            // Log the results
+            $this->log('upgradelicense', json_encode($api->lastRequest()), 'input', true);
+            $this->log(
+                'upgradelicense',
+                $price_change_response->raw(),
+                'output',
+                $price_change_response->status() == 200
+            );
+
+            if ($price_change_response->status() != 200) {
+                // Record errors
+                $this->Input->setErrors(['api' => ['internal' => $price_change_response->errors()]]);
+            }
+
+            return [];
+        }
+
+        // Create a new license to upgrade the domain to
+        $license_key = $this->provisionLicense($vars, $package);
+
+        if ($this->Input->errors()) {
+            return [];
+        } else {
+            $license_keys[] = $license_key;
+        }
+
+        // If we are changing licenses, deactivate the old one
+        if (isset($current_license->licenseKey)) {
+            $api->deactivateLicense($current_license->licenseKey);
+        }
+
+        if ($current_license && isset($current_license->site)) {
+            // Change the current domain over to the new license
+            $site_response = $api->upgradeLicenseForSite(
+                [
+                    'renew' => false,
+                    'email' => $vars['cwatch_email'],
+                    'site' => $current_license->site->domain,
+                    'licenseKeyNew' => $license_keys[0]
+                ]
+            );
+
+            // Log the site upgrade
+            $this->log('upgradesitelicense', json_encode($api->lastRequest()), 'input', true);
+            $this->log('upgradesitelicense', $site_response->raw(), 'output', $site_response->status() == 200);
+        }
+
+        return $license_keys;
+    }
+
+    /**
+     * Provisions a new license in cWatch
+     *
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param stdClass $package The package this service is using
+     * @return string The key of the license that was added
+     */
+    private function provisionLicense($vars, $package)
+    {
+        $api = $this->getApi();
+
+        // Determine what term to add these licenses for
+        $license_term = 'MONTH_1';
+        if (($pricing = $this->Services->getPackagePricing($vars['pricing_id']))) {
+            $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
+        }
+
+        // Add licenses to the customer account according to the config options provided
+        $license_response = $api->addLicense(
+            $package->meta->cwatch_license_type,
+            $package->meta->cwatch_license_type == self::BASICPRODUCT ? self::BASICTERM : $license_term,
+            $vars['cwatch_email'],
+            $vars['cwatch_firstname'],
+            $vars['cwatch_lastname'],
+            $vars['cwatch_country']
+        );
+        $license = $license_response->response();
+
+        // Log the request
+        $this->log('addlicense', json_encode($api->lastRequest()), 'input', true);
+        $this->log(
+            'addlicense',
+            $license_response->raw(),
+            'output',
+            $license_response->status() == 200
+        );
+
+        // Break on error
+        if ($license_response->status() != 200) {
+            $this->Input->setErrors(['api' => ['internal' => $license_response->errors()]]);
+            return '';
+        }
+
+        // Success! Return the key of the license that was created
+        return $license->distributionResult[0]->licenseKeys[0];
+    }
+
+    /**
+     * Provision a cwatch license for a service on multi license package
+     *
+     * @param array $vars An array of user supplied info to satisfy the request
+     * @param array $service_licenses A list of licenses already belonging to the service
+     * @return array A list of licenses keys added
+     */
+    private function provisionMultiLicense($vars, array $service_licenses)
+    {
+        $api = $this->getApi();
+
+        $license_types = Configure::get('cwatch.products');
+        $unused_licenses_by_type = [];
+        // Get a count of licenses to provide for each type
+        foreach ($license_types as $license_type => $value) {
+            $license_types[$license_type] = isset($vars['configoptions'][$license_type])
+                ? $vars['configoptions'][$license_type]
+                : 0;
+
+            $unused_licenses_by_type[$license_type] = [];
+        }
+
+        // Get cWatch licenses
+        $licenses_response = $api->getLicenses($vars['cwatch_email'], false);
+        $license_errors = $licenses_response->errors();
+        $licenses = empty($license_errors) ? $licenses_response->response() : [];
+
+        // Count how many licenses to add
+        foreach ($licenses as $license) {
+            if (strtolower($license->status) == 'valid'
+                && ($service_licenses === null || in_array($license->licenseKey, $service_licenses))
+                && array_key_exists($license->pricingTerm, $license_types)
+            ) {
+                $license_types[$license->pricingTerm]--;
+
+                if ($license->registeredDomainCount == 0) {
+                    $unused_licenses_by_type[$license->pricingTerm][] = $license->licenseKey;
+                }
+            }
+        }
+
+        // Check for invalid license type counts
+        $license_removals_by_type = [];
+        foreach ($license_types as $license_type => $quantity) {
+            // Add licenses
+            if ($quantity + count($unused_licenses_by_type[$license_type]) < 0) {
+                // Give an error if the config option has a value lower than the current number of used licenses
+                // for this type
+                $this->Input->setErrors(
+                    ['licenses' => ['limit_exceeded' => Language::_('CWatch.!error.limit_exceeded', true)]]
+                );
+
+                return [];
+            }
+
+            // Record the number of licenses of this type to remove
+            $license_removals_by_type[$license_type] = $quantity * -1;
+        }
+
+        // Determine what term to add these licenses for
+        $license_term = 'MONTH_1';
+        if (($pricing = $this->Services->getPackagePricing($vars['pricing_id']))) {
+            $license_term = strtoupper($pricing->period) . '_' . $pricing->term;
+        }
+
+        // Keep track of the keys for all licenses that are added
+        $license_keys = [];
+
+        // Add licenses to the customer account according to the config options provided
+        foreach ($license_types as $license_type => $quantity) {
+            for ($i = 0; $i < $quantity; $i++) {
+                // Add licenses
+                $license_response = $api->addLicense(
+                    $license_type,
+                    $license_type == self::BASICPRODUCT ? self::BASICTERM : $license_term,
+                    $vars['cwatch_email'],
+                    $vars['cwatch_firstname'],
+                    $vars['cwatch_lastname'],
+                    $vars['cwatch_country']
+                );
+
+                $this->log('addlicense', json_encode($api->lastRequest()), 'input', true);
+                $this->log(
+                    'addlicense',
+                    $license_response->raw(),
+                    'output',
+                    $license_response->status() == 200
+                );
+
+                // Break on error
+                if ($license_response->status() != 200) {
+                    $this->Input->setErrors(['api' => ['internal' => $license_response->errors()]]);
+
+                    break 2;
+                }
+
+                // Keep track of which licenses were created by this edit so they can be reverted or added to
+                // the list of keys for this service
+                $license = $license_response->response();
+                $license_keys[] = $license->distributionResult[0]->licenseKeys[0];
+            }
+        }
+
+        // Delete licenses from the customer account according to the config options provided
+        foreach ($license_removals_by_type as $license_type => $quantity) {
+            for ($i = 0; $i < $quantity; $i++) {
+                $this->deactivateLicenses(
+                    array_slice($unused_licenses_by_type[$license_type], 0, $quantity),
+                    $vars['cwatch_email']
+                );
+            }
         }
 
         return $license_keys;
@@ -659,6 +924,7 @@ class Cwatch extends Module
 
             // Only delete if there are no other services using this email
             if (--$account_emails_meta->value[$service_fields->cwatch_email] == 0) {
+                unset($account_emails_meta->value[$service_fields->cwatch_email]);
                 // Delete user
                 $this->deleteUser($service_fields->cwatch_email);
             }
@@ -754,7 +1020,7 @@ class Cwatch extends Module
                 $errors['api'][$email] = $response->errors();
             }
 
-            $this->log('deleteuser', serialize($api->lastRequest()), 'input', true);
+            $this->log('deleteuser', json_encode($api->lastRequest()), 'input', true);
             $this->log('deleteuser', $response->raw(), 'output', $response->status() == 200);
         } catch (Exception $e) {
             $errors['api']['internal'] = $e->getMessage();
@@ -1024,7 +1290,7 @@ class Cwatch extends Module
                 $scanner_raw->password = '***';
             }
 
-            $this->log('addmalwarescanner', serialize($last_request), 'input', true);
+            $this->log('addmalwarescanner', json_encode($last_request), 'input', true);
             $this->log('addmalwarescanner', json_encode($scanner_raw), 'output', empty($scanner_errors));
 
             if (!empty($scanner_errors)) {
@@ -1066,8 +1332,20 @@ class Cwatch extends Module
      */
     public function tabClientLicenses($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'client_add_site' : 'tab_client_licenses';
-        return $this->getLicensesTab($template, $service, $post, $get);
+        // Determine which view template to show the user
+        $template = 'tab_client_licenses';
+        if (isset($get['action'])) {
+            switch ($get['action']) {
+                case 'add_site':
+                    $template = 'client_add_site';
+                    break;
+                case 'upgrade_site':
+                    $template = 'client_upgrade_site';
+                    break;
+            }
+        }
+
+        return $this->getLicensesTab($template, $service, $post, $get, $package);
     }
 
     /**
@@ -1082,8 +1360,20 @@ class Cwatch extends Module
      */
     public function tabLicenses($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $template = isset($get['action']) && $get['action'] == 'add_site' ? 'admin_add_site' : 'tab_licenses';
-        return $this->getLicensesTab($template, $service, $post, $get);
+        // Determine which view template to show the user
+        $template = 'tab_licenses';
+        if (isset($get['action'])) {
+            switch ($get['action']) {
+                case 'add_site':
+                    $template = 'admin_add_site';
+                    break;
+                case 'upgrade_site':
+                    $template = 'admin_upgrade_site';
+                    break;
+            }
+        }
+
+        return $this->getLicensesTab($template, $service, $post, $get, $package);
     }
 
     /**
@@ -1093,43 +1383,74 @@ class Cwatch extends Module
      * @param stdClass $service A stdClass object representing the current service
      * @param array $post Any POST parameters
      * @param array $get Any GET parameters
+     * @param stdClass $package A stdClass object representing the current package
      * @return string The string representing the contents of this tab
      */
-    private function getLicensesTab($template, $service, $post, $get)
+    private function getLicensesTab($template, $service, $post, $get, $package)
     {
         // Load view
         $this->view = $this->getView($template);
+        if (!isset($get['action']) && $package->meta->cwatch_package_type == 'single_license') {
+            $this->setMessage('notice', Language::_('CWatch.tab_licenses.upgrade_delay', true));
+        }
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
+        Loader::loadModels($this, ['PackageOptions', 'Services']);
 
         $service_fields = $this->serviceFieldsToObject($service->fields);
         $service_licenses = $service_fields->cwatch_licenses;
+
+        $license_key = isset($get['key']) ? $get['key'] : '';
 
         // Get cWatch API
         $api = $this->getApi();
 
         if (!empty($post)) {
-            $remove_site = isset($post['action']) && $post['action'] == 'remove_domain';
-            if ($remove_site) {
-                $site = $api->removeSite($service_fields->cwatch_email, $post['domain']);
-            } else {
-                $site = $api->addSite(
-                    [
-                        'email' => $service_fields->cwatch_email,
-                        'domain' => $post['domain'],
-                        'licenseKey' => $post['licenseKey'],
-                        'initiateDns' => isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false,
-                        'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
-                    ]
-                );
+            // Default the action to add_site
+            $post['action'] = isset($post['action']) ? $post['action'] : 'add_site';
+
+            switch ($post['action']) {
+                case 'upgrade_site':
+                    $this->upgradeLicenseForSite(
+                        $service_fields->cwatch_email,
+                        isset($post['domain']) ? $post['domain'] : '',
+                        isset($post['licenseKey']) ? $post['licenseKey'] : ''
+                    );
+                    break;
+                case 'deactivate_license':
+                    $api_response = $api->deactivateLicense($post['licenseKey']);
+                    break;
+                case 'remove_domain':
+                    $api_response = $api->removeSite(
+                        $service_fields->cwatch_email,
+                        isset($post['domain']) ? $post['domain'] : ''
+                    );
+                    break;
+                case 'add_site':
+                    // This is the default case
+                default:
+                    $api_response = $api->addSite(
+                        [
+                            'email' => $service_fields->cwatch_email,
+                            'domain' => isset($post['domain']) ? $post['domain'] : '',
+                            'licenseKey' => isset($post['licenseKey']) ? $post['licenseKey'] : '',
+                            'initiateDns' => isset($post['initiateDns']) && $post['initiateDns'] == 1 ? true : false,
+                            'autoSsl' => isset($post['autoSsl']) && $post['autoSsl'] == 1 ? true : false
+                        ]
+                    );
             }
 
-            $site_errors = $site->errors();
-            $this->log($remove_site ? 'removesite' : 'addsite', serialize($api->lastRequest()), 'input', true);
-            $this->log($remove_site ? 'removesite' : 'addsite', $site->raw(), 'output', empty($site_errors));
-            if (!empty($site_errors)) {
-                $this->Input->setErrors(['api' => ['internal' => $site_errors]]);
+            if (in_array($post['action'], ['add_site', 'remove_site', 'deactivate_license'])) {
+                // Log request and response
+                $api_errors = $api_response->errors();
+                $this->log($post['action'], json_encode($api->lastRequest()), 'input', true);
+                $this->log($post['action'], $api_response->raw(), 'output', empty($api_errors));
+
+                // Set errors
+                if (!empty($api_errors)) {
+                    $this->Input->setErrors(['api' => ['internal' => $api_errors]]);
+                }
             }
         }
 
@@ -1160,8 +1481,9 @@ class Cwatch extends Module
             $sites = $sites_response->response();
         }
 
-        // Sort sites by license
+        // Sort sites by license and make a list of domains
         $sites_by_license = [];
+        $domains = [];
         foreach ($sites as $site) {
             if (!in_array($site->licenseKey, $service_licenses)) {
                 continue;
@@ -1175,13 +1497,16 @@ class Cwatch extends Module
             }
 
             $sites_by_license[$site->licenseKey] = $site;
+            $domains[$site->domain] = $site->domain;
         }
 
         // Get cWatch licenses
-        $licenses_response = $api->getLicenses($service_fields->cwatch_email);
+        $licenses_response = $api->getLicenses($service_fields->cwatch_email, false);
         $licenses_errors = $licenses_response->errors();
         $licenses = [];
+        $inactive_licenses = [];
         $available_licenses = [];
+        $selected_license = null;
         if (empty($licenses_errors)) {
             foreach ($licenses_response->response() as $license) {
                 if (!in_array($license->licenseKey, $service_licenses)) {
@@ -1194,23 +1519,62 @@ class Cwatch extends Module
                 } elseif (isset($provisions_by_license[$license->licenseKey])) {
                     // Use the associated provision for site info
                     $license->site = $provisions_by_license[$license->licenseKey];
-                } else {
+                } elseif ($license->status == 'Valid') {
                     // Mark this license available for attaching a new domain
-                    $available_licenses[$license->licenseKey] = $license->productTitle;
+                    $available_licenses[$license->licenseKey] = Language::_(
+                        'CWatch.tab_licenses.license_name',
+                        true,
+                        $license->licenseKey,
+                        $license->productTitle
+                    );
                 }
 
-                $licenses[] = $license;
+                if ($license->status == 'Valid') {
+                    $licenses[] = $license;
+                } else {
+                    $inactive_licenses[] = $license;
+                }
+
+                if ($license->licenseKey == $license_key) {
+                    $selected_license = $license;
+                }
             }
         }
 
         $this->view->set('site_statuses', $this->getSiteStatuses());
-        $this->view->set('licenses', $licenses);
-        $this->view->set('available_licenses', $available_licenses);
         $this->view->set('service', $service);
-        $this->view->set('license_key', isset($get['key']) ? $get['key'] : '');
+        $this->view->set('package_type', $package->meta->cwatch_package_type);
+        $this->view->set('licenses', $licenses);
+        $this->view->set('inactive_licenses', $inactive_licenses);
+        $this->view->set('available_licenses', $available_licenses);
+        $this->view->set('selected_license', $selected_license);
+        $this->view->set('domains', $domains);
 
         $this->view->setDefaultView('components' . DS . 'modules' . DS . 'cwatch' . DS);
         return $this->view->fetch();
+    }
+
+    private function upgradeLicenseForSite($email, $domain, $new_license_key)
+    {
+        $api = $this->getApi();
+
+        // Change the domain over to the new license
+        $site_response = $api->upgradeLicenseForSite(
+            [
+                'renew' => false,
+                'email' => $email,
+                'site' => $domain,
+                'licenseKeyNew' => $new_license_key
+            ]
+        );
+
+        // Log the site license change
+        $this->log('upgradesitelicense', json_encode($api->lastRequest()), 'input', true);
+        $this->log('upgradesitelicense', $site_response->raw(), 'output', $site_response->status() == 200);
+
+        if ($site_response->status() != 200) {
+            $this->Input->setErrors(['api' => [$site_response->errors()]]);
+        }
     }
 
     /**
@@ -1340,6 +1704,18 @@ class Cwatch extends Module
      */
     public function validateService($package, array $vars = null)
     {
+        // Set the module row to use if not given
+        if (!isset($vars['module_row_id'])) {
+            // Set module row to that defined for the package if available
+            if ($package->module_row) {
+                $vars['module_row_id'] = $package->module_row;
+            } else {
+                // If no module row defined for the package, let the module decide which row to use
+                $vars['module_row_id'] = $this->selectModuleRow($package->module_group);
+            }
+        }
+        $this->setModuleRow($this->getModuleRow($vars['module_row_id']));
+
         $this->Input->setRules($this->getServiceRules($vars));
         return $this->Input->validates($vars);
     }
@@ -1385,6 +1761,7 @@ class Cwatch extends Module
                 'unique' => [
                     'rule' => function ($email) use ($client_id) {
                         Loader::loadModels($this, ['ModuleClientMeta']);
+
                         $module = $this->getModule();
                         $account_emails = $this->ModuleClientMeta->get(
                             $client_id,
@@ -1404,9 +1781,9 @@ class Cwatch extends Module
                         $user_response = $api->getUser($email);
                         $user_errors = $user_response->errors();
 
-                        if (empty($user_errors)
-                            && ($user = $user_response->response())
-                            && !empty($user)
+                        if ($user_errors
+                            || (($user = $user_response->response())
+                                && !empty($user))
                         ) {
                             return false;
                         }
@@ -1455,6 +1832,26 @@ class Cwatch extends Module
                     },
                     'message' => Language::_('CWatch.!error.cwatch_domain.format', true)
                 ],
+//                'unique' => [
+//                    'if_set' => true,
+//                    'rule' => function ($host_name) {
+//                        // Fetch any site matching this domain from cWatch
+//                        $api = $this->getApi();
+//                        $site_response = $api->checkSite($host_name);
+//                        $site_errors = $site_response->errors();
+//
+//                        var_dump($site_response->raw());
+//                        if (empty($site_errors)
+//                            && ($site = $site_response->response())
+//                            && isset($site->existing)
+//                        ) {
+//                            return !$site->existing;
+//                        }
+//
+//                        return false;
+//                    },
+//                    'message' => Language::_('CWatch.!error.cwatch_domain.unique', true)
+//                ],
             ]
         ];
 

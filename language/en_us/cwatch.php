@@ -16,7 +16,8 @@ $lang['CWatch.!error.cwatch_firstname.empty'] = 'Enter a first name.';
 $lang['CWatch.!error.cwatch_lastname.empty'] = 'Enter a last name.';
 $lang['CWatch.!error.cwatch_country.length'] = 'Invalid county.';
 $lang['CWatch.!error.cwatch_domain.format'] = 'Please enter a valid domain name, e.g. domain.com.';
-$lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently on this account exceeds the limit entered.  Please remove licenses before reducing your limit.';
+$lang['CWatch.!error.cwatch_domain.unique'] = 'Domain already registered. Please select a different domain.';
+$lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently assigned to domains exceeds the limit entered.  Please free licenses by removing domains before reducing your limit.';
 $lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
 $lang['CWatch.!error.ftps_test'] = 'The FTPS connection failed! Please check your settings and try again.';
 $lang['CWatch.!error.ftp_test'] = 'The FTP connection failed! Please check your settings and try again.';
@@ -77,21 +78,31 @@ $lang['CWatch.service_info.option_login'] = 'Log in to cWatch';
 
 // Tab licenses
 $lang['CWatch.tab_licenses.licenses'] = 'Manage Licenses';
+$lang['CWatch.tab_licenses.inactive_licenses'] = 'Inactive Licenses';
 $lang['CWatch.tab_licenses.add'] = 'Add New Site';
 $lang['CWatch.tab_licenses.licenseKey'] = 'License Key';
-$lang['CWatch.tab_licenses.type'] = 'License Type';
+$lang['CWatch.tab_licenses.type'] = 'Type';
 $lang['CWatch.tab_licenses.domain'] = 'Domain';
 $lang['CWatch.tab_licenses.status'] = 'Domain Status';
-$lang['CWatch.tab_licenses.malware_scanner'] = 'Malware Scanner';
-$lang['CWatch.tab_licenses.actions'] = 'Actions';
-$lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for this customer.';
+$lang['CWatch.tab_licenses.malware_scanner'] = 'Scanner';
+$lang['CWatch.tab_licenses.options'] = 'Options';
+$lang['CWatch.tab_licenses.no_upgrade_options'] = 'There are no licenses available for upgrade.';
+$lang['CWatch.tab_licenses.no_results'] = 'No licenses have been provisioned for this service.';
+$lang['CWatch.tab_licenses.upgrade_delay'] = 'Upgrades may take some time to propogate, so the old license type may still be shown.';
 
 $lang['CWatch.tab_licenses.not_applicable'] = 'N/A';
+$lang['CWatch.tab_licenses.deactivate_license'] = 'Deactivate License';
 $lang['CWatch.tab_licenses.remove_site'] = 'Remove Site';
 $lang['CWatch.tab_licenses.add_site'] = 'Add Site';
+$lang['CWatch.tab_licenses.upgrade_site'] = 'Upgrade Site';
 $lang['CWatch.tab_licenses.confirm_delete'] = 'Are you sure you want to remove this domain?';
+$lang['CWatch.tab_licenses.confirm_deactivate'] = 'Are you sure you want to deactivate this license?';
 
-$lang['CWatch.tab_licenses.domain'] = 'Domain Name';
+$lang['CWatch.tab_licenses.cancel'] = 'Cancel';
+
+$lang['CWatch.tab_licenses.current_license'] = 'Current License';
+$lang['CWatch.tab_licenses.license_name'] = '%1$s (%2$s)'; // %1$s is the license key, %2$s is the license type
+
 $lang['CWatch.tab_licenses.initiateDns'] = 'Initial DNS';
 $lang['CWatch.tab_licenses.autoSsl'] = 'AutoSSL';
 $lang['CWatch.tab_licenses.submit'] = 'Submit';
