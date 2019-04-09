@@ -1212,49 +1212,54 @@ class Cwatch extends Module
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
+        Loader::loadComponents($this, ['Security']);
 
         // Get cWatch API
         $api = $this->getApi();
         $service_fields = $this->serviceFieldsToObject($service->fields);
 
+        $use_sftp = isset($post['sftp']);
         if (isset($post['test_ftp'])) {
-            $use_ftps = isset($post['ftps']);
-            $error_message = Language::_('CWatch.!error.ftp' . ($use_ftps ? 's' : '') . '_test', true);
+            $error_message = Language::_('CWatch.!error.' . ($use_sftp ? 's' : '') . 'ftp_test', true);
 
             try {
-                // Set regular FTP options
-                $ftp_options = array(
-                    'passive' => true,
-                    'port' => $this->Html->ifSet($post['port']),
-                    'timeout' => 30,
-                    'curlOptions' => array(
-                        CURLOPT_PROTOCOLS => CURLPROTO_FTP,
-                    )
-                );
-                $protocol = 'ftp://';
+                if ($use_sftp) {
+                    $ftp = $this->Security->create(
+                        'Net',
+                        'SFTP',
+                        [$this->Html->ifSet($post['host']), $this->Html->ifSet($post['port'])]
+                    );
 
-                // Update options for FTPS
-                if ($use_ftps) {
-                    $protocol = 'ftps://';
-                    $ftp_options['curlOptions'][CURLOPT_PROTOCOLS] = CURLPROTO_FTPS;
-                    $ftp_options['curlOptions'][CURLOPT_SSL_VERIFYPEER] = true;
-                    $ftp_options['curlOptions'][CURLOPT_USE_SSL] = CURLUSESSL_ALL;
-                    $ftp_options['curlOptions'][CURLOPT_FTPSSLAUTH] = CURLFTPAUTH_DEFAULT;
+                    $success = $ftp->login($this->Html->ifSet($post['username']), $this->Html->ifSet($post['password']))
+                        && $ftp->chdir($this->Html->ifSet($post['path']));
+                } else {
+                    // Set regular FTP options
+                    $ftp_options = array(
+                        'passive' => true,
+                        'port' => $this->Html->ifSet($post['port']),
+                        'timeout' => 30,
+                        'curlOptions' => array(
+                            CURLOPT_PROTOCOLS => CURLPROTO_FTP,
+                        )
+                    );
+                    $protocol = 'ftp://';
+
+                    $ftp = new Ftp();
+                    $ftp->setServer($protocol . $this->Html->ifSet($post['host']));
+                    $ftp->setCredentials(
+                        $this->Html->ifSet($post['username']),
+                        $this->Html->ifSet($post['password'])
+                    );
+                    $ftp->setOptions($ftp_options);
+
+                    $success = $ftp->listDir($this->Html->ifSet($post['path']));
                 }
 
-                $ftp = new Ftp();
-                $ftp->setServer($protocol . $this->Html->ifSet($post['host']));
-                $ftp->setCredentials(
-                    $this->Html->ifSet($post['username']),
-                    $this->Html->ifSet($post['password'])
-                );
-                $ftp->setOptions($ftp_options);
-
                 // Attempt to login to test the connection and navigate to the given path. Show success or error
-                if ($ftp->listDir($this->Html->ifSet($post['path']))) {
+                if ($success) {
                     echo $this->setMessage(
                         'message',
-                        Language::_('CWatch.!success.ftp' . ($use_ftps ? 's' : '') . '_test', true)
+                        Language::_('CWatch.!success.' . ($use_sftp ? 's' : '') . 'ftp_test', true)
                     );
                 } else {
                     echo $this->setMessage('error', $error_message);
@@ -1274,7 +1279,7 @@ class Cwatch extends Module
                     'host' => $this->Html->ifSet($post['host']),
                     'port' => $this->Html->ifSet($post['port']),
                     'path' => $this->Html->ifSet($post['path']),
-                    'protocol' => isset($post['ftps']) ? 'FTPS' : 'FTP'
+                    'protocol' => $use_sftp ? 'SFTP' : 'FTP'
                 ]
             );
 
@@ -1296,6 +1301,8 @@ class Cwatch extends Module
             if (!empty($scanner_errors)) {
                 $this->Input->setErrors(['api' => ['internal' => $scanner_errors]]);
             }
+
+            $this->view->set('vars', $post);
         }
 
         $sites_response = $api->getSites($service_fields->cwatch_email);

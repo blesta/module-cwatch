@@ -364,7 +364,7 @@ class CwatchApi
      *
      * @param string $email The customer to add the scanner for
      * @param array $params
-     *     - domainname The domain to scan
+     *     - domain The domain to scan
      *     - login The username for FTP access
      *     - password The password for FTP access
      *     - host The host to use for FTP access

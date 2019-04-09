@@ -4,7 +4,7 @@ $lang['CWatch.name'] = 'CWatch';
 $lang['CWatch.module_row.name'] = 'Credential';
 $lang['CWatch.module_row_plural.name'] = 'Credentials';
 
-$lang['CWatch.!success.ftps_test'] = 'FTPS connection was successful!';
+$lang['CWatch.!success.sftp_test'] = 'SFTP connection was successful!';
 $lang['CWatch.!success.ftp_test'] = 'FTP connection was successful!';
 
 $lang['CWatch.!tooltip.initiateDns'] = 'Whether to start a scan of the DNS records.';
@@ -19,7 +19,7 @@ $lang['CWatch.!error.cwatch_domain.format'] = 'Please enter a valid domain name,
 $lang['CWatch.!error.cwatch_domain.unique'] = 'Domain already registered. Please select a different domain.';
 $lang['CWatch.!error.limit_exceeded'] = 'The number of licenses currently assigned to domains exceeds the limit entered.  Please free licenses by removing domains before reducing your limit.';
 $lang['CWatch.!error.api.internal'] = 'An internal error occurred, or the server did not respond to the request.';
-$lang['CWatch.!error.ftps_test'] = 'The FTPS connection failed! Please check your settings and try again.';
+$lang['CWatch.!error.sftp_test'] = 'The SFTP connection failed! Please check your settings and try again.';
 $lang['CWatch.!error.ftp_test'] = 'The FTP connection failed! Please check your settings and try again.';
 
 // Manage Module Row Meta
@@ -116,7 +116,7 @@ $lang['CWatch.tab_malware.ftppassword'] = 'FTP Password';
 $lang['CWatch.tab_malware.ftpusername'] = 'FTP Username';
 $lang['CWatch.tab_malware.host'] = 'FTP HostName';
 $lang['CWatch.tab_malware.port'] = 'FTP Port';
-$lang['CWatch.tab_malware.ftps'] = 'Use SSL';
+$lang['CWatch.tab_malware.sftp'] = 'Use SFTP';
 $lang['CWatch.tab_malware.path'] = 'Site Directory';
 
 $lang['CWatch.tab_malware.submit'] = 'Submit';
