@@ -386,6 +386,14 @@ class CwatchApi
     }
 
     /**
+     * Gets a list of available license types
+     */
+    public function getLicenseTypes()
+    {
+        return $this->apiRequest('/partner/getDistributableLicenseTypes', [], 'GET');
+    }
+
+    /**
      * Send an API request to cWatch server
      *
      * @param string $route The path to the API method

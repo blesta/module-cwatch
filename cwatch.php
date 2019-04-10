@@ -158,29 +158,9 @@ class Cwatch extends Module
     public function getPackageFields($vars = null)
     {
         Loader::loadHelpers($this, ['Html']);
+        Loader::loadModels($this, ['ModuleManager']);
 
         $fields = new ModuleFields();
-        $fields->setHtml("
-            <script type=\"text/javascript\">
-                $(document).ready(function() {
-                    toggleLicenseField();
-                    $('#cwatch_package_type').change(function () {
-                        toggleLicenseField();
-                    });
-                });
-
-                function toggleLicenseField() {
-                    // Hide/show license types based on package type
-                    if ($('#cwatch_package_type').val() == 'single_license') {
-                        $('#cwatch_license_type').show();
-                        $('#cwatch_license_type').parent().find('label').show();
-                    } else {
-                        $('#cwatch_license_type').hide();
-                        $('#cwatch_license_type').parent().find('label').hide();
-                    }
-                }
-            </script>
-        ");
 
         // Set the package types
         $package_type = $fields->label(
@@ -200,15 +180,21 @@ class Cwatch extends Module
         $package_type->attach($tooltip);
         $fields->setField($package_type);
 
-        // Set the license types
-        $license_types = Configure::get('cwatch.products');
-        foreach ($license_types as $license_type => $terms) {
-            $license_types[$license_type] = Language::_(
-                'CWatch.package_fields.license_' . strtolower($license_type),
-                true
-            );
+        // Set the module row to use if not given
+        if (empty($vars->module_row)) {
+            if (!empty($vars->module_group) && is_numeric($vars->module_group)) {
+                // Let the module decide which row to use
+                $vars->module_row = $this->selectModuleRow($vars->module_group);
+            } else {
+                $rows = (array) $this->ModuleManager->getRows($vars->module_id);
+                $vars->module_row = isset($rows[0]) ? $rows[0]->id : 0;
+            }
         }
+        // Set the module row for API calls
+        $this->setModuleRow($this->getModuleRow($vars->module_row));
 
+        // Set the license types
+        $license_types = $this->getLicenseTypes();
         $license_type = $fields->label(
             Language::_('CWatch.package_fields.license_type', true),
             'cwatch_license_type'
@@ -216,12 +202,56 @@ class Cwatch extends Module
         $license_type->attach(
             $fields->fieldSelect(
                 'meta[cwatch_license_type]',
-                $license_types,
+                $license_types['language'],
                 $this->Html->ifSet($vars->meta['cwatch_license_type'], ''),
                 ['id' => 'cwatch_license_type']
             )
         );
         $fields->setField($license_type);
+
+        $html = "<script type=\"text/javascript\">
+                $(document).ready(function() {
+                    toggleLicenseField();
+                    $('#cwatch_package_type').change(function () {
+                        toggleLicenseField();
+                    });
+
+                    // Add a section to display available terms for each license type
+                    if (!$('#license_type_terms').length) {
+                        $('#cwatch_license_type').parent().append(
+                            '<div id=\"license_type_terms\" class=\"pad\"></div>'
+                        );
+                    }
+
+                    // Make a list of terms by license type
+                    var license_terms = {";
+        foreach ($license_types['terms'] as $license_type => $terms) {
+            $html .= "'" . $license_type . "': '" . implode(", ", $terms) . "',";
+        }
+        $html .= "};
+
+                    // When type license type is changed, diaplay the available terms for the new type
+                    $('#cwatch_license_type').change(function() {
+                        $('#license_type_terms').html(
+                            '" . Language::_('CWatch.package_fields.available_terms', true) . ": '
+                                + license_terms[$(this).val()]
+                        );
+                    });
+                    // Trigger the change event
+                    $('#cwatch_license_type').change();
+                });
+
+                function toggleLicenseField() {
+                    // Hide/show license types based on package type
+                    if ($('#cwatch_package_type').val() == 'single_license') {
+                        $('#cwatch_license_type').parent().show();
+                    } else {
+                        $('#cwatch_license_type').parent().hide();
+                    }
+                }
+            </script>
+        ";
+        $fields->setHtml($html);
 
         return $fields;
     }
@@ -237,6 +267,39 @@ class Cwatch extends Module
             'multi_license' => Language::_('CWatch.packagetypes.multi_license', true),
             'single_license' => Language::_('CWatch.packagetypes.single_license', true)
         ];
+    }
+
+    /**
+     *
+     */
+    private function getLicenseTypes()
+    {
+        $api = $this->getApi();
+        $license_type_response = $api->getLicenseTypes();
+        $license_types = ['language' => [], 'terms' => []];
+        if (!$license_type_response->errors()) {
+            foreach ($license_type_response->response() as $license_type) {
+                $license_language = Language::_(
+                    'CWatch.package_fields.license_' . strtolower($license_type->licenseType),
+                    true
+                );
+
+                $license_types['language'][$license_type->licenseType] = $license_language
+                    ? $license_language
+                    : $license_type->friendlyName;
+
+                $license_types['terms'][$license_type->licenseType] = [];
+                foreach ($license_type->compatibility as $license_term) {
+                   $license_types['terms'][$license_type->licenseType][$license_term->term] = $license_term->friendlyName;
+                }
+            }
+        }
+
+        // Log request data
+        $this->log('getlicensetypes', json_encode($api->lastRequest()), 'input', true);
+        $this->log('getlicensetypes', $license_type_response->raw(), 'output', $license_type_response->status() == 200);
+
+        return $license_types;
     }
 
     /**
@@ -779,11 +842,12 @@ class Cwatch extends Module
     {
         $api = $this->getApi();
 
-        $license_types = Configure::get('cwatch.products');
+        $license_type_list = $this->getLicenseTypes();
+        $license_type_quantities = $license_type_list['language'];
         $unused_licenses_by_type = [];
         // Get a count of licenses to provide for each type
-        foreach ($license_types as $license_type => $value) {
-            $license_types[$license_type] = isset($vars['configoptions'][$license_type])
+        foreach ($license_type_quantities as $license_type => $value) {
+            $license_type_quantities[$license_type] = isset($vars['configoptions'][$license_type])
                 ? $vars['configoptions'][$license_type]
                 : 0;
 
@@ -799,9 +863,9 @@ class Cwatch extends Module
         foreach ($licenses as $license) {
             if (strtolower($license->status) == 'valid'
                 && ($service_licenses === null || in_array($license->licenseKey, $service_licenses))
-                && array_key_exists($license->pricingTerm, $license_types)
+                && array_key_exists($license->pricingTerm, $license_type_quantities)
             ) {
-                $license_types[$license->pricingTerm]--;
+                $license_type_quantities[$license->pricingTerm]--;
 
                 if ($license->registeredDomainCount == 0) {
                     $unused_licenses_by_type[$license->pricingTerm][] = $license->licenseKey;
@@ -811,7 +875,7 @@ class Cwatch extends Module
 
         // Check for invalid license type counts
         $license_removals_by_type = [];
-        foreach ($license_types as $license_type => $quantity) {
+        foreach ($license_type_quantities as $license_type => $quantity) {
             // Add licenses
             if ($quantity + count($unused_licenses_by_type[$license_type]) < 0) {
                 // Give an error if the config option has a value lower than the current number of used licenses
@@ -837,7 +901,7 @@ class Cwatch extends Module
         $license_keys = [];
 
         // Add licenses to the customer account according to the config options provided
-        foreach ($license_types as $license_type => $quantity) {
+        foreach ($license_type_quantities as $license_type => $quantity) {
             for ($i = 0; $i < $quantity; $i++) {
                 // Add licenses
                 $license_response = $api->addLicense(
