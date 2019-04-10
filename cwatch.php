@@ -230,7 +230,7 @@ class Cwatch extends Module
         }
         $html .= "};
 
-                    // When type license type is changed, diaplay the available terms for the new type
+                    // When type license type is changed, display the available terms for the new type
                     $('#cwatch_license_type').change(function() {
                         $('#license_type_terms').html(
                             '" . Language::_('CWatch.package_fields.available_terms', true) . ": '
