@@ -186,7 +186,7 @@ class Cwatch extends Module
                 // Let the module decide which row to use
                 $vars->module_row = $this->selectModuleRow($vars->module_group);
             } else {
-                $rows = (array) $this->ModuleManager->getRows($vars->module_id);
+                $rows = $this->getModuleRows();
                 $vars->module_row = isset($rows[0]) ? $rows[0]->id : 0;
             }
         }
