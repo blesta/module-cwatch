@@ -270,7 +270,11 @@ class Cwatch extends Module
     }
 
     /**
+     * Gets list of license types and some information about them
      *
+     * @return array Language and available terms for all license types in the following fields:
+     *  - language: A list of license keys and their language
+     *  - terms: A list of license keys and arrays of their terms in term/term name key/value pairs
      */
     private function getLicenseTypes()
     {
