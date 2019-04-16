@@ -37,14 +37,19 @@ $lang['CWatch.manage.heading_options'] = 'Options';
 
 // Package fields
 $lang['CWatch.package_fields.package_type'] = 'Package Type';
+$lang['CWatch.package_fields.available_terms'] = 'Available Terms';
 $lang['CWatch.package_fields.tooltip.package_type'] = 'Single license packages provision only one license in cWatch of the type selected here by the package.  Multi license packages use Configurable Options to allow customers to order a variable number of licenses of different types.';
 $lang['CWatch.package_fields.license_type'] = 'License Type';
 $lang['CWatch.package_fields.license_basic_detection'] = 'Basic';
 $lang['CWatch.package_fields.license_starter'] = 'Starter';
+$lang['CWatch.package_fields.license_starter_paid_with_trial'] = 'Starter Paid with Trial';
+$lang['CWatch.package_fields.license_waf_starter'] = 'Waf Starter';
 $lang['CWatch.package_fields.license_pro'] = 'Professional';
+$lang['CWatch.package_fields.license_pro_paid_with_trial'] = 'Professional Paid with Trial';
 $lang['CWatch.package_fields.license_pro_free'] = 'Professional Trial';
 $lang['CWatch.package_fields.license_pro_free_60d'] = 'Extended Professional Trial';
 $lang['CWatch.package_fields.license_premium'] = 'Premium';
+$lang['CWatch.package_fields.license_premium_paid_with_trial'] = 'Premium Paid with Trial';
 $lang['CWatch.package_fields.license_premium_free'] = 'Premium Trial';
 $lang['CWatch.package_fields.license_premium_free_60d'] = 'Extended Premium Trial';
 
