@@ -274,6 +274,16 @@ class CwatchApi
     }
 
     /**
+     * Fetch license info for the admin
+     *
+     * @return CwatchResponse
+     */
+    public function getAdmin()
+    {
+        return $this->apiRequest('admin/summary', [], 'GET');
+    }
+
+    /**
      * Fetch license info for a given license key
      *
      * @param string $licenseKey The key of the license

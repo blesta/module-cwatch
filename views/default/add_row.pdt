@@ -23,7 +23,7 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
             <li>
             <?php
             $this->Form->label($this->_('CWatch.add_row.field_password', true), 'password');
-            $this->Form->fieldPassword('password', ['id' => 'password']);
+            $this->Form->fieldPassword('password', ['id' => 'password', 'value' => $this->Html->ifSet($vars->password)]);
             ?>
             </li>
             <li>
