@@ -655,7 +655,8 @@ class Cwatch extends Module
         }
 
         $response = null;
-        $edit_user = $edit || array_key_exists($vars['cwatch_email'], $account_emails_meta->value);
+        $edit_user = $edit
+            || ($account_emails_meta && array_key_exists($vars['cwatch_email'], $account_emails_meta->value));
         if ($edit_user) {
             // Edit a customer account in cWatch
             $response = $api->editUser(
