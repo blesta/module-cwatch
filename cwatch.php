@@ -11,6 +11,7 @@
  */
 use Blesta\Core\Util\Common\Traits\Container;
 use Blesta\Core\Util\Ftp\Ftp;
+use Blesta\Core\Util\Validate\Server;
 
 class Cwatch extends Module
 {
@@ -1980,15 +1981,8 @@ class Cwatch extends Module
                 'format' => [
                     'if_set' => true,
                     'rule' => function ($host_name) {
-                        if (strlen($host_name) > 255) {
-                            return false;
-                        }
-
-                        return $this->Input->matches(
-                            $host_name,
-                            '/^([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9])'
-                            . '(\.([a-z0-9]|[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]))+$/i'
-                        );
+                        $validator = new Server();
+                        return $validator->isDomain($host_name) || $validator->isIp($host_name);
                     },
                     'message' => Language::_('CWatch.!error.cwatch_domain.format', true)
                 ],
