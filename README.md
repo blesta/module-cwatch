@@ -26,6 +26,14 @@ your Blesta installation path.
 
 4. Find the cWatch module, click the "Install", and enter your cWatch username and password
 
+### Blesta Compatibility
+
+|Blesta Version|Module Version|
+|--------------|--------------|
+|< v4.2.0|N/A|
+|>= v4.2.0|v2.0.0+|
+|>= v4.9.0|v2.4.0+|
+
 ## When creating a package
 #### Multi-license Packages
 

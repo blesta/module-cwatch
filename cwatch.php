@@ -392,31 +392,6 @@ class Cwatch extends Module
     }
 
     /**
-     * Returns an array of key values for fields stored for a module, package,
-     * and service under this module, used to substitute those keys with their
-     * actual module, package, or service meta values in related emails.
-     *
-     * @return array A multi-dimensional array of key/value pairs where each key is
-     *  one of 'module', 'package', or 'service' and each value is a numerically
-     *  indexed array of key values that match meta fields under that category.
-     * @see Modules::addModuleRow()
-     * @see Modules::editModuleRow()
-     * @see Modules::addPackage()
-     * @see Modules::editPackage()
-     * @see Modules::addService()
-     * @see Modules::editService()
-     */
-    public function getEmailTags()
-    {
-        return
-        [
-            'module' => [],
-            'package' => ['type', 'package', 'acl'],
-            'service' => ['cwatch_email', 'cwatch_firstname', 'cwatch_lastname', 'cwatch_country']
-        ];
-    }
-
-    /**
      * Adds the service to the remote server. Sets Input errors on failure,
      * preventing the service from being added.
      *

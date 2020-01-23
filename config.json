@@ -1,13 +1,16 @@
 {
-    "version": "2.3.0",
+    "version": "2.4.0",
     "name": "CWatch.name",
-    "description": "",
+    "description": "CWatch.description",
     "authors": [
         {
             "name": "Phillips Data, Inc.",
             "url": "http://www.blesta.com"
         }
     ],
+    "package": {
+        "name_key": ""
+    },
     "service": {
         "name_key": "cwatch_email"
     },
@@ -16,7 +19,9 @@
         "rows": "CWatch.module_row_plural.name",
         "row_key": "username"
     },
-    "package": {
-        "name_key": ""
+    "email_tags": {
+        "module": [],
+        "package": ["type", "package", "acl"],
+        "service": ["cwatch_email", "cwatch_firstname", "cwatch_lastname", "cwatch_country"]
     }
 }
