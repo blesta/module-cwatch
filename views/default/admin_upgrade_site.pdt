@@ -31,7 +31,7 @@ $this->Form->fieldHidden('action', 'upgrade_site');
         </li>
     </ul>
     <button class="btn btn-default pull-right">
-        <i class="fa fa-edit"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
+        <i class="fas fa-edit"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
     </button>
         <?php
         } else {
