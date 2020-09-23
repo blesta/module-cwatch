@@ -41,14 +41,14 @@ if (!empty($licenses)) {
                         if ($this->Html->ifSet($license->site->status) == 'Valid') {
                         ?>
                         <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="btn btn-xs btn-default">
-                            <i class="fa fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
+                            <i class="fas fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                         </a>
                         <?php
                         } else {
                         ?>
                         <div>
                             <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-default">
-                                <i class="fa fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
+                                <i class="fas fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
                             </a>
                         </div>
                         <?php
@@ -66,7 +66,7 @@ if (!empty($licenses)) {
                             ?>
                             <li>
                                 <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>" class="remove_site">
-                                    <i class="fa fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                                    <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
                                 </a>
                             </li>
                             <?php
@@ -76,7 +76,7 @@ if (!empty($licenses)) {
                             ?>
                             <li>
                                 <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_deactivate', true));?>" class="deactivate_license">
-                                    <i class="fa fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.deactivate_license');?>
+                                    <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.deactivate_license');?>
                                 </a>
                             </li>
                             <?php
@@ -140,7 +140,7 @@ if (!empty($inactive_licenses)) {
                     ?>
                     <div class="btn-group">
                         <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="btn btn-xs btn-default">
-                            <i class="fa fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
+                            <i class="fas fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                         </a>
                         <button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" type="button">
                             <span class="caret"></span>
@@ -148,7 +148,7 @@ if (!empty($inactive_licenses)) {
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
-                                    <i class="fa fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
+                                    <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
                                 </a>
                             </li>
                         </ul>
