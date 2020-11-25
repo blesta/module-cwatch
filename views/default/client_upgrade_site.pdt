@@ -5,7 +5,7 @@
 $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
 $this->Form->fieldHidden('action', 'upgrade_site');
 ?>
-<div class="col-md-12">
+<div class="w-100">
     <div>
         <?php $this->Form->label($this->_('CWatch.tab_licenses.current_license', true));?>
         <p><?php $this->_('CWatch.tab_licenses.license_name', false, $this->Html->ifSet($selected_license->licenseKey), $this->Html->ifSet($selected_license->productTitle));?></p>
@@ -24,7 +24,7 @@ $this->Form->fieldHidden('action', 'upgrade_site');
         $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($selected_license->licenseKey), ['class' => 'form-control', 'id' => 'licenseKey']);
         ?>
     </div>
-    <button class="btn btn-default pull-right">
+    <button class="btn btn-light float-right">
         <i class="fas fa-edit"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
     </button>
     <?php
