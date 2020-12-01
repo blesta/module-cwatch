@@ -34,7 +34,7 @@ $this->Form->create($this->base_uri . 'clients/serviceTab/' . $this->Html->ifSet
         </li>
     </ul>
 </div>
-<button class="btn btn-default pull-right">
+<button class="btn btn-default float-right">
     <i class="fas fa-edit"></i> <?php $this->_('CWatch.tab_licenses.submit');?>
 </button>
 <?php

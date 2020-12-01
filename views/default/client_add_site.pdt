@@ -4,7 +4,7 @@
 <?php
 $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
 ?>
-<div class="col-md-12">
+<div class="w-100">
     <div class="form-group">
         <?php
         $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
@@ -32,7 +32,7 @@ $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($s
         <a href="#" data-toggle="tooltip" title="<?php $this->_("CWatch.!tooltip.autoSsl");?>"><i class="fas fa-question-circle text-primary"></i></a>
     </div>
 </div>
-<button class="btn btn-default pull-right">
+<button class="btn btn-light float-right">
     <i class="fas fa-edit"></i> <?php $this->_('CWatch.tab_licenses.submit');?>
 </button>
 <?php
