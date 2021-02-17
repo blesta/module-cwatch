@@ -1,5 +1,5 @@
 <?php
-echo $this->Html->ifSet($message);
+echo (isset($message) ? $message : null);
 ?>
 <h3>
     <?php $this->_('CWatch.tab_licenses.licenses');?>
@@ -27,27 +27,27 @@ if (!empty($licenses)) {
                 <td><?php $this->Html->_($license->licenseKey);?></td>
                 <td><?php $this->Html->_($license->productTitle);?></td>
                 <td><?php $this->Html->_($license->site->domain);?></td>
-                <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], $this->Html->ifSet($license->site->status)));?></td>
-                <td><?php echo $this->Html->ifSet($license->site->scanner) ? $this->Html->_($license->site->scanner->status, true) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
+                <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], (isset($license->site->status) ? $license->site->status : null)));?></td>
+                <td><?php echo (isset($license->site->scanner) ? $license->site->scanner : null) ? $this->Html->_($license->site->scanner->status, true) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
                 <td>
                     <?php
-                    $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
-                    $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
-                    $this->Form->fieldHidden('licenseKey', $this->Html->ifSet($license->licenseKey));
+                    $this->Form->create($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');
+                    $this->Form->fieldHidden('domain', (isset($license->site->domain) ? $license->site->domain : null));
+                    $this->Form->fieldHidden('licenseKey', (isset($license->licenseKey) ? $license->licenseKey : null));
                     $this->Form->fieldHidden('action', 'remove_domain', ['class' => 'license_action']);
                     ?>
                     <div class="btn-group">
                         <?php
-                        if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                        if ((isset($license->site->status) ? $license->site->status : null) == 'Valid') {
                         ?>
-                        <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="btn btn-xs btn-light">
+                        <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/?action=upgrade_site&key=' . (isset($license->licenseKey) ? $license->licenseKey : null));?>" class="btn btn-xs btn-light">
                             <i class="fas fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                         </a>
                         <?php
                         } else {
                         ?>
                         <div>
-                            <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=add_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="manage btn btn-xs btn-light">
+                            <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/?action=add_site&key=' . (isset($license->licenseKey) ? $license->licenseKey : null));?>" class="manage btn btn-xs btn-light">
                                 <i class="fas fa-plus-circle fa-fw"></i> <?php $this->_('CWatch.tab_licenses.add_site');?>
                             </a>
                         </div>
@@ -55,27 +55,27 @@ if (!empty($licenses)) {
                         }
                         ?>
                         <?php
-                        if ($this->Html->ifSet($license->site->status) == 'Valid' || $this->Html->ifSet($package_type) != 'single_license') {
+                        if ((isset($license->site->status) ? $license->site->status : null) == 'Valid' || (isset($package_type) ? $package_type : null) != 'single_license') {
                         ?>
                         <button class="btn btn-xs btn-light dropdown-toggle" data-toggle="dropdown" type="button">
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">
                             <?php
-                            if ($this->Html->ifSet($license->site->status) == 'Valid') {
+                            if ((isset($license->site->status) ? $license->site->status : null) == 'Valid') {
                             ?>
                             <li>
-                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>" class="remove_site">
+                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>" class="remove_site">
                                     <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
                                 </a>
                             </li>
                             <?php
                             }
 
-                            if ($this->Html->ifSet($package_type) != 'single_license') {
+                            if ((isset($package_type) ? $package_type : null) != 'single_license') {
                             ?>
                             <li>
-                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_deactivate', true));?>" class="deactivate_license">
+                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_deactivate', true));?>" class="deactivate_license">
                                     <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.deactivate_license');?>
                                 </a>
                             </li>
@@ -134,12 +134,12 @@ if (!empty($inactive_licenses)) {
                 <td>
                     <?php
                     if ($site) {
-                        $this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
-                        $this->Form->fieldHidden('domain', $this->Html->ifSet($license->site->domain));
+                        $this->Form->create($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');
+                        $this->Form->fieldHidden('domain', (isset($license->site->domain) ? $license->site->domain : null));
                         $this->Form->fieldHidden('action', 'remove_domain');
                     ?>
                     <div class="btn-group">
-                        <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/?action=upgrade_site&key=' . $this->Html->ifSet($license->licenseKey));?>" class="btn btn-xs btn-light">
+                        <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/?action=upgrade_site&key=' . (isset($license->licenseKey) ? $license->licenseKey : null));?>" class="btn btn-xs btn-light">
                             <i class="fas fa-arrow-up fa-fw"></i> <?php $this->_('CWatch.tab_licenses.upgrade_site');?>
                         </a>
                         <button class="btn btn-xs btn-light dropdown-toggle" data-toggle="dropdown" type="button">
@@ -147,7 +147,7 @@ if (!empty($inactive_licenses)) {
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
+                                <a href="<?php echo $this->Html->safe($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');?>" rel="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true));?>">
                                     <i class="fas fa-ban fa-fw"></i> <?php $this->_('CWatch.tab_licenses.remove_site');?>
                                 </a>
                             </li>

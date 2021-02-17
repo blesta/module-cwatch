@@ -17,19 +17,19 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
             <li>
             <?php
             $this->Form->label($this->_('CWatch.add_row.field_username', true), 'username');
-            $this->Form->fieldText('username', $this->Html->ifSet($vars->username), ['id' => 'username']);
+            $this->Form->fieldText('username', (isset($vars->username) ? $vars->username : null), ['id' => 'username']);
             ?>
             </li>
             <li>
             <?php
             $this->Form->label($this->_('CWatch.add_row.field_password', true), 'password');
-            $this->Form->fieldPassword('password', ['id' => 'password', 'value' => $this->Html->ifSet($vars->password)]);
+            $this->Form->fieldPassword('password', ['id' => 'password', 'value' => (isset($vars->password) ? $vars->password : null)]);
             ?>
             </li>
             <li>
             <?php
             $this->Form->label($this->_('CWatch.add_row.field_sandbox', true), 'cwatch_sandbox');
-            $this->Form->fieldCheckbox('cwatch_sandbox', 'true', $this->Html->ifSet($vars->cwatch_sandbox, 'true') == 'true', ['id' => 'cwatch_sandbox']);
+            $this->Form->fieldCheckbox('cwatch_sandbox', 'true', (isset($vars->cwatch_sandbox) ? $vars->cwatch_sandbox : 'true') == 'true', ['id' => 'cwatch_sandbox']);
             ?>
             </li>
         </ul>

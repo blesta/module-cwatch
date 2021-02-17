@@ -2,13 +2,13 @@
     <h3><?php $this->_('CWatch.tab_licenses.add');?></h3>
 </div>
 <?php
-$this->Form->create($this->base_uri . 'services/manage/' . $this->Html->ifSet($service->id) . '/tabClientLicenses/');
+$this->Form->create($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');
 ?>
 <div class="w-100">
     <div class="form-group">
         <?php
         $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
-        $this->Form->fieldSelect('licenseKey', $this->Html->ifSet($available_licenses), $this->Html->ifSet($selected_license->licenseKey), ['class' => 'form-control', 'id' => 'licenseKey']);
+        $this->Form->fieldSelect('licenseKey', (isset($available_licenses) ? $available_licenses : null), (isset($selected_license->licenseKey) ? $selected_license->licenseKey : null), ['class' => 'form-control', 'id' => 'licenseKey']);
         ?>
     </div>
     <div class="form-group">

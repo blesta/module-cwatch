@@ -256,7 +256,7 @@ class Cwatch extends Module
             $fields->fieldSelect(
                 'meta[cwatch_package_type]',
                 $this->getPackageTypes(),
-                $this->Html->ifSet($vars->meta['cwatch_package_type'], 'multi_license'),
+                (isset($vars->meta['cwatch_package_type']) ? $vars->meta['cwatch_package_type'] : 'multi_license'),
                 ['id' => 'cwatch_package_type']
             )
         );
@@ -288,7 +288,7 @@ class Cwatch extends Module
             $fields->fieldSelect(
                 'meta[cwatch_license_type]',
                 $license_types['language'],
-                $this->Html->ifSet($vars->meta['cwatch_license_type'], ''),
+                (isset($vars->meta['cwatch_license_type']) ? $vars->meta['cwatch_license_type'] : ''),
                 ['id' => 'cwatch_license_type']
             )
         );
@@ -1178,7 +1178,7 @@ class Cwatch extends Module
         $fields = new ModuleFields();
 
         $requestor = $this->getFromContainer('requestor');
-        $client_id = $this->Html->ifSet($requestor->client_id, $this->Session->read('blesta_client_id'));
+        $client_id = (isset($requestor->client_id) ? $requestor->client_id : $this->Session->read('blesta_client_id'));
         $client = $this->Clients->get($client_id);
 
         // Provision the license assigned to this package
@@ -1187,7 +1187,7 @@ class Cwatch extends Module
             $domain = $fields->label(Language::_('Cwatch.service_field.domain', true), 'cwatch_domain');
             // Create domain field and attach to domain label
             $domain->attach(
-                $fields->fieldText('cwatch_domain', $this->Html->ifSet($vars->cwatch_domain), ['id' => 'cwatch_domain'])
+                $fields->fieldText('cwatch_domain', (isset($vars->cwatch_domain) ? $vars->cwatch_domain : null), ['id' => 'cwatch_domain'])
             );
             // Set the label as a field
             $fields->setField($domain);
@@ -1356,16 +1356,16 @@ class Cwatch extends Module
                     $ftp = $this->Security->create(
                         'Net',
                         'SFTP',
-                        [$this->Html->ifSet($post['host']), $this->Html->ifSet($post['port'])]
+                        [(isset($post['host']) ? $post['host'] : null), (isset($post['port']) ? $post['port'] : null)]
                     );
 
-                    $success = $ftp->login($this->Html->ifSet($post['username']), $this->Html->ifSet($post['password']))
-                        && $ftp->chdir($this->Html->ifSet($post['path']));
+                    $success = $ftp->login((isset($post['username']) ? $post['username'] : null), (isset($post['password']) ? $post['password'] : null))
+                        && $ftp->chdir((isset($post['path']) ? $post['path'] : null));
                 } else {
                     // Set regular FTP options
                     $ftp_options = array(
                         'passive' => true,
-                        'port' => $this->Html->ifSet($post['port']),
+                        'port' => (isset($post['port']) ? $post['port'] : null),
                         'timeout' => 30,
                         'curlOptions' => array(
                             CURLOPT_PROTOCOLS => CURLPROTO_FTP,
@@ -1374,14 +1374,14 @@ class Cwatch extends Module
                     $protocol = 'ftp://';
 
                     $ftp = new Ftp();
-                    $ftp->setServer($protocol . $this->Html->ifSet($post['host']));
+                    $ftp->setServer($protocol . (isset($post['host']) ? $post['host'] : null));
                     $ftp->setCredentials(
-                        $this->Html->ifSet($post['username']),
-                        $this->Html->ifSet($post['password'])
+                        (isset($post['username']) ? $post['username'] : null),
+                        (isset($post['password']) ? $post['password'] : null)
                     );
                     $ftp->setOptions($ftp_options);
 
-                    $success = $ftp->listDir($this->Html->ifSet($post['path']));
+                    $success = $ftp->listDir((isset($post['path']) ? $post['path'] : null));
                 }
 
                 // Attempt to login to test the connection and navigate to the given path. Show success or error
@@ -1402,12 +1402,12 @@ class Cwatch extends Module
             $scanner = $api->addScanner(
                 $service_fields->cwatch_email,
                 [
-                    'domain' => $this->Html->ifSet($post['domainname']),
-                    'password' => $this->Html->ifSet($post['password']),
-                    'login' => $this->Html->ifSet($post['username']),
-                    'host' => $this->Html->ifSet($post['host']),
-                    'port' => $this->Html->ifSet($post['port']),
-                    'path' => $this->Html->ifSet($post['path']),
+                    'domain' => (isset($post['domainname']) ? $post['domainname'] : null),
+                    'password' => (isset($post['password']) ? $post['password'] : null),
+                    'login' => (isset($post['username']) ? $post['username'] : null),
+                    'host' => (isset($post['host']) ? $post['host'] : null),
+                    'port' => (isset($post['port']) ? $post['port'] : null),
+                    'path' => (isset($post['path']) ? $post['path'] : null),
                     'protocol' => $use_sftp ? 'SFTP' : 'FTP'
                 ]
             );
