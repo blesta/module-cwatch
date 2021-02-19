@@ -24,11 +24,11 @@ if (!empty($licenses)) {
         foreach ($licenses as $key => $license) {
         ?>
             <tr>
-                <td><?php $this->Html->_($license->licenseKey);?></td>
-                <td><?php $this->Html->_($license->productTitle);?></td>
-                <td><?php $this->Html->_($license->site->domain);?></td>
+                <td><?php (echo isset($license->licenseKey) ? $this->Html->safe($license->licenseKey) : null);?></td>
+                <td><?php (echo isset($license->productTitle) ? $this->Html->safe($license->productTitle) : null);?></td>
+                <td><?php (echo isset($license->site->domain) ? $this->Html->safe($license->site->domain) : null);?></td>
                 <td><?php echo $this->Html->safe($this->Html->ifSet($site_statuses[$this->Html->ifSet($license->site->status)], (isset($license->site->status) ? $license->site->status : null)));?></td>
-                <td><?php echo (isset($license->site->scanner) ? $license->site->scanner : null) ? $this->Html->_($license->site->scanner->status, true) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
+                <td><?php echo (isset($license->site->scanner) ? $license->site->scanner : null) ? (isset($license->site->scanner->status) ? $this->Html->safe($license->site->scanner->status) : null) : $this->_('CWatch.tab_licenses.not_applicable', true);?></td>
                 <td>
                     <?php
                     $this->Form->create($this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/');
@@ -128,9 +128,9 @@ if (!empty($inactive_licenses)) {
             $site = isset($license->site);
         ?>
             <tr>
-                <td><?php $this->Html->_($license->licenseKey);?></td>
-                <td><?php $this->Html->_($license->productTitle);?></td>
-                <td><?php $this->Html->_($license->site->domain);?></td>
+                <td><?php (echo isset($license->licenseKey) ? $this->Html->safe($license->licenseKey) : null);?></td>
+                <td><?php (echo isset($license->productTitle) ? $this->Html->safe($license->productTitle) : null);?></td>
+                <td><?php (echo isset($license->site->domain) ? $this->Html->safe($license->site->domain) : null);?></td>
                 <td>
                     <?php
                     if ($site) {

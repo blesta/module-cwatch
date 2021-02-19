@@ -16,7 +16,7 @@ $this->Form->fieldHidden('action', 'upgrade_site');
         <li>
             <?php
             $this->Form->label($this->_('CWatch.tab_licenses.domain', true), 'domain');
-            $this->Html->_($selected_license->site->domain);
+            (echo isset($selected_license->site->domain) ? $this->Html->safe($selected_license->site->domain) : null);
             $this->Form->fieldHidden('domain', (isset($selected_license->site->domain) ? $selected_license->site->domain : null), ['id' => 'domain']);
             ?>
         </li>
