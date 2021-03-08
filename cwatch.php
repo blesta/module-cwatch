@@ -1199,7 +1199,7 @@ class Cwatch extends Module
         $email->attach(
             $fields->fieldText(
                 'cwatch_email',
-                $this->Html->ifSet($vars->cwatch_email, $this->Html->ifSet($client->email)),
+                (isset($vars->cwatch_email) ? $vars->cwatch_email : ($client->email ?? null)),
                 ['id' => 'cwatch_email']
             )
         );
@@ -1212,7 +1212,7 @@ class Cwatch extends Module
         $firstname->attach(
             $fields->fieldText(
                 'cwatch_firstname',
-                $this->Html->ifSet($vars->cwatch_firstname, $this->Html->ifSet($client->first_name)),
+                (isset($vars->cwatch_firstname) ? $vars->cwatch_firstname : ($client->first_name ?? null)),
                 ['id' => 'cwatch_firstname']
             )
         );
@@ -1225,7 +1225,7 @@ class Cwatch extends Module
         $lastname->attach(
             $fields->fieldText(
                 'cwatch_lastname',
-                $this->Html->ifSet($vars->cwatch_lastname, $this->Html->ifSet($client->last_name)),
+                (isset($vars->cwatch_lastname) ? $vars->cwatch_lastname : ($client->last_name ?? null)),
                 ['id' => 'cwatch_lastname']
             )
         );
@@ -1239,7 +1239,7 @@ class Cwatch extends Module
             $fields->fieldSelect(
                 'cwatch_country',
                 $this->Form->collapseObjectArray($this->Countries->getList(), ['name', 'alt_name'], 'alpha2', ' - '),
-                $this->Html->ifSet($vars->cwatch_country, $this->Html->ifSet($client->country)),
+                (isset($vars->cwatch_country) ? $vars->cwatch_country : ($client->country ?? null)),
                 ['id' => 'cwatch_country']
             )
         );

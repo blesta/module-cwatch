@@ -12,7 +12,7 @@ $this->Form->fieldHidden('action', 'upgrade_site');
     </div>
     <div>
         <?php $this->Form->label($this->_('CWatch.tab_licenses.domain', true), 'domain');?>
-        <p><?php (echo isset($selected_license->site->domain) ? $this->Html->safe($selected_license->site->domain) : null);?></p>
+        <p><?php echo (isset($selected_license->site->domain) ? $this->Html->safe($selected_license->site->domain) : null);?></p>
         <?php $this->Form->fieldHidden('domain', (isset($selected_license->site->domain) ? $selected_license->site->domain : null), ['id' => 'domain']);?>
     </div>
     <?php

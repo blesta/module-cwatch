@@ -1,7 +1,7 @@
 <table class="table">
     <tr>
         <td>
-            <a target="_blank" href="<?php (echo isset($login_url) ? $this->Html->safe($login_url) : null);?>"><?php $this->_('CWatch.service_info.option_login');?></a>
+            <a target="_blank" href="<?php echo (isset($login_url) ? $this->Html->safe($login_url) : null);?>"><?php $this->_('CWatch.service_info.option_login');?></a>
         </td>
     </tr>
     <?php
@@ -19,7 +19,7 @@
                 ?>
                 <tr>
                     <td><?php echo ucfirst((isset($field) ? $this->Html->safe($field) : null));?></td>
-                    <td><?php (echo isset($value) ? $this->Html->safe($value) : null);?></td>
+                    <td><?php echo (isset($value) ? $this->Html->safe($value) : null);?></td>
                 </tr>
                 <?php
                 }
