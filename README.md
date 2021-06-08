@@ -33,6 +33,7 @@ your Blesta installation path.
 |< v4.2.0|N/A|
 |>= v4.2.0|v2.0.0+|
 |>= v4.9.0|v2.4.0+|
+|>= v5.0.0|v2.6.0+|
 
 ## When creating a package
 #### Multi-license Packages
