@@ -1,8 +1,13 @@
 <?php
+use Blesta\Core\Util\Common\Traits\Container;
+
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'cwatch_response.php';
 
 class CwatchApi
 {
+    // Load traits
+    use Container;
+
     // API endpoint URL
     private $apiUrl;
 
@@ -31,6 +36,10 @@ class CwatchApi
         if ($response) {
             $this->setToken($response->headers());
         }
+
+        // Initialize logger
+        $logger = $this->getFromContainer('logger');
+        $this->logger = $logger;
     }
 
     /**
@@ -433,6 +442,14 @@ class CwatchApi
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
 
+        if (Configure::get('Blesta.curl_verify_ssl')) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
+
         $headers = [];
         $headers[] = 'Authorization: ' . $this->token;
         $headers[] = 'Cache-Control: no-cache';
@@ -441,6 +458,11 @@ class CwatchApi
 
         $this->lastRequest = ['content' => $body, 'headers' => $headers];
         $result = curl_exec($ch);
+
+        if ($result == false) {
+            $this->logger->error(curl_error($ch));
+        }
+
         if (curl_errno($ch)) {
             $error = [
                 'error' => 'Curl Error',
@@ -450,6 +472,7 @@ class CwatchApi
 
             return new CwatchResponse(['content' => json_encode($error)]);
         }
+
         curl_close($ch);
 
         $authorization = '';

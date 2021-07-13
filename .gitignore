@@ -1,6 +1,7 @@
 # Ignore external vendor code
 /vendor/
 /nbproject/
+/.idea
 
 # Ignore composer lock
 /composer.lock
