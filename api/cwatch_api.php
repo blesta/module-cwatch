@@ -32,14 +32,14 @@ class CwatchApi
             $this->apiUrl = 'https://partner.cwatch.comodo.com';
         }
 
+        // Initialize logger
+        $logger = $this->getFromContainer('logger');
+        $this->logger = $logger;
+
         $response = $this->apiRequest('login', ['username' => $username, 'password' => $password], 'POST');
         if ($response) {
             $this->setToken($response->headers());
         }
-
-        // Initialize logger
-        $logger = $this->getFromContainer('logger');
-        $this->logger = $logger;
     }
 
     /**
