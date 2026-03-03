@@ -8,9 +8,7 @@ $this->Widget->setLinkButtons($link_buttons);
 $this->Widget->create($this->_('CWatch.manage.boxtitle', true, (isset($module->name) ? $this->Html->safe($module->name) : null)), ['id' => 'manage_none']);
 ?>
 
-<div class='title_row first'>
-    <h6 class="form-section-header"><?php $this->_('CWatch.manage.title');?></h6>
-</div>
+<h6 class="form-section-header first"><?php $this->_('CWatch.manage.title');?></h6>
 
 <?php
 $num_rows = count((isset($module->rows) ? $module->rows : []));
