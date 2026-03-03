@@ -1,3 +1,5 @@
+<?php /** @var View $this **/ ?>
+
 <table class="table">
     <tr>
         <td>
@@ -8,26 +10,27 @@
     $i = 0;
     foreach ((isset($licenses) ? $licenses : []) as $license) {
     ?>
-    <tr class="expand <?php echo $i++ % 2 == 1 ? 'odd_row' : ''?>">
+    <tr class="expand">
         <td><?php echo (isset($license->productTitle) ? $this->Html->safe($license->productTitle) : null) . ' - ' . (isset($license->licenseKey) ? $this->Html->safe($license->licenseKey) : null);?></td>
     </tr>
     <tr class="expand_details">
         <td class="subtable">
             <table class="table">
                 <?php
+
                 foreach ($license as $field => $value) {
                 ?>
                 <tr>
                     <td><?php echo ucfirst((isset($field) ? $this->Html->safe($field) : null));?></td>
                     <td><?php echo (isset($value) ? $this->Html->safe($value) : null);?></td>
                 </tr>
-                <?php
+                        <?php
                 }
                 ?>
             </table>
         </td>
     </tr>
-    <?php
+                        <?php
     }
     ?>
 </table>
