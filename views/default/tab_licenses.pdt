@@ -1,6 +1,4 @@
-<?php
-/** @var View $this **/
-?>
+<?php /** @var View $this **/ ?>
 
 <?php if (isset($message)) { ?>
 <div><?php echo isset($message) ? $message : null; ?></div>

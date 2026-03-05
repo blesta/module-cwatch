@@ -1,6 +1,4 @@
-<?php
-/** @var View $this **/
-?>
+<?php /** @var View $this **/ ?>
 
 <h6 class="form-section-header first"><?php $this->_('CWatch.tab_licenses.add'); ?></h6>
 <?php $this->Form->create(
