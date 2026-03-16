@@ -1,6 +1,6 @@
 <?php /** @var View $this **/ ?>
 
-<h6 class="form-section-header first"><?php $this->_('CWatch.tab_licenses.upgrade_site'); ?></h6>
+<h6 class="form-section-header"><?php $this->_('CWatch.tab_licenses.upgrade_site'); ?></h6>
 <?php
 $this->Form->create(
     $this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/',

@@ -3,7 +3,7 @@
 <?php if (isset($message)) { ?>
 <div><?php echo isset($message) ? $message : null; ?></div>
     <?php } ?>
-<h6 class="form-section-header first"><?php $this->_('CWatch.tab_licenses.licenses'); ?></h6>
+<h6 class="form-section-header"><?php $this->_('CWatch.tab_licenses.licenses'); ?></h6>
     <?php if (!empty($licenses)) { ?>
 <table class="table table-bordered table-striped" id="licenses">
     <thead>
@@ -186,11 +186,9 @@
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('#licenses a.manage[rel]').forEach(function(el) {
-            $(el).blestaModalConfirm({
-                base_url: '<?php echo $this->base_uri; ?>',
-                submit: true
-            });
+        blestaModalConfirm('#licenses a.manage[rel]', {
+            base_url: '<?php echo $this->base_uri; ?>',
+            submit: true
         });
     });
 </script>
