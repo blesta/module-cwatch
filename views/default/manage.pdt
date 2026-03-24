@@ -10,13 +10,12 @@ $link_buttons = [
 
 $this->Widget->clear();
 $this->Widget->setLinkButtons($link_buttons);
+$this->Widget->setBodyWrapper(false);
 $this->Widget->create(
     $this->_('CWatch.manage.boxtitle', true, isset($module->name) ? $this->Html->safe($module->name) : null),
     ['id' => 'manage_none'],
 );
 ?>
-
-<h6 class="form-section-header"><?php $this->_('CWatch.manage.title'); ?></h6>
 <?php
 $num_rows = count($module->rows ?? []);
 if ($num_rows > 0) {
@@ -77,11 +76,3 @@ if ($num_rows > 0) {
 
 $this->Widget->end();
 ?>
-
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof blestaModalConfirm === 'function') {
-            blestaModalConfirm('.modal-confirm-delete');
-        }
-    });
-</script>
