@@ -2,7 +2,7 @@
 
 <h6 class="form-section-header"><?php $this->_('CWatch.tab_licenses.add'); ?></h6>
 <?php $this->Form->create(
-    $this->base_uri . 'services/manage/' . (isset($service->id) ? $service->id : null) . '/tabClientLicenses/',
+    $this->base_uri . 'services/manage/' . ($service->id ?? null) . '/tabClientLicenses/',
 ); ?>
 <div class="w-100">
     <div class="form-group">
@@ -10,8 +10,8 @@
         $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey');
         $this->Form->fieldSelect(
             'licenseKey',
-            isset($available_licenses) ? $available_licenses : null,
-            isset($selected_license->licenseKey) ? $selected_license->licenseKey : null,
+            $available_licenses ?? null,
+            $selected_license->licenseKey ?? null,
             ['class' => 'form-control', 'id' => 'licenseKey'],
         );
         ?>

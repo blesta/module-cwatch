@@ -18,6 +18,8 @@ class CwatchApi
     // The data sent with the last request served by this API
     private $lastRequest = [];
 
+    private $logger;
+
     /**
      * CwatchApi constructor.
      *

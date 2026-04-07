@@ -4,9 +4,9 @@
 <?php $this->Form->create(
     $this->base_uri .
         'clients/serviceTab/' .
-        (isset($service->client_id) ? $service->client_id : null) .
+        ($service->client_id ?? null) .
         '/' .
-        (isset($service->id) ? $service->id : null) .
+        ($service->id ?? null) .
         '/tablicenses/',
 ); ?>
 <div>
@@ -15,8 +15,8 @@
         $this->Form->label($this->_('CWatch.tab_licenses.licenseKey', true), 'licenseKey', ['class' => 'form-label']);
         $this->Form->fieldSelect(
             'licenseKey',
-            isset($available_licenses) ? $available_licenses : null,
-            isset($selected_license->licenseKey) ? $selected_license->licenseKey : null,
+            $available_licenses ?? null,
+            $selected_license->licenseKey ?? null,
             ['id' => 'licenseKey', 'class' => 'form-select'],
         );
         ?>
@@ -39,7 +39,7 @@
             ]);
             ?>
             <span class="tooltip"><?php $this->_('AppController.tooltip.text'); ?><div><?php $this->_(
-    'CWatch.!tooltip.initiateDns',
+                'CWatch.!tooltip.initiateDns',
 ); ?></div></span>
         </div>
     </div>
@@ -52,7 +52,7 @@
             ]);
             ?>
             <span class="tooltip"><?php $this->_('AppController.tooltip.text'); ?><div><?php $this->_(
-    'CWatch.!tooltip.autoSsl',
+                'CWatch.!tooltip.autoSsl',
 ); ?></div></span>
         </div>
     </div>

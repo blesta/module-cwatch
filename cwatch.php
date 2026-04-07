@@ -312,17 +312,18 @@ class Cwatch extends Module
         $fields->setField($license_type);
 
         $html = "<script type=\"text/javascript\">
-                $(document).ready(function() {
+                (function() {
                     toggleLicenseField();
-                    $('#cwatch_package_type').change(function () {
+                    document.getElementById('cwatch_package_type').addEventListener('change', function() {
                         toggleLicenseField();
                     });
 
                     // Add a section to display available terms for each license type
-                    if (!$('#license_type_terms').length) {
-                        $('#cwatch_license_type').parent().append(
-                            '<div id=\"license_type_terms\" class=\"pad\"></div>'
-                        );
+                    if (!document.getElementById('license_type_terms')) {
+                        var termsDiv = document.createElement('div');
+                        termsDiv.id = 'license_type_terms';
+                        termsDiv.className = 'pad';
+                        document.getElementById('cwatch_license_type').parentNode.appendChild(termsDiv);
                     }
 
                     // Make a list of terms by license type
@@ -333,24 +334,25 @@ class Cwatch extends Module
         $html .= "};
 
                     // When type license type is changed, display the available terms for the new type
-                    $('#cwatch_license_type').change(function() {
-                        $('#license_type_terms').html(
+                    var licenseTypeEl = document.getElementById('cwatch_license_type');
+                    licenseTypeEl.addEventListener('change', function() {
+                        document.getElementById('license_type_terms').innerHTML =
                             '" . Language::_('CWatch.package_fields.available_terms', true) . ": '
-                                + license_terms[$(this).val()]
-                        );
+                                + license_terms[this.value];
                     });
                     // Trigger the change event
-                    $('#cwatch_license_type').change();
-                });
+                    licenseTypeEl.dispatchEvent(new Event('change'));
 
-                function toggleLicenseField() {
-                    // Hide/show license types based on package type
-                    if ($('#cwatch_package_type').val() == 'single_license') {
-                        $('#cwatch_license_type').parent().show();
-                    } else {
-                        $('#cwatch_license_type').parent().hide();
+                    function toggleLicenseField() {
+                        // Hide/show license types based on package type
+                        var licenseTypeParent = document.getElementById('cwatch_license_type').parentNode;
+                        if (document.getElementById('cwatch_package_type').value == 'single_license') {
+                            licenseTypeParent.style.display = '';
+                        } else {
+                            licenseTypeParent.style.display = 'none';
+                        }
                     }
-                }
+                })();
             </script>
         ";
         $fields->setHtml($html);
@@ -2066,12 +2068,18 @@ class Cwatch extends Module
         try {
             $api = new CwatchApi($username, $password, $sandbox == 'true');
 
+            $this->log('getadmin', json_encode($api->lastRequest()), 'input', true);
             $summary_response = $api->getAdmin();
+
+            // Log request data
+            $this->log('getadmin', $summary_response->raw(), 'output', $summary_response->status() == 200);
+
             if (!$summary_response->errors()) {
                 return true;
             }
         } catch (\Throwable $e) {
             // Trap any errors encountered, could not validate connection
+            $this->log('getadmin', $e->getMessage(), 'output', false);
         }
         return false;
     }

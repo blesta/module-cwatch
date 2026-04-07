@@ -10,7 +10,7 @@
     </tr>
     <?php
     $i = 0;
-    foreach (isset($licenses) ? $licenses : [] as $license) { ?>
+    foreach ($licenses ?? [] as $license) { ?>
     <tr class="expand">
         <td><?php echo (isset($license->productTitle) ? $this->Html->safe($license->productTitle) : null) .
             ' - ' .
@@ -24,10 +24,10 @@
                     <td><?php echo ucfirst(isset($field) ? $this->Html->safe($field) : null); ?></td>
                     <td><?php echo isset($value) ? $this->Html->safe($value) : null; ?></td>
                 </tr>
-                        <?php } ?>
+                <?php } ?>
             </table>
         </td>
     </tr>
-                        <?php }
+    <?php }
     ?>
 </table>

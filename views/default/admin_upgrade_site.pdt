@@ -6,9 +6,9 @@
     $this->Form->create(
         $this->base_uri .
             'clients/serviceTab/' .
-            (isset($service->client_id) ? $service->client_id : null) .
+            ($service->client_id ?? null) .
             '/' .
-            (isset($service->id) ? $service->id : null) .
+            ($service->id ?? null) .
             '/tablicenses/',
         ['class' => 'disable-on-submit'],
     );
@@ -22,8 +22,8 @@
             <p class="form-text"><?php $this->_(
                 'CWatch.tab_licenses.license_name',
                 false,
-                isset($selected_license->licenseKey) ? $selected_license->licenseKey : null,
-                isset($selected_license->productTitle) ? $selected_license->productTitle : null,
+                $selected_license->licenseKey ?? null,
+                $selected_license->productTitle ?? null,
             ); ?></p>
         </div>
         <div class="mb-3">
@@ -35,7 +35,7 @@
                 : null; ?></p>
             <?php $this->Form->fieldHidden(
                 'domain',
-                isset($selected_license->site->domain) ? $selected_license->site->domain : null,
+                $selected_license->site->domain ?? null,
                 ['id' => 'domain'],
             ); ?>
         </div>
@@ -47,8 +47,8 @@
             ]);
             $this->Form->fieldSelect(
                 'licenseKey',
-                isset($available_licenses) ? $available_licenses : null,
-                isset($selected_license->licenseKey) ? $selected_license->licenseKey : null,
+                $available_licenses ?? null,
+                $selected_license->licenseKey ?? null,
                 ['id' => 'licenseKey', 'class' => 'form-select'],
             );
             ?>
@@ -64,6 +64,6 @@
         <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
         <p class="mt-3 mb-0"><?php $this->_('CWatch.tab_licenses.no_upgrade_options'); ?></p>
     </div>
-        <?php } ?>
+    <?php } ?>
         <?php $this->Form->end(); ?>
 </div>

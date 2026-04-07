@@ -10,10 +10,9 @@ $this->Widget->setLinkButtons([
     ],
 ]);
 
+$this->Form->create(null, ['class' => 'disable-on-submit']);
 $this->Widget->create($this->_('CWatch.add_row.box_title', true));
 ?>
-
-<?php $this->Form->create(null, ['class' => 'disable-on-submit']); ?>
 
     <h6 class="form-section-header"><?php $this->_('CWatch.add_row.basic_title'); ?></h6>
 
@@ -21,7 +20,7 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
         <label for="username" class="form-label">
             <?php $this->_('CWatch.add_row.field_username'); ?>
         </label>
-        <?php $this->Form->fieldText('username', isset($vars->username) ? $vars->username : null, [
+        <?php $this->Form->fieldText('username', $vars->username ?? null, [
             'id' => 'username',
             'class' => 'form-control',
         ]); ?>
@@ -34,7 +33,7 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
         <?php $this->Form->fieldPassword('password', [
             'id' => 'password',
             'class' => 'form-control',
-            'value' => isset($vars->password) ? $vars->password : null,
+            'value' => $vars->password ?? null,
         ]); ?>
     </div>
 
@@ -43,7 +42,7 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
             <?php $this->Form->fieldCheckbox(
                 'cwatch_sandbox',
                 'true',
-                (isset($vars->cwatch_sandbox) ? $vars->cwatch_sandbox : 'true') == 'true',
+                ($vars->cwatch_sandbox ?? 'true') == 'true',
                 ['id' => 'cwatch_sandbox', 'class' => 'form-check-input'],
             ); ?>
             <label for="cwatch_sandbox" class="form-check-label">
@@ -59,6 +58,6 @@ $this->Widget->create($this->_('CWatch.add_row.box_title', true));
         ]); ?>
     </div>
 
-<?php $this->Form->end(); ?>
+<?php $this->Widget->end(); ?>
 
-<?php $this->Widget->end();
+<?php $this->Form->end();

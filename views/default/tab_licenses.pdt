@@ -46,6 +46,7 @@
                             '/' .
                             (isset($service->id) ? $service->id : null) .
                             '/tabLicenses/',
+                        ['class' => 'd-inline'],
                     );
                     $this->Form->fieldHidden('domain', isset($license->site->domain) ? $license->site->domain : null);
                     $this->Form->fieldHidden('action', 'remove_domain');
@@ -58,19 +59,14 @@
                         (isset($service->id) ? $service->id : null) .
                         '/tabLicenses/?action=upgrade_site&key=' .
                         (isset($license->licenseKey) ? $license->licenseKey : null),
-                ); ?>">
-                    <?php $this->_('CWatch.tab_licenses.upgrade_site'); ?></a>,
-                <a href="<?php echo $this->Html->safe(
-                    $this->base_uri .
-                        'clients/serviceTab/' .
-                        (isset($service->client_id) ? $service->client_id : null) .
-                        '/' .
-                        (isset($service->id) ? $service->id : null) .
-                        '/tabLicenses/',
-                ); ?>" class="manage" rel="<?php echo $this->Html->safe(
-    $this->_('CWatch.tab_licenses.confirm_delete', true),
-); ?>">
-                    <?php $this->_('CWatch.tab_licenses.remove_site'); ?></a>,
+                ); ?>" class="btn btn-sm btn-outline-success" title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.upgrade_site', true)); ?>">
+                    <i class="bi bi-arrow-up-circle"></i>
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger modal-confirm-delete"
+                    data-confirm-message="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true)); ?>"
+                    title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.remove_site', true)); ?>">
+                    <i class="bi bi-trash"></i>
+                </button>
                 <?php $this->Form->end(); ?>
                 <?php
                 } else {
@@ -83,7 +79,9 @@
                         (isset($service->id) ? $service->id : null) .
                         '/tabLicenses/?action=add_site&key=' .
                         (isset($license->licenseKey) ? $license->licenseKey : null),
-                ); ?>"><?php $this->_('CWatch.tab_licenses.add_site'); ?></a>,
+                ); ?>" class="btn btn-sm btn-outline-secondary" title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.add_site', true)); ?>">
+                    <i class="bi bi-plus-circle"></i>
+                </a>
                 <?php
                 } ?>
                 <?php
@@ -94,21 +92,16 @@
                         '/' .
                         (isset($service->id) ? $service->id : null) .
                         '/tabLicenses/',
+                    ['class' => 'd-inline'],
                 );
                 $this->Form->fieldHidden('licenseKey', isset($license->licenseKey) ? $license->licenseKey : null);
                 $this->Form->fieldHidden('action', 'deactivate_license');
                 ?>
-                <a href="<?php echo $this->Html->safe(
-                    $this->base_uri .
-                        'clients/serviceTab/' .
-                        (isset($service->client_id) ? $service->client_id : null) .
-                        '/' .
-                        (isset($service->id) ? $service->id : null) .
-                        '/tabLicenses/',
-                ); ?>" class="manage" rel="<?php echo $this->Html->safe(
-    $this->_('CWatch.tab_licenses.confirm_deactivate', true),
-); ?>">
-                    <?php $this->_('CWatch.tab_licenses.deactivate_license'); ?></a>
+                <button type="button" class="btn btn-sm btn-outline-warning modal-confirm-delete"
+                    data-confirm-message="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_deactivate', true)); ?>"
+                    title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.deactivate_license', true)); ?>">
+                    <i class="bi bi-power"></i>
+                </button>
                 <?php $this->Form->end(); ?>
             </td>
         </tr>
@@ -149,6 +142,7 @@
                             '/' .
                             (isset($service->id) ? $service->id : null) .
                             '/tabLicenses/',
+                        ['class' => 'd-inline'],
                     );
                     $this->Form->fieldHidden('domain', isset($license->site->domain) ? $license->site->domain : null);
                     $this->Form->fieldHidden('action', 'remove_domain');
@@ -161,19 +155,14 @@
                         (isset($service->id) ? $service->id : null) .
                         '/tabLicenses/?action=upgrade_site&key=' .
                         (isset($license->licenseKey) ? $license->licenseKey : null),
-                ); ?>">
-                    <?php $this->_('CWatch.tab_licenses.upgrade_site'); ?></a>,
-                <a href="<?php echo $this->Html->safe(
-                    $this->base_uri .
-                        'clients/serviceTab/' .
-                        (isset($service->client_id) ? $service->client_id : null) .
-                        '/' .
-                        (isset($service->id) ? $service->id : null) .
-                        '/tabLicenses/',
-                ); ?>" class="manage" rel="<?php echo $this->Html->safe(
-    $this->_('CWatch.tab_licenses.confirm_delete', true),
-); ?>">
-                    <?php $this->_('CWatch.tab_licenses.remove_site'); ?></a>
+                ); ?>" class="btn btn-sm btn-outline-success" title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.upgrade_site', true)); ?>">
+                    <i class="bi bi-arrow-up-circle"></i>
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger modal-confirm-delete"
+                    data-confirm-message="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.confirm_delete', true)); ?>"
+                    title="<?php echo $this->Html->safe($this->_('CWatch.tab_licenses.remove_site', true)); ?>">
+                    <i class="bi bi-trash"></i>
+                </button>
                 <?php $this->Form->end();
                 } ?>
             </td>
@@ -184,11 +173,3 @@
 </table>
                 <?php } ?>
 
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        blestaModalConfirm('#licenses a.manage[rel]', {
-            base_url: '<?php echo $this->base_uri; ?>',
-            submit: true
-        });
-    });
-</script>
