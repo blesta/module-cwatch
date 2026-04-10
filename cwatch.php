@@ -1773,7 +1773,7 @@ class Cwatch extends Module
         }
 
         $this->view->set('licenses', $licenses);
-        $this->log('viewinfo', safe_serialize($licenses), 'output', true);
+        $this->log('viewinfo', serialize($licenses), 'output', true);
 
         $login_url = 'https://partner.cwatch.comodo.com';
         $user_response = $api->getUser($service_fields->cwatch_email);
