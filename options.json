@@ -1,0 +1,330 @@
+{
+    "id": 1,
+    "name": "cWatch Configurable Options",
+    "description": "Configurable options for cWatch multi-license provisioning. Each option represents a license type quantity.",
+    "hidden": 0,
+    "hide_options": 0,
+    "options": [
+        {
+            "id": 1,
+            "label": "Basic Detection",
+            "name": "BASIC_DETECTION",
+            "description": "Number of Basic Detection licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 1,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 1,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "label": "Starter",
+            "name": "STARTER",
+            "description": "Number of Starter licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 2,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 2,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "label": "Pro",
+            "name": "PRO",
+            "description": "Number of Pro licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 3,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 3,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "label": "Pro Free",
+            "name": "PRO_FREE",
+            "description": "Number of Pro Free licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 4,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 4,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "label": "Pro Free 60-Day",
+            "name": "PRO_FREE_60D",
+            "description": "Number of Pro Free 60-Day licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 5,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 5,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "label": "Premium",
+            "name": "PREMIUM",
+            "description": "Number of Premium licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 6,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 6,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "label": "Premium Free",
+            "name": "PREMIUM_FREE",
+            "description": "Number of Premium Free licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 7,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 7,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "label": "Premium Free 60-Day",
+            "name": "PREMIUM_FREE_60D",
+            "description": "Number of Premium Free 60-Day licenses to provision",
+            "type": "quantity",
+            "addable": 1,
+            "editable": 1,
+            "hidden": 0,
+            "disable_pricing": 1,
+            "hide_on_invoice": 1,
+            "values": [
+                {
+                    "id": 8,
+                    "name": "",
+                    "value": "",
+                    "default": 0,
+                    "status": "active",
+                    "order": 0,
+                    "min": 0,
+                    "max": null,
+                    "step": 1,
+                    "image": null,
+                    "pricing": [
+                        {
+                            "id": 8,
+                            "term": 1,
+                            "period": "month",
+                            "price": "0.0000",
+                            "price_renews": "0.0000",
+                            "price_transfer": null,
+                            "setup_fee": "0.0000",
+                            "cancel_fee": "0.0000",
+                            "currency": "USD",
+                            "precision": 2
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "condition_sets": []
+}
