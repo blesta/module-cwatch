@@ -19,7 +19,7 @@
             "values": [
                 {
                     "id": 1,
-                    "name": "",
+                    "name": "Basic Detection",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -59,7 +59,7 @@
             "values": [
                 {
                     "id": 2,
-                    "name": "",
+                    "name": "Starter",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -99,7 +99,7 @@
             "values": [
                 {
                     "id": 3,
-                    "name": "",
+                    "name": "Pro",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -139,7 +139,7 @@
             "values": [
                 {
                     "id": 4,
-                    "name": "",
+                    "name": "Pro Free",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -179,7 +179,7 @@
             "values": [
                 {
                     "id": 5,
-                    "name": "",
+                    "name": "Pro Free 60-Day",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -219,7 +219,7 @@
             "values": [
                 {
                     "id": 6,
-                    "name": "",
+                    "name": "Premium",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -259,7 +259,7 @@
             "values": [
                 {
                     "id": 7,
-                    "name": "",
+                    "name": "Premium Free",
                     "value": "",
                     "default": 0,
                     "status": "active",
@@ -299,7 +299,7 @@
             "values": [
                 {
                     "id": 8,
-                    "name": "",
+                    "name": "Premium Free 60-Day",
                     "value": "",
                     "default": 0,
                     "status": "active",
