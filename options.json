@@ -20,7 +20,7 @@
                 {
                     "id": 1,
                     "name": "Basic Detection",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -60,7 +60,7 @@
                 {
                     "id": 2,
                     "name": "Starter",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -100,7 +100,7 @@
                 {
                     "id": 3,
                     "name": "Pro",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -140,7 +140,7 @@
                 {
                     "id": 4,
                     "name": "Pro Free",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -180,7 +180,7 @@
                 {
                     "id": 5,
                     "name": "Pro Free 60-Day",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -220,7 +220,7 @@
                 {
                     "id": 6,
                     "name": "Premium",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -260,7 +260,7 @@
                 {
                     "id": 7,
                     "name": "Premium Free",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
@@ -300,7 +300,7 @@
                 {
                     "id": 8,
                     "name": "Premium Free 60-Day",
-                    "value": "",
+                    "value": null,
                     "default": 0,
                     "status": "active",
                     "order": 0,
