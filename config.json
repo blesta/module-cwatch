@@ -33,5 +33,8 @@
             "cwatch_country"
         ]
     },
-    "icon": "bi-shield-check"
+    "logo": {
+        "light": "views/default/images/logo.png",
+        "dark": "views/default/images/logo-dark.png"
+    }
 }
